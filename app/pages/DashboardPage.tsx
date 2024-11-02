@@ -8,6 +8,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "@tanstack/react-router";
 import { Quiz } from "drizzle/schema";
+import { deleteQuiz } from "~/services/quizzes-service";
 
 const { Title } = Typography;
 
@@ -18,9 +19,9 @@ const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
         navigate({ to: "/quiz/create" });
     };
 
-    const handleEditQuiz = (quizId?: string) => {
+    const handleViewQuiz = (quizId?: string) => {
         if (!quizId) return;
-        navigate({ to: `/quiz/edit/${quizId}` });
+        navigate({ to: `/quiz/view/${quizId}` });
     };
 
     const handleStartQuiz = (quizId?: string) => {
@@ -30,7 +31,7 @@ const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
 
     const handleDeleteQuiz = (quizId?: string) => {
         if (!quizId) return;
-        console.log("Deleting quiz:", quizId);
+        deleteQuiz(Number(quizId));
     };
 
     const getStatusColor = (status: Quiz["status"]) => {
@@ -80,12 +81,12 @@ const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
                                     Start
                                 </Button>,
                                 <Button
-                                    key="edit"
+                                    key="view"
                                     type="link"
                                     icon={<EditOutlined />}
-                                    onClick={() => handleEditQuiz(quiz.id)}
+                                    onClick={() => handleViewQuiz(quiz.id)}
                                 >
-                                    Edit
+                                    View
                                 </Button>,
                                 <Popconfirm
                                     key="delete"
