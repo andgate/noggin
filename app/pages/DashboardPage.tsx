@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, List, Card, Space, Typography, Popconfirm, Tag } from "antd";
+import { Button, List, Card, Space, Typography, Popconfirm } from "antd";
 import {
     PlusOutlined,
     EditOutlined,
@@ -7,40 +7,32 @@ import {
     PlayCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "@tanstack/react-router";
-import { Quiz } from "drizzle/schema";
-import { deleteQuiz } from "~/services/quizzes-service";
-
+import { deleteQuiz } from "~/services/quiz-service";
+import { GetAllQuizzesResponse } from "~/services/quiz-service.types";
 const { Title } = Typography;
 
-const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
+const DashboardPage: React.FC<{ quizzes: GetAllQuizzesResponse }> = ({
+    quizzes,
+}) => {
     const navigate = useNavigate({ from: "/" });
 
     const handleCreateQuiz = () => {
         navigate({ to: "/quiz/create" });
     };
 
-    const handleViewQuiz = (quizId?: string) => {
+    const handleViewQuiz = (quizId?: number) => {
         if (!quizId) return;
         navigate({ to: `/quiz/view/${quizId}` });
     };
 
-    const handleStartQuiz = (quizId?: string) => {
+    const handleStartQuiz = (quizId?: number) => {
         if (!quizId) return;
         navigate({ to: `/quiz/practice/${quizId}` });
     };
 
-    const handleDeleteQuiz = (quizId?: string) => {
+    const handleDeleteQuiz = (quizId?: number) => {
         if (!quizId) return;
         deleteQuiz(Number(quizId));
-    };
-
-    const getStatusColor = (status: Quiz["status"]) => {
-        const colors = {
-            Completed: "success",
-            "In Progress": "processing",
-            Draft: "default",
-        };
-        return colors[status];
     };
 
     return (
@@ -116,14 +108,9 @@ const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
                                         <div>
                                             Created:{" "}
                                             {new Date(
-                                                quiz.dateCreated,
+                                                quiz.createdAt!,
                                             ).toLocaleDateString()}
                                         </div>
-                                        <Tag
-                                            color={getStatusColor(quiz.status)}
-                                        >
-                                            {quiz.status}
-                                        </Tag>
                                     </Space>
                                 }
                             />

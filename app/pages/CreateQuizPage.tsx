@@ -13,9 +13,9 @@ import {
 } from "antd";
 import type { UploadFile } from "antd/es/upload/interface";
 import { useState } from "react";
-import { createQuiz } from "../services/quizzes-service";
+import { createQuiz } from "../services/quiz-service";
 import { NewQuiz } from "drizzle/schema";
-import { generateQuiz } from "../services/generate-quiz";
+import { generateQuiz } from "../services/generate-quiz-service";
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -40,8 +40,11 @@ export const CreateQuizPage: React.FC = () => {
             const newQuiz: NewQuiz = {
                 ...values,
             };
-            const generatedQuiz = await generateQuiz(newQuiz);
-            const createdQuiz = await createQuiz(generatedQuiz);
+            const generatedQuiz = await generateQuiz({
+                quiz: newQuiz,
+                source: values.source,
+            });
+            const createdQuiz = await createQuiz(generatedQuiz.quiz);
             const createQuizId = createdQuiz?.id;
             navigate({ to: `/quiz/view/${createQuizId}` });
         } catch (error) {

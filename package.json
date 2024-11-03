@@ -8,10 +8,12 @@
     "dev": "vinxi dev",
     "build": "vinxi build --preset node-server",
     "start": "vinxi start --preset node-server",
+    "check": "tsc --watch --noEmit",
     "generate": "drizzle-kit generate",
     "push": "drizzle-kit push",
     "studio": "drizzle-kit studio",
     "test": "playwright test",
+    "test:ui": "playwright test --ui",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -23,6 +25,7 @@
     "better-sqlite3": "^11.5.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "0.33.0",
+    "drizzle-zod": "^0.5.1",
     "openai": "^4.70.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

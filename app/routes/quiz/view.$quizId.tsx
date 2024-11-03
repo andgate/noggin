@@ -1,11 +1,12 @@
 import { ErrorComponent, createFileRoute } from "@tanstack/react-router";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { ViewQuizPage } from "../../pages/ViewQuizPage";
-import { fetchQuiz } from "../../services/quizzes-service";
+import { getQuiz } from "../../services/quiz-service";
 import { NotFound } from "../../components/NotFound";
 
 export const Route = createFileRoute("/quiz/view/$quizId")({
-    loader: async ({ params: { quizId } }) => fetchQuiz(parseInt(quizId, 10)),
+    loader: async ({ params: { quizId } }) =>
+        getQuiz({ id: parseInt(quizId, 10) }),
     errorComponent: ViewQuizErrorComponent as any,
     component: RouteComponent,
     notFoundComponent: () => {

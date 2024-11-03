@@ -1,10 +1,10 @@
 import { Typography, Card, Space, Button } from "antd";
 import { useNavigate } from "@tanstack/react-router";
-import { Quiz } from "drizzle/schema";
+import { GetQuizResponse } from "~/services/quiz-service.types";
 
 const { Title, Text } = Typography;
 
-export const ViewQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
+export const ViewQuizPage: React.FC<{ quiz: GetQuizResponse }> = ({ quiz }) => {
     const navigate = useNavigate({ from: `/quiz/view/${quiz.id}` });
 
     return (

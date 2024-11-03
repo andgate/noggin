@@ -1,15 +1,24 @@
 import { createServerFn } from "@tanstack/start";
-import { NewQuiz } from "drizzle/schema";
 import { OpenAI } from "openai";
 import { zodResponseFormat } from "openai/helpers/zod";
-import { GenerateQuizResponse } from "~/types/quiz";
+import {
+    GenerateQuizRequest,
+    GenerateQuizResponse,
+    generateQuizResponseSchema,
+} from "./quiz-service.types";
 
-const generateQuizPrompt = (quiz: NewQuiz) =>
-    `Generate a quiz title "${quiz.title}" from the following source content:\n\n${quiz.source}`;
+const generateQuizPrompt = (quiz: GenerateQuizRequest, source: string) =>
+    `Generate a quiz titled "${quiz.title}" with ${quiz.questionCount} questions from the following source content:\n\n${source}`;
 
 export const generateQuiz = createServerFn(
     "POST",
-    async (quiz: NewQuiz): Promise<GenerateQuizResponse | null> => {
+    async ({
+        quiz,
+        source,
+    }: {
+        quiz: GenerateQuizRequest;
+        source: string;
+    }): Promise<GenerateQuizResponse | null> => {
         console.log(
             "import.meta.env.VITE_OPENAI_API_KEY",
             import.meta.env.VITE_OPENAI_API_KEY,
@@ -26,10 +35,10 @@ export const generateQuiz = createServerFn(
                     content:
                         "You are a helpful professor. Only use the schema for quiz responses.",
                 },
-                { role: "user", content: generateQuizPrompt(quiz) },
+                { role: "user", content: generateQuizPrompt(quiz, source) },
             ],
             response_format: zodResponseFormat(
-                GenerateQuizResponse,
+                generateQuizResponseSchema,
                 "quizResponse",
             ),
         });

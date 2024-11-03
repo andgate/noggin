@@ -1,9 +1,9 @@
 import { createFileRoute, useLoaderData } from "@tanstack/react-router";
-import { fetchQuizzes } from "../services/quizzes-service";
 import DashboardPage from "../pages/DashboardPage";
+import { getAllQuizzes } from "~/services/quiz-service";
 
 export const Route = createFileRoute("/")({
-    loader: async () => fetchQuizzes(),
+    loader: async () => getAllQuizzes(),
     component: Index,
 });
 
