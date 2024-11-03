@@ -1,4 +1,3 @@
-import { UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "@tanstack/react-router";
 import {
     Button,
@@ -9,44 +8,35 @@ import {
     Select,
     Space,
     Typography,
-    Upload,
 } from "antd";
-import type { UploadFile } from "antd/es/upload/interface";
 import { useState } from "react";
 import { createQuiz } from "../services/quiz-service";
-import { NewQuiz } from "drizzle/schema";
-import { generateQuiz } from "../services/generate-quiz-service";
+import { generateQuiz } from "../services/quiz-generation-service";
 
 const { TextArea } = Input;
 const { Title } = Typography;
 
 interface QuizFormData {
-    title: string;
-    source: string;
+    content: string;
     questionCount: number;
     questionTypes: string[];
-    url?: string;
 }
 
 export const CreateQuizPage: React.FC = () => {
     const navigate = useNavigate({ from: "/quiz/create" });
-    const [form] = Form.useForm();
-    const [fileList, setFileList] = useState<UploadFile[]>([]);
+    const [form] = Form.useForm<QuizFormData>();
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (values: QuizFormData) => {
         setLoading(true);
         try {
-            const newQuiz: NewQuiz = {
-                ...values,
-            };
             const generatedQuiz = await generateQuiz({
-                quiz: newQuiz,
-                source: values.source,
+                questionCount: values.questionCount,
+                questionTypes: values.questionTypes,
+                source: values.content,
             });
-            const createdQuiz = await createQuiz(generatedQuiz.quiz);
-            const createQuizId = createdQuiz?.id;
-            navigate({ to: `/quiz/view/${createQuizId}` });
+            const newQuizId = await createQuiz(generatedQuiz);
+            navigate({ to: `/quiz/view/${newQuizId}` });
         } catch (error) {
             console.error(error);
         } finally {
@@ -68,19 +58,6 @@ export const CreateQuizPage: React.FC = () => {
                     }}
                 >
                     <Form.Item
-                        name="title"
-                        label="Quiz Title"
-                        rules={[
-                            {
-                                required: true,
-                                message: "Please enter a quiz title",
-                            },
-                        ]}
-                    >
-                        <Input placeholder="Enter quiz title" />
-                    </Form.Item>
-
-                    <Form.Item
                         name="content"
                         label="Study Content"
                         rules={[
@@ -94,22 +71,6 @@ export const CreateQuizPage: React.FC = () => {
                             rows={6}
                             placeholder="Paste your study material here"
                         />
-                    </Form.Item>
-
-                    <Form.Item label="Upload Files">
-                        <Upload
-                            fileList={fileList}
-                            onChange={({ fileList }) => setFileList(fileList)}
-                            beforeUpload={() => false}
-                        >
-                            <Button icon={<UploadOutlined />}>
-                                Select File
-                            </Button>
-                        </Upload>
-                    </Form.Item>
-
-                    <Form.Item name="url" label="URL (Optional)">
-                        <Input placeholder="Enter webpage URL to extract content" />
                     </Form.Item>
 
                     <Space size="large">

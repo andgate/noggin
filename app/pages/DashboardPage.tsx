@@ -8,12 +8,10 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "@tanstack/react-router";
 import { deleteQuiz } from "~/services/quiz-service";
-import { GetAllQuizzesResponse } from "~/services/quiz-service.types";
+import { Quiz } from "~/types/quiz-view-types";
 const { Title } = Typography;
 
-const DashboardPage: React.FC<{ quizzes: GetAllQuizzesResponse }> = ({
-    quizzes,
-}) => {
+const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
     const navigate = useNavigate({ from: "/" });
 
     const handleCreateQuiz = () => {
@@ -103,7 +101,7 @@ const DashboardPage: React.FC<{ quizzes: GetAllQuizzesResponse }> = ({
                                 description={
                                     <Space direction="vertical">
                                         <div>
-                                            {quiz.questionCount} Questions
+                                            {quiz.questions.length} Questions
                                         </div>
                                         <div>
                                             Created:{" "}

@@ -16,7 +16,7 @@ export const multipleChoiceQuestionSchema = z.object({
     id: z.number(),
     question: z.string(),
     questionType: z.literal("multiple_choice"),
-    choices: z.array(z.string()),
+    choices: z.array(choiceSchema),
 });
 
 export const writtenQuestionSchema = z.object({
@@ -30,8 +30,10 @@ export const questionSchema = z.discriminatedUnion("questionType", [
     writtenQuestionSchema,
 ]);
 
+export const quizIdSchema = z.number();
+
 export const quizSchema = z.object({
-    id: z.number(),
+    id: quizIdSchema,
     createdAt: z.string(),
     title: z.string(),
     source: sourceSchema,
@@ -41,4 +43,5 @@ export const quizSchema = z.object({
 export type Source = z.infer<typeof sourceSchema>;
 export type Choice = z.infer<typeof choiceSchema>;
 export type Question = z.infer<typeof questionSchema>;
+export type QuizId = z.infer<typeof quizIdSchema>;
 export type Quiz = z.infer<typeof quizSchema>;

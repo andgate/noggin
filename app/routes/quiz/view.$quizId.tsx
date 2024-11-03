@@ -5,9 +5,8 @@ import { getQuiz } from "../../services/quiz-service";
 import { NotFound } from "../../components/NotFound";
 
 export const Route = createFileRoute("/quiz/view/$quizId")({
-    loader: async ({ params: { quizId } }) =>
-        getQuiz({ id: parseInt(quizId, 10) }),
-    errorComponent: ViewQuizErrorComponent as any,
+    loader: async ({ params: { quizId } }) => getQuiz(Number(quizId)),
+    errorComponent: ViewQuizErrorComponent,
     component: RouteComponent,
     notFoundComponent: () => {
         return <NotFound>Project not found</NotFound>;

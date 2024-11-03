@@ -13,6 +13,9 @@ export const sources = sqliteTable("sources", {
         .default(sql`(CURRENT_TIMESTAMP)`)
         .notNull(),
     content: text("content").notNull(),
+    quizId: integer("quiz_id")
+        .references(() => quizzes.id)
+        .notNull(),
 });
 
 // Zod Schemas
@@ -20,8 +23,11 @@ export const insertSourceSchema = createInsertSchema(sources);
 export const selectSourceSchema = createSelectSchema(sources);
 
 // Source Relations
-export const sourcesRelations = relations(sources, ({ many }) => ({
-    quizzes: many(quizzes),
+export const sourcesRelations = relations(sources, ({ one }) => ({
+    quiz: one(quizzes, {
+        fields: [sources.quizId],
+        references: [quizzes.id],
+    }),
 }));
 
 /**
@@ -51,7 +57,7 @@ export const questionsRelations = relations(questions, ({ one, many }) => ({
         fields: [questions.quizId],
         references: [quizzes.id],
     }),
-    multipleChoiceOptions: many(multipleChoiceOptions),
+    choices: many(multipleChoiceOptions),
 }));
 
 /**
@@ -59,14 +65,14 @@ export const questionsRelations = relations(questions, ({ one, many }) => ({
  */
 export const multipleChoiceOptions = sqliteTable("multiple_choice_options", {
     id: integer("id").primaryKey(),
+    createdAt: text("created_at")
+        .default(sql`(CURRENT_TIMESTAMP)`)
+        .notNull(),
     questionId: integer("question_id")
         .references(() => questions.id)
         .notNull(),
     optionText: text("option_text").notNull(),
     isCorrect: integer("is_correct").notNull(), // SQLite doesn't have boolean, so we use integer (0/1)
-    createdAt: text("created_at")
-        .default(sql`(CURRENT_TIMESTAMP)`)
-        .notNull(),
 });
 
 // Zod Schemas
@@ -97,9 +103,6 @@ export const quizzes = sqliteTable("quizzes", {
     createdAt: text("created_at")
         .notNull()
         .default(sql`(CURRENT_TIMESTAMP)`),
-    sourceId: integer("source_id")
-        .notNull()
-        .references(() => sources.id), // Reference to source table
 });
 
 // Zod Schemas
@@ -107,10 +110,7 @@ export const insertQuizSchema = createInsertSchema(quizzes);
 export const selectQuizSchema = createSelectSchema(quizzes);
 
 // Quiz Relations
-export const quizzesRelations = relations(quizzes, ({ one, many }) => ({
-    source: one(sources, {
-        fields: [quizzes.sourceId],
-        references: [sources.id],
-    }),
+export const quizzesRelations = relations(quizzes, ({ many }) => ({
+    sources: many(sources),
     questions: many(questions),
 }));

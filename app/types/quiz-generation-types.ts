@@ -6,14 +6,14 @@ export const choiceSchema = z.object({
 });
 
 export const generatedMultipleChoiceQuestionSchema = z.object({
-    question: z.string(),
     questionType: z.literal("multiple_choice"),
-    choices: z.array(z.string()),
+    question: z.string(),
+    choices: choiceSchema.array(),
 });
 
 export const generatedWrittenQuestionSchema = z.object({
-    question: z.string(),
     questionType: z.literal("written"),
+    question: z.string(),
 });
 
 export const generatedQuestionSchema = z.discriminatedUnion("questionType", [
