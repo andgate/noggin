@@ -1,34 +1,27 @@
-import { Typography, Card, Space, Button } from "antd";
+import { Title, Text, Card, Stack, Button } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { Question, Quiz } from "~/types/quiz-view-types";
-
-const { Title, Text } = Typography;
 
 const QuizQuestionPreview: React.FC<{ question: Question; index: number }> = ({
     question,
     index,
 }) => {
     const isMultipleChoice = question.questionType === "multiple_choice";
-    let choiceList = <></>;
+    let choiceList = <Text fs="italic">Written response.</Text>;
     if (isMultipleChoice && question.choices) {
         choiceList = (
-            <>
+            <Stack gap="xs">
                 {question.choices.map((choice) => (
-                    <div key={choice.id}>
-                        <Text type={choice.isCorrect ? "success" : undefined}>
-                            • {choice.text}
-                            {choice.isCorrect && " (Correct)"}
-                        </Text>
-                    </div>
+                    <Text key={choice.id}>• {choice.optionText}</Text>
                 ))}
-            </>
+            </Stack>
         );
     }
 
     return (
         <div key={question.id}>
             <div>
-                <Text strong>Question {index + 1}:</Text>
+                <Text fw={700}>Question {index + 1}:</Text>
                 <Text> {question.question}</Text>
             </div>
 
@@ -39,7 +32,7 @@ const QuizQuestionPreview: React.FC<{ question: Question; index: number }> = ({
 
 const QuizPreview: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     return (
-        <>
+        <Stack gap="md">
             {quiz.questions.map((question, index) => (
                 <QuizQuestionPreview
                     key={index}
@@ -47,12 +40,12 @@ const QuizPreview: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
                     index={index}
                 />
             ))}
-        </>
+        </Stack>
     );
 };
 
 export const ViewQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
-    const navigate = useNavigate({ from: `/quiz/view/${quiz.id}` });
+    const navigate = useNavigate({ from: `/quiz/view/$quizId` });
 
     console.log("ViewQuizPage quiz ==>", quiz);
 
@@ -61,24 +54,20 @@ export const ViewQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
             style={{ maxWidth: 800, margin: "0 auto", padding: "24px" }}
             data-testid="quiz-view-page"
         >
-            <Card>
-                <Space
-                    direction="vertical"
-                    size="large"
-                    style={{ width: "100%" }}
-                    data-testid="quiz-questions-list"
-                >
-                    <Title level={2}>{quiz.title}</Title>
+            <Card withBorder padding="md">
+                <Stack gap="lg" data-testid="quiz-questions-list">
+                    <Title order={2}>{quiz.title}</Title>
 
                     <Button
-                        type="primary"
-                        onClick={() => navigate({ to: "/quiz/practice" })}
+                        onClick={() =>
+                            navigate({ to: `/quiz/practice/${quiz.id}` })
+                        }
                     >
                         Practice Quiz
                     </Button>
 
                     <QuizPreview quiz={quiz} />
-                </Space>
+                </Stack>
             </Card>
         </div>
     );

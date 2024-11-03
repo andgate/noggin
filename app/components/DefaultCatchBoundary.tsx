@@ -6,7 +6,7 @@ import {
     useMatch,
     useRouter,
 } from "@tanstack/react-router";
-import { Button, Space, Layout } from "antd";
+import { Button, Group, Container } from "@mantine/core";
 
 export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
     const router = useRouter();
@@ -18,38 +18,37 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
     console.error(error);
 
     return (
-        <Layout.Content
+        <Container
             style={{
-                padding: 16,
+                padding: "var(--mantine-spacing-md)",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                minHeight: "200px",
+                minHeight: 200,
             }}
         >
             <ErrorComponent error={error} />
-            <Space size="small" style={{ marginTop: 24 }}>
-                <Button type="primary" onClick={() => router.invalidate()}>
-                    Try Again
-                </Button>
+            <Group gap="sm" mt="md">
+                <Button onClick={() => router.invalidate()}>Try Again</Button>
 
                 {isRoot ? (
-                    <Button type="primary">
-                        <Link to="/">Home</Link>
+                    <Button component={Link} to="/">
+                        Home
                     </Button>
                 ) : (
                     <Button
-                        type="primary"
                         onClick={(e) => {
                             e.preventDefault();
                             window.history.back();
                         }}
+                        component={Link}
+                        to="/"
                     >
-                        <Link to="/">Go Back</Link>
+                        Go Back
                     </Button>
                 )}
-            </Space>
-        </Layout.Content>
+            </Group>
+        </Container>
     );
 }

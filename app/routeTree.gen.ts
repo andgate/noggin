@@ -12,28 +12,16 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as QuizResultsImport } from './routes/quiz/results'
-import { Route as QuizPracticeImport } from './routes/quiz/practice'
 import { Route as QuizCreateImport } from './routes/quiz/create'
 import { Route as QuizViewQuizIdImport } from './routes/quiz/view.$quizId'
+import { Route as QuizResultsSubmissionIdImport } from './routes/quiz/results.$submissionId'
+import { Route as QuizPracticeQuizIdImport } from './routes/quiz/practice.$quizId'
 
 // Create/Update Routes
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const QuizResultsRoute = QuizResultsImport.update({
-  id: '/quiz/results',
-  path: '/quiz/results',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const QuizPracticeRoute = QuizPracticeImport.update({
-  id: '/quiz/practice',
-  path: '/quiz/practice',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -46,6 +34,18 @@ const QuizCreateRoute = QuizCreateImport.update({
 const QuizViewQuizIdRoute = QuizViewQuizIdImport.update({
   id: '/quiz/view/$quizId',
   path: '/quiz/view/$quizId',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const QuizResultsSubmissionIdRoute = QuizResultsSubmissionIdImport.update({
+  id: '/quiz/results/$submissionId',
+  path: '/quiz/results/$submissionId',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const QuizPracticeQuizIdRoute = QuizPracticeQuizIdImport.update({
+  id: '/quiz/practice/$quizId',
+  path: '/quiz/practice/$quizId',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -67,18 +67,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuizCreateImport
       parentRoute: typeof rootRoute
     }
-    '/quiz/practice': {
-      id: '/quiz/practice'
-      path: '/quiz/practice'
-      fullPath: '/quiz/practice'
-      preLoaderRoute: typeof QuizPracticeImport
+    '/quiz/practice/$quizId': {
+      id: '/quiz/practice/$quizId'
+      path: '/quiz/practice/$quizId'
+      fullPath: '/quiz/practice/$quizId'
+      preLoaderRoute: typeof QuizPracticeQuizIdImport
       parentRoute: typeof rootRoute
     }
-    '/quiz/results': {
-      id: '/quiz/results'
-      path: '/quiz/results'
-      fullPath: '/quiz/results'
-      preLoaderRoute: typeof QuizResultsImport
+    '/quiz/results/$submissionId': {
+      id: '/quiz/results/$submissionId'
+      path: '/quiz/results/$submissionId'
+      fullPath: '/quiz/results/$submissionId'
+      preLoaderRoute: typeof QuizResultsSubmissionIdImport
       parentRoute: typeof rootRoute
     }
     '/quiz/view/$quizId': {
@@ -96,16 +96,16 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/quiz/create': typeof QuizCreateRoute
-  '/quiz/practice': typeof QuizPracticeRoute
-  '/quiz/results': typeof QuizResultsRoute
+  '/quiz/practice/$quizId': typeof QuizPracticeQuizIdRoute
+  '/quiz/results/$submissionId': typeof QuizResultsSubmissionIdRoute
   '/quiz/view/$quizId': typeof QuizViewQuizIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/quiz/create': typeof QuizCreateRoute
-  '/quiz/practice': typeof QuizPracticeRoute
-  '/quiz/results': typeof QuizResultsRoute
+  '/quiz/practice/$quizId': typeof QuizPracticeQuizIdRoute
+  '/quiz/results/$submissionId': typeof QuizResultsSubmissionIdRoute
   '/quiz/view/$quizId': typeof QuizViewQuizIdRoute
 }
 
@@ -113,8 +113,8 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/quiz/create': typeof QuizCreateRoute
-  '/quiz/practice': typeof QuizPracticeRoute
-  '/quiz/results': typeof QuizResultsRoute
+  '/quiz/practice/$quizId': typeof QuizPracticeQuizIdRoute
+  '/quiz/results/$submissionId': typeof QuizResultsSubmissionIdRoute
   '/quiz/view/$quizId': typeof QuizViewQuizIdRoute
 }
 
@@ -123,22 +123,22 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/quiz/create'
-    | '/quiz/practice'
-    | '/quiz/results'
+    | '/quiz/practice/$quizId'
+    | '/quiz/results/$submissionId'
     | '/quiz/view/$quizId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/quiz/create'
-    | '/quiz/practice'
-    | '/quiz/results'
+    | '/quiz/practice/$quizId'
+    | '/quiz/results/$submissionId'
     | '/quiz/view/$quizId'
   id:
     | '__root__'
     | '/'
     | '/quiz/create'
-    | '/quiz/practice'
-    | '/quiz/results'
+    | '/quiz/practice/$quizId'
+    | '/quiz/results/$submissionId'
     | '/quiz/view/$quizId'
   fileRoutesById: FileRoutesById
 }
@@ -146,16 +146,16 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   QuizCreateRoute: typeof QuizCreateRoute
-  QuizPracticeRoute: typeof QuizPracticeRoute
-  QuizResultsRoute: typeof QuizResultsRoute
+  QuizPracticeQuizIdRoute: typeof QuizPracticeQuizIdRoute
+  QuizResultsSubmissionIdRoute: typeof QuizResultsSubmissionIdRoute
   QuizViewQuizIdRoute: typeof QuizViewQuizIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   QuizCreateRoute: QuizCreateRoute,
-  QuizPracticeRoute: QuizPracticeRoute,
-  QuizResultsRoute: QuizResultsRoute,
+  QuizPracticeQuizIdRoute: QuizPracticeQuizIdRoute,
+  QuizResultsSubmissionIdRoute: QuizResultsSubmissionIdRoute,
   QuizViewQuizIdRoute: QuizViewQuizIdRoute,
 }
 
@@ -171,8 +171,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/quiz/create",
-        "/quiz/practice",
-        "/quiz/results",
+        "/quiz/practice/$quizId",
+        "/quiz/results/$submissionId",
         "/quiz/view/$quizId"
       ]
     },
@@ -182,11 +182,11 @@ export const routeTree = rootRoute
     "/quiz/create": {
       "filePath": "quiz/create.tsx"
     },
-    "/quiz/practice": {
-      "filePath": "quiz/practice.tsx"
+    "/quiz/practice/$quizId": {
+      "filePath": "quiz/practice.$quizId.tsx"
     },
-    "/quiz/results": {
-      "filePath": "quiz/results.tsx"
+    "/quiz/results/$submissionId": {
+      "filePath": "quiz/results.$submissionId.tsx"
     },
     "/quiz/view/$quizId": {
       "filePath": "quiz/view.$quizId.tsx"

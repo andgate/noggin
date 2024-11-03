@@ -1,13 +1,13 @@
 # Noggin
 
-A modern quiz application built with React, TypeScript, and Ant Design.
+A modern quiz application built with React, TypeScript, and Mantine.
 
 ## Features
 
 -   Create and manage quizzes
 -   Practice mode for quiz taking
 -   View quiz results
--   Clean, responsive UI using Ant Design components
+-   Clean, responsive UI using Mantine components
 -   Full test coverage with Playwright
 
 ## Prerequisites
@@ -77,13 +77,14 @@ pnpm test
 -   TanStack Router
 -   Drizzle ORM
 -   SQLite (better-sqlite3)
--   Ant Design
+-   Mantine v7
+-   @tabler/icons-react
 -   TypeScript
 -   Playwright (Testing)
 
 ## License
 
-Copyright 2024 Noggin
+Copyright 2024 Gabriel Anderson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

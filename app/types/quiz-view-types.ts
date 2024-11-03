@@ -8,21 +8,21 @@ export const sourceSchema = z.object({
 
 export const choiceSchema = z.object({
     id: z.number(),
-    text: z.string(),
+    optionText: z.string(),
     isCorrect: z.boolean(),
 });
 
 export const multipleChoiceQuestionSchema = z.object({
+    questionType: z.literal("multiple_choice"),
     id: z.number(),
     question: z.string(),
-    questionType: z.literal("multiple_choice"),
     choices: z.array(choiceSchema),
 });
 
 export const writtenQuestionSchema = z.object({
+    questionType: z.literal("written"),
     id: z.number(),
     question: z.string(),
-    questionType: z.literal("written"),
 });
 
 export const questionSchema = z.discriminatedUnion("questionType", [
@@ -36,7 +36,7 @@ export const quizSchema = z.object({
     id: quizIdSchema,
     createdAt: z.string(),
     title: z.string(),
-    source: sourceSchema,
+    sources: sourceSchema.array(),
     questions: z.array(questionSchema),
 });
 

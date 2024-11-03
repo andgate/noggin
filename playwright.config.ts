@@ -71,9 +71,10 @@ export default defineConfig({
     ],
 
     /* Run your local dev server before starting the tests */
+    // TODO Currently not working as expected
     // webServer: {
-    //   command: 'npm run start',
-    //   url: 'http://127.0.0.1:3000',
-    //   reuseExistingServer: !process.env.CI,
+    //     command: "pnpm dev",
+    //     url: "http://127.0.0.1:33482",
+    //     reuseExistingServer: !process.env.CI,
     // },
 });

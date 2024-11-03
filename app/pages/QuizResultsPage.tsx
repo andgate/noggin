@@ -1,37 +1,35 @@
-import { Typography, Card, Space } from "antd";
-
-const { Title, Text } = Typography;
+import { Title, Text, Card, Stack, Container } from "@mantine/core";
 
 export const QuizResultsPage = () => {
     return (
-        <div style={{ maxWidth: 800, margin: "0 auto", padding: "24px" }}>
-            <Card>
-                <Space
-                    direction="vertical"
-                    size="large"
-                    style={{ width: "100%" }}
-                >
-                    <Title level={2}>Quiz Results</Title>
+        <Container size="md" p="md">
+            <Card withBorder padding="lg">
+                <Stack gap="lg">
+                    <Title order={2}>Quiz Results</Title>
 
                     <div>
-                        <Title level={4}>Score: 8/10</Title>
+                        <Title order={4}>Score: 8/10</Title>
                         <Text>Time taken: 12 minutes</Text>
                     </div>
 
-                    <Space direction="vertical">
-                        <Text strong>Question 1: Correct</Text>
-                        <Text>What is the capital of France?</Text>
-                        <Text type="success">Your answer: Paris</Text>
+                    <Stack gap="md">
+                        <div>
+                            <Text fw={700}>Question 1: Correct</Text>
+                            <Text>What is the capital of France?</Text>
+                            <Text c="green">Your answer: Paris</Text>
+                        </div>
 
-                        <Text strong>Question 2: Incorrect</Text>
-                        <Text>
-                            What is the largest planet in our solar system?
-                        </Text>
-                        <Text type="danger">Your answer: Saturn</Text>
-                        <Text type="success">Correct answer: Jupiter</Text>
-                    </Space>
-                </Space>
+                        <div>
+                            <Text fw={700}>Question 2: Incorrect</Text>
+                            <Text>
+                                What is the largest planet in our solar system?
+                            </Text>
+                            <Text c="red">Your answer: Saturn</Text>
+                            <Text c="green">Correct answer: Jupiter</Text>
+                        </div>
+                    </Stack>
+                </Stack>
             </Card>
-        </div>
+        </Container>
     );
 };

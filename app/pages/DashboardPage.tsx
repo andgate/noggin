@@ -1,18 +1,47 @@
 import React from "react";
-import { Button, List, Card, Space, Typography, Popconfirm } from "antd";
 import {
-    PlusOutlined,
-    EditOutlined,
-    DeleteOutlined,
-    PlayCircleOutlined,
-} from "@ant-design/icons";
+    Button,
+    Card,
+    Group,
+    Stack,
+    Title,
+    Text,
+    SimpleGrid,
+} from "@mantine/core";
+import {
+    IconPlus,
+    IconEdit,
+    IconTrash,
+    IconPlayerPlay,
+} from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteQuiz } from "~/services/quiz-service";
 import { Quiz } from "~/types/quiz-view-types";
-const { Title } = Typography;
+import { notifications } from "@mantine/notifications";
 
 const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
+    const queryClient = useQueryClient();
     const navigate = useNavigate({ from: "/" });
+
+    const deleteMutation = useMutation({
+        mutationFn: (quizId: number) => deleteQuiz(quizId),
+        onSuccess: () => {
+            notifications.show({
+                title: "Success",
+                message: "Quiz deleted successfully",
+                color: "green",
+            });
+            queryClient.invalidateQueries({ queryKey: ["quizzes"] });
+        },
+        onError: () => {
+            notifications.show({
+                title: "Error",
+                message: "Failed to delete quiz",
+                color: "red",
+            });
+        },
+    });
 
     const handleCreateQuiz = () => {
         navigate({ to: "/quiz/create" });
@@ -30,93 +59,83 @@ const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
 
     const handleDeleteQuiz = (quizId?: number) => {
         if (!quizId) return;
-        deleteQuiz(Number(quizId));
+        deleteMutation.mutate(quizId);
     };
 
     return (
-        <div style={{ padding: "24px" }}>
-            <div
-                style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "24px",
-                }}
-            >
-                <Title level={2}>My Quizzes</Title>
+        <Stack p="md">
+            <Group justify="space-between" align="center">
+                <Title order={2}>My Quizzes</Title>
                 <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    size="large"
+                    leftSection={<IconPlus size={16} />}
+                    size="md"
                     onClick={handleCreateQuiz}
                 >
                     Create Quiz
                 </Button>
-            </div>
+            </Group>
 
-            <List
-                grid={{ gutter: 16, xs: 1, sm: 2, md: 2, lg: 3, xl: 3, xxl: 4 }}
-                dataSource={[...quizzes]}
-                renderItem={(quiz) => (
-                    <List.Item>
-                        <Card
-                            hoverable
-                            actions={[
-                                <Button
-                                    key="start"
-                                    type="link"
-                                    icon={<PlayCircleOutlined />}
-                                    onClick={() => handleStartQuiz(quiz.id)}
-                                >
-                                    Start
-                                </Button>,
-                                <Button
-                                    key="view"
-                                    type="link"
-                                    icon={<EditOutlined />}
-                                    onClick={() => handleViewQuiz(quiz.id)}
-                                >
-                                    View
-                                </Button>,
-                                <Popconfirm
-                                    key="delete"
-                                    title="Delete this quiz?"
-                                    description="This action cannot be undone."
-                                    onConfirm={() => handleDeleteQuiz(quiz.id)}
-                                    okText="Yes"
-                                    cancelText="No"
-                                >
-                                    <Button
-                                        type="link"
-                                        danger
-                                        icon={<DeleteOutlined />}
-                                    >
-                                        Delete
-                                    </Button>
-                                </Popconfirm>,
-                            ]}
-                        >
-                            <Card.Meta
-                                title={quiz.title}
-                                description={
-                                    <Space direction="vertical">
-                                        <div>
-                                            {quiz.questions.length} Questions
-                                        </div>
-                                        <div>
-                                            Created:{" "}
-                                            {new Date(
-                                                quiz.createdAt!,
-                                            ).toLocaleDateString()}
-                                        </div>
-                                    </Space>
-                                }
-                            />
-                        </Card>
-                    </List.Item>
-                )}
-            />
-        </div>
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="md">
+                {quizzes.map((quiz: Quiz) => (
+                    <Card
+                        key={quiz.id}
+                        shadow="sm"
+                        padding="lg"
+                        radius="md"
+                        withBorder
+                    >
+                        <Card.Section p="md">
+                            <Text fw={500} size="lg">
+                                {quiz.title}
+                            </Text>
+                            <Stack gap="xs" mt="sm">
+                                <Text size="sm">
+                                    {quiz.questions.length} Questions
+                                </Text>
+                                <Text size="sm">
+                                    Created:{" "}
+                                    {new Date(
+                                        quiz.createdAt!,
+                                    ).toLocaleDateString()}
+                                </Text>
+                            </Stack>
+                        </Card.Section>
+
+                        <Group justify="space-between" mt="md">
+                            <Button
+                                variant="light"
+                                leftSection={<IconPlayerPlay size={16} />}
+                                onClick={() => handleStartQuiz(quiz.id)}
+                            >
+                                Start
+                            </Button>
+                            <Button
+                                variant="light"
+                                leftSection={<IconEdit size={16} />}
+                                onClick={() => handleViewQuiz(quiz.id)}
+                            >
+                                View
+                            </Button>
+                            <Button
+                                variant="light"
+                                color="red"
+                                leftSection={<IconTrash size={16} />}
+                                onClick={() => {
+                                    const confirmed = window.confirm(
+                                        "Are you sure you want to delete this quiz? This action cannot be undone.",
+                                    );
+                                    if (confirmed) {
+                                        handleDeleteQuiz(quiz.id);
+                                    }
+                                }}
+                            >
+                                Delete
+                            </Button>
+                        </Group>
+                    </Card>
+                ))}
+            </SimpleGrid>
+        </Stack>
     );
 };
 

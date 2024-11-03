@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 import { createServerFn } from "@tanstack/start";
 import { eq } from "drizzle-orm";
 import db from "drizzle/db";
@@ -32,7 +33,41 @@ export const getQuiz = createServerFn(
                 throw new Error("Quiz not found");
             }
 
-            return quiz as unknown as Quiz;
+            return {
+                id: quiz.id,
+                createdAt: quiz.createdAt,
+                title: quiz.title,
+                sources: quiz.sources.map((source) => ({
+                    id: source.id,
+                    content: source.content,
+                    createdAt: source.createdAt,
+                })),
+                questions: quiz.questions.map((question) => {
+                    switch (question.questionType) {
+                        case "multiple_choice":
+                            return {
+                                questionType: question.questionType,
+                                id: question.id,
+                                question: question.question,
+                                choices: question.choices.map((choice) => ({
+                                    id: choice.id,
+                                    optionText: choice.optionText,
+                                    isCorrect: Boolean(choice.isCorrect),
+                                })),
+                            };
+                        case "written":
+                            return {
+                                questionType: question.questionType,
+                                id: question.id,
+                                question: question.question,
+                            };
+                        default:
+                            throw new Error(
+                                "Invalid question type encountered!",
+                            );
+                    }
+                }),
+            };
         } catch (error) {
             console.error("Error fetching quiz:", error);
             throw new Error("Failed to fetch quiz");
@@ -60,7 +95,41 @@ export const getAllQuizzes = createServerFn<"GET", undefined, Quiz[]>(
                     },
                 },
             });
-            return allQuizzes as unknown as Quiz[];
+            return allQuizzes.map((quiz) => ({
+                id: quiz.id,
+                createdAt: quiz.createdAt,
+                title: quiz.title,
+                sources: quiz.sources.map((source) => ({
+                    id: source.id,
+                    content: source.content,
+                    createdAt: source.createdAt,
+                })),
+                questions: quiz.questions.map((question) => {
+                    switch (question.questionType) {
+                        case "multiple_choice":
+                            return {
+                                questionType: question.questionType,
+                                id: question.id,
+                                question: question.question,
+                                choices: question.choices.map((choice) => ({
+                                    id: choice.id,
+                                    optionText: choice.optionText,
+                                    isCorrect: Boolean(choice.isCorrect),
+                                })),
+                            };
+                        case "written":
+                            return {
+                                questionType: question.questionType,
+                                id: question.id,
+                                question: question.question,
+                            };
+                        default:
+                            throw new Error(
+                                "Invalid question type encountered!",
+                            );
+                    }
+                }),
+            }));
         } catch (error) {
             console.error("Error fetching quizzes:", error);
             return [];
@@ -73,54 +142,63 @@ export const getAllQuizzes = createServerFn<"GET", undefined, Quiz[]>(
  * @param generatedQuiz - The generated quiz data.
  * @returns A Promise that resolves to the created quiz data.
  */
-export const createQuiz = createServerFn(
+export const createQuiz = createServerFn<
     "POST",
-    async (generatedQuiz: GeneratedQuiz): Promise<QuizId> => {
-        console.info("Storing generated quiz in database...", generatedQuiz);
+    { generatedQuiz: GeneratedQuiz; sources: string[] },
+    QuizId
+>("POST", async ({ generatedQuiz, sources }): Promise<QuizId> => {
+    console.info("Storing generated quiz in database...", generatedQuiz);
 
-        try {
-            return await db.transaction(async (tx) => {
-                const { title } = generatedQuiz;
-                // 1. Create the new quiz
-                const [newQuiz] = await tx
-                    .insert(schema.quizzes)
-                    .values({ title })
+    try {
+        return await db.transaction(async (tx) => {
+            const { title } = generatedQuiz;
+            // 1. Create the new quiz
+            const [newQuiz] = await tx
+                .insert(schema.quizzes)
+                .values({ title })
+                .returning();
+
+            // 2. Upload sources
+            for (const source of sources) {
+                await tx.insert(schema.sources).values({
+                    quizId: newQuiz.id,
+                    content: source,
+                });
+            }
+
+            // 2. Create questions with quiz ID
+            for (const question of generatedQuiz.questions) {
+                const [newQuestion] = await tx
+                    .insert(schema.questions)
+                    .values({
+                        quizId: newQuiz.id,
+                        questionType: question.questionType,
+                        question: question.question,
+                    })
                     .returning();
 
-                // 2. Create questions with quiz ID
-                for (const question of generatedQuiz.questions) {
-                    const [newQuestion] = await tx
-                        .insert(schema.questions)
-                        .values({
-                            quizId: newQuiz.id,
-                            questionType: question.questionType,
-                            question: question.question,
-                        })
-                        .returning();
-
-                    // 3. Create multiple choice options with question IDs
-                    if (question.questionType === "multiple_choice") {
-                        for (const choice of question.choices) {
-                            await tx
-                                .insert(schema.multipleChoiceOptions)
-                                .values({
-                                    questionId: newQuestion.id,
-                                    optionText: choice.text,
-                                    isCorrect: choice.isCorrect ? 1 : 0,
-                                })
-                                .returning();
-                        }
+                // 3. Create multiple choice options with question IDs
+                if (question.questionType === "multiple_choice") {
+                    for (const choice of question.choices) {
+                        await tx
+                            .insert(schema.multipleChoiceOptions)
+                            .values({
+                                questionId: newQuestion.id,
+                                optionText: choice.text,
+                                isCorrect: choice.isCorrect ? 1 : 0,
+                            })
+                            .returning();
                     }
                 }
+            }
 
-                return newQuiz.id;
-            });
-        } catch (error) {
-            console.error("Error creating quiz:", error);
-            throw new Error("Failed to create quiz and associated data");
-        }
-    },
-);
+            return newQuiz.id;
+        });
+    } catch (error) {
+        console.error("Error creating quiz:", error);
+        throw new Error("Failed to create quiz and associated data");
+    }
+});
 
 /**
  * Deletes a quiz by its ID.

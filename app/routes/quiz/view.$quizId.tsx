@@ -9,7 +9,7 @@ export const Route = createFileRoute("/quiz/view/$quizId")({
     errorComponent: ViewQuizErrorComponent,
     component: RouteComponent,
     notFoundComponent: () => {
-        return <NotFound>Project not found</NotFound>;
+        return <NotFound>Quiz not found</NotFound>;
     },
 });
 

@@ -14,7 +14,7 @@ export const sources = sqliteTable("sources", {
         .notNull(),
     content: text("content").notNull(),
     quizId: integer("quiz_id")
-        .references(() => quizzes.id)
+        .references(() => quizzes.id, { onDelete: "cascade" })
         .notNull(),
 });
 
@@ -39,7 +39,7 @@ export const questions = sqliteTable("questions", {
         .default(sql`(CURRENT_TIMESTAMP)`)
         .notNull(),
     quizId: integer("quiz_id")
-        .references(() => quizzes.id)
+        .references(() => quizzes.id, { onDelete: "cascade" })
         .notNull(),
     questionType: text("question_type").notNull(), // "multiple_choice" or "written"
     question: text("question").notNull(),
@@ -58,6 +58,7 @@ export const questionsRelations = relations(questions, ({ one, many }) => ({
         references: [quizzes.id],
     }),
     choices: many(multipleChoiceOptions),
+    responses: many(responses),
 }));
 
 /**
@@ -69,7 +70,7 @@ export const multipleChoiceOptions = sqliteTable("multiple_choice_options", {
         .default(sql`(CURRENT_TIMESTAMP)`)
         .notNull(),
     questionId: integer("question_id")
-        .references(() => questions.id)
+        .references(() => questions.id, { onDelete: "cascade" })
         .notNull(),
     optionText: text("option_text").notNull(),
     isCorrect: integer("is_correct").notNull(), // SQLite doesn't have boolean, so we use integer (0/1)
@@ -113,4 +114,63 @@ export const selectQuizSchema = createSelectSchema(quizzes);
 export const quizzesRelations = relations(quizzes, ({ many }) => ({
     sources: many(sources),
     questions: many(questions),
+    submissions: many(submissions),
+}));
+
+/** Submissions Table */
+export const submissions = sqliteTable("submissions", {
+    id: integer("id").primaryKey(),
+    quizId: integer("quiz_id")
+        .references(() => quizzes.id, { onDelete: "cascade" })
+        .notNull(),
+    createdAt: text("created_at")
+        .notNull()
+        .default(sql`(CURRENT_TIMESTAMP)`),
+    grade: integer("grade"),
+});
+
+// Zod Schemas
+export const insertSubmissionSchema = createInsertSchema(submissions);
+export const selectSubmissionSchema = createSelectSchema(submissions);
+
+// Submission Relations
+export const submissionsRelations = relations(submissions, ({ one, many }) => ({
+    quiz: one(quizzes, {
+        fields: [submissions.quizId],
+        references: [quizzes.id],
+    }),
+    responses: many(responses),
+}));
+
+/** Responses Table */
+export const responses = sqliteTable("responses", {
+    id: integer("id").primaryKey(),
+    createdAt: text("created_at")
+        .notNull()
+        .default(sql`(CURRENT_TIMESTAMP)`),
+    submissionId: integer("submission_id")
+        .references(() => submissions.id, { onDelete: "cascade" })
+        .notNull(),
+    questionId: integer("question_id")
+        .references(() => questions.id, { onDelete: "cascade" })
+        .notNull(),
+    response: text("response").notNull(),
+    score: integer("score"),
+    feedback: text("feedback"),
+});
+
+// Zod Schemas
+export const insertResponseSchema = createInsertSchema(responses);
+export const selectResponseSchema = createSelectSchema(responses);
+
+// Response Relations
+export const responsesRelations = relations(responses, ({ one }) => ({
+    submission: one(submissions, {
+        fields: [responses.submissionId],
+        references: [submissions.id],
+    }),
+    question: one(questions, {
+        fields: [responses.questionId],
+        references: [questions.id],
+    }),
 }));

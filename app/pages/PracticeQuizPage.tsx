@@ -1,53 +1,108 @@
-import { Typography, Card, Space, Button } from "antd";
 import { useNavigate } from "@tanstack/react-router";
+import {
+    Radio,
+    Textarea,
+    Card,
+    Stack,
+    Title,
+    Button,
+    Box,
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { submitQuiz } from "~/services/submission-service";
+import { Quiz, Question } from "~/types/quiz-view-types";
 
-const { Title, Text } = Typography;
+// Component for multiple choice questions
+const MultiChoiceQuestionItem: React.FC<{
+    question: Extract<Question, { questionType: "multiple_choice" }>;
+    questionLabel: string;
+}> = ({ question, questionLabel }) => (
+    <Box mb="md">
+        <Title order={4} mb="xs">
+            {questionLabel}
+        </Title>
+        <Radio.Group name={`question_${question.id}`}>
+            <Stack>
+                {question.choices.map((choice) => (
+                    <Radio
+                        key={choice.id}
+                        value={choice.id.toString()}
+                        label={choice.optionText}
+                    />
+                ))}
+            </Stack>
+        </Radio.Group>
+    </Box>
+);
 
-export const PracticeQuizPage = () => {
-    const navigate = useNavigate({ from: "/quiz/practice" });
+// Component for written questions
+const WrittenQuestionItem: React.FC<{
+    question: Extract<Question, { questionType: "written" }>;
+    questionLabel: string;
+}> = ({ question, questionLabel }) => (
+    <Box mb="md">
+        <Title order={4} mb="xs">
+            {questionLabel}
+        </Title>
+        <Textarea name={`question_${question.id}`} minRows={4} />
+    </Box>
+);
 
-    const handleSubmit = () => {
-        navigate({ to: "/quiz/results" });
+// Main QuestionItem component that delegates to specific question type components
+const QuestionItem: React.FC<{ question: Question; index: number }> = ({
+    question,
+    index,
+}) => {
+    const questionLabel = `${index + 1}. ${question.question}`;
+
+    if (question.questionType === "multiple_choice") {
+        return (
+            <MultiChoiceQuestionItem
+                question={question}
+                questionLabel={questionLabel}
+            />
+        );
+    }
+
+    return (
+        <WrittenQuestionItem
+            question={question}
+            questionLabel={questionLabel}
+        />
+    );
+};
+
+export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
+    const navigate = useNavigate({ from: `/quiz/practice/$quizId` });
+    const form = useForm({
+        initialValues: {},
+    });
+
+    const handleSubmit = async (values: Record<string, string>) => {
+        console.log("Submitting quiz", values);
+        const responses = [""];
+        const submissionId = await submitQuiz({ quiz, responses });
+        navigate({ to: `/quiz/results/${submissionId}` });
     };
 
     return (
-        <div style={{ maxWidth: 800, margin: "0 auto", padding: "24px" }}>
-            <Card>
-                <Space
-                    direction="vertical"
-                    size="large"
-                    style={{ width: "100%" }}
-                >
-                    <Title level={2}>Practice Quiz</Title>
+        <Box maw={800} mx="auto" p="xl">
+            <Title order={2} mb="lg">
+                {quiz.title}
+            </Title>
 
-                    <div>
-                        <Text strong>Question 1 of 10</Text>
-                        <Text>
-                            {" "}
-                            What is the primary purpose of React hooks?
-                        </Text>
-                    </div>
-
-                    <Space direction="vertical">
-                        <Button style={{ textAlign: "left", width: "100%" }}>
-                            A) To manage component lifecycle
-                        </Button>
-                        <Button style={{ textAlign: "left", width: "100%" }}>
-                            B) To handle routing in React applications
-                        </Button>
-                        <Button style={{ textAlign: "left", width: "100%" }}>
-                            C) To style React components
-                        </Button>
-                        <Button style={{ textAlign: "left", width: "100%" }}>
-                            D) To optimize React performance
-                        </Button>
-                    </Space>
-
-                    <Button type="primary" onClick={handleSubmit}>
+            <form onSubmit={form.onSubmit(handleSubmit)}>
+                <Stack>
+                    {quiz.questions.map((question, index) => (
+                        <Card key={question.id} withBorder padding="md">
+                            <QuestionItem question={question} index={index} />
+                        </Card>
+                    ))}
+                    <Button type="submit" size="lg">
                         Submit Quiz
                     </Button>
-                </Space>
-            </Card>
-        </div>
+                </Stack>
+            </form>
+        </Box>
     );
 };
