@@ -49,12 +49,18 @@ const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
 
     const handleViewQuiz = (quizId?: number) => {
         if (!quizId) return;
-        navigate({ to: `/quiz/view/${quizId}` });
+        navigate({
+            to: "/quiz/view/$quizId",
+            params: { quizId: `${quizId}` },
+        });
     };
 
     const handleStartQuiz = (quizId?: number) => {
         if (!quizId) return;
-        navigate({ to: `/quiz/practice/${quizId}` });
+        navigate({
+            to: "/quiz/practice/$quizId",
+            params: { quizId: `${quizId}` },
+        });
     };
 
     const handleDeleteQuiz = (quizId?: number) => {

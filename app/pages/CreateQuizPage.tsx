@@ -56,7 +56,10 @@ export const CreateQuizPage: React.FC = () => {
                 generatedQuiz,
                 sources: [values.content],
             });
-            navigate({ to: `/quiz/view/${newQuizId}` });
+            navigate({
+                to: "/quiz/view/$quizId",
+                params: { quizId: `${newQuizId}` },
+            });
         } catch (error) {
             console.error(error);
         } finally {

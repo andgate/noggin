@@ -45,7 +45,7 @@ const QuizPreview: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
 };
 
 export const ViewQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
-    const navigate = useNavigate({ from: `/quiz/view/$quizId` });
+    const navigate = useNavigate({ from: "/quiz/view/$quizId" });
 
     console.log("ViewQuizPage quiz ==>", quiz);
 
@@ -60,7 +60,10 @@ export const ViewQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
 
                     <Button
                         onClick={() =>
-                            navigate({ to: `/quiz/practice/${quiz.id}` })
+                            navigate({
+                                to: "/quiz/practice/$quizId",
+                                params: { quizId: `${quiz.id}` },
+                            })
                         }
                     >
                         Practice Quiz

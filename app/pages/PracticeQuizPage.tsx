@@ -83,7 +83,7 @@ const QuestionItem: React.FC<{
 };
 
 export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
-    const navigate = useNavigate({ from: `/quiz/practice/$quizId` });
+    const navigate = useNavigate({ from: "/quiz/practice/$quizId" });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const form = useForm({
         initialValues: quiz.questions.reduce(
@@ -106,7 +106,10 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
             const responses = Object.values(values);
             const gradedSubmission = await gradeQuiz({ quiz, responses });
             const submissionId = await submitQuiz({ quiz, gradedSubmission });
-            navigate({ to: `/quiz/submission/${submissionId}` });
+            navigate({
+                to: "/quiz/submission/$submissionId",
+                params: { submissionId: `${submissionId}` },
+            });
         } finally {
             setIsSubmitting(false);
         }
