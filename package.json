@@ -2,7 +2,7 @@
   "name": "noggin",
   "private": true,
   "version": "0.0.0",
-  "packageManager": "pnpm@9.11.0",
+  "packageManager": "pnpm@9.12.3",
   "type": "module",
   "scripts": {
     "dev": "vinxi dev --port 33482",
