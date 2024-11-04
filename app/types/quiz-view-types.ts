@@ -40,8 +40,32 @@ export const quizSchema = z.object({
     questions: z.array(questionSchema),
 });
 
+export const responseSchema = z.object({
+    id: z.number(),
+    createdAt: z.string(),
+    quizId: z.number(),
+    submissionId: z.number(),
+    question: questionSchema,
+    response: z.string(),
+    score: z.number(),
+    feedback: z.string(),
+});
+
+export const submissionIdSchema = z.number();
+
+export const submissionSchema = z.object({
+    id: submissionIdSchema,
+    createdAt: z.string(),
+    quizTitle: z.string(),
+    grade: z.number(),
+    responses: responseSchema.array(),
+});
+
 export type Source = z.infer<typeof sourceSchema>;
 export type Choice = z.infer<typeof choiceSchema>;
 export type Question = z.infer<typeof questionSchema>;
 export type QuizId = z.infer<typeof quizIdSchema>;
 export type Quiz = z.infer<typeof quizSchema>;
+export type Submission = z.infer<typeof submissionSchema>;
+export type SubmissionId = z.infer<typeof submissionIdSchema>;
+export type Response = z.infer<typeof responseSchema>;

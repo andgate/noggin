@@ -58,16 +58,16 @@ export const generateQuiz = createServerFn(
             apiKey: import.meta.env.VITE_OPENAI_API_KEY,
         });
 
-        const generatedQuestions: GeneratedQuestion[] = [];
-        for (let i = 0; i < questionCount; i++) {
-            const question = await generateQuestion(
-                client,
-                source,
-                generatedQuestions,
-                questionTypes,
-            );
-            generatedQuestions.push(question);
-        }
+        const generatedQuestions: GeneratedQuestion[] = await Promise.all(
+            Array(questionCount).map(() =>
+                generateQuestion(
+                    client,
+                    source,
+                    generatedQuestions,
+                    questionTypes,
+                ),
+            ),
+        );
 
         const title = await generateQuizTitle(
             client,

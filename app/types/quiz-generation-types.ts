@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 export const choiceSchema = z.object({
     text: z.string(),
     isCorrect: z.boolean(),
@@ -26,6 +25,17 @@ export const generatedQuizSchema = z.object({
     questions: z.array(generatedQuestionSchema),
 });
 
+export const gradedResponseSchema = z.object({
+    response: z.string(),
+    score: z.number(),
+    feedback: z.string(),
+});
+
+export const gradedSubmissionSchema = z.object({
+    responses: gradedResponseSchema.array(),
+    grade: z.number(),
+});
+
 export type GeneratedChoice = z.infer<typeof choiceSchema>;
 export type GeneratedWrittenQuestion = z.infer<
     typeof generatedWrittenQuestionSchema
@@ -35,3 +45,6 @@ export type GeneratedMultipleChoiceQuestion = z.infer<
 >;
 export type GeneratedQuestion = z.infer<typeof generatedQuestionSchema>;
 export type GeneratedQuiz = z.infer<typeof generatedQuizSchema>;
+
+export type GradedSubmission = z.infer<typeof gradedSubmissionSchema>;
+export type GradedResponse = z.infer<typeof gradedResponseSchema>;

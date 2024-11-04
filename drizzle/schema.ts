@@ -126,7 +126,7 @@ export const submissions = sqliteTable("submissions", {
     createdAt: text("created_at")
         .notNull()
         .default(sql`(CURRENT_TIMESTAMP)`),
-    grade: integer("grade"),
+    grade: integer("grade").notNull(),
 });
 
 // Zod Schemas
@@ -155,8 +155,8 @@ export const responses = sqliteTable("responses", {
         .references(() => questions.id, { onDelete: "cascade" })
         .notNull(),
     response: text("response").notNull(),
-    score: integer("score"),
-    feedback: text("feedback"),
+    score: integer("score").notNull(),
+    feedback: text("feedback").notNull(),
 });
 
 // Zod Schemas

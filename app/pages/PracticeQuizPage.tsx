@@ -9,24 +9,26 @@ import {
     Box,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { submitQuiz } from "~/services/submission-service";
 import { Quiz, Question } from "~/types/quiz-view-types";
+import { submitQuiz } from "~/services/submission-service";
+import { gradeQuiz } from "~/services/grading-service";
 
 // Component for multiple choice questions
 const MultiChoiceQuestionItem: React.FC<{
     question: Extract<Question, { questionType: "multiple_choice" }>;
     questionLabel: string;
-}> = ({ question, questionLabel }) => (
+    form: ReturnType<typeof useForm>;
+}> = ({ question, questionLabel, form }) => (
     <Box mb="md">
         <Title order={4} mb="xs">
             {questionLabel}
         </Title>
-        <Radio.Group name={`question_${question.id}`}>
+        <Radio.Group {...form.getInputProps(`question_${question.id}`)}>
             <Stack>
                 {question.choices.map((choice) => (
                     <Radio
                         key={choice.id}
-                        value={choice.id.toString()}
+                        value={choice.optionText}
                         label={choice.optionText}
                     />
                 ))}
@@ -39,20 +41,25 @@ const MultiChoiceQuestionItem: React.FC<{
 const WrittenQuestionItem: React.FC<{
     question: Extract<Question, { questionType: "written" }>;
     questionLabel: string;
-}> = ({ question, questionLabel }) => (
+    form: ReturnType<typeof useForm>;
+}> = ({ question, questionLabel, form }) => (
     <Box mb="md">
         <Title order={4} mb="xs">
             {questionLabel}
         </Title>
-        <Textarea name={`question_${question.id}`} minRows={4} />
+        <Textarea
+            {...form.getInputProps(`question_${question.id}`)}
+            minRows={4}
+        />
     </Box>
 );
 
 // Main QuestionItem component that delegates to specific question type components
-const QuestionItem: React.FC<{ question: Question; index: number }> = ({
-    question,
-    index,
-}) => {
+const QuestionItem: React.FC<{
+    question: Question;
+    index: number;
+    form: ReturnType<typeof useForm>;
+}> = ({ question, index, form }) => {
     const questionLabel = `${index + 1}. ${question.question}`;
 
     if (question.questionType === "multiple_choice") {
@@ -60,6 +67,7 @@ const QuestionItem: React.FC<{ question: Question; index: number }> = ({
             <MultiChoiceQuestionItem
                 question={question}
                 questionLabel={questionLabel}
+                form={form}
             />
         );
     }
@@ -68,6 +76,7 @@ const QuestionItem: React.FC<{ question: Question; index: number }> = ({
         <WrittenQuestionItem
             question={question}
             questionLabel={questionLabel}
+            form={form}
         />
     );
 };
@@ -75,14 +84,21 @@ const QuestionItem: React.FC<{ question: Question; index: number }> = ({
 export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     const navigate = useNavigate({ from: `/quiz/practice/$quizId` });
     const form = useForm({
-        initialValues: {},
+        initialValues: quiz.questions.reduce(
+            (acc, question) => ({
+                ...acc,
+                [`question_${question.id}`]: "",
+            }),
+            {},
+        ),
     });
 
     const handleSubmit = async (values: Record<string, string>) => {
         console.log("Submitting quiz", values);
-        const responses = [""];
-        const submissionId = await submitQuiz({ quiz, responses });
-        navigate({ to: `/quiz/results/${submissionId}` });
+        const responses = Object.values(values);
+        const gradedSubmission = await gradeQuiz({ quiz, responses });
+        const submissionId = await submitQuiz({ quiz, gradedSubmission });
+        navigate({ to: `/quiz/submission/${submissionId}` });
     };
 
     return (
@@ -95,7 +111,11 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
                 <Stack>
                     {quiz.questions.map((question, index) => (
                         <Card key={question.id} withBorder padding="md">
-                            <QuestionItem question={question} index={index} />
+                            <QuestionItem
+                                question={question}
+                                index={index}
+                                form={form}
+                            />
                         </Card>
                     ))}
                     <Button type="submit" size="lg">
