@@ -36,7 +36,24 @@ pnpm install
 cp .env.example .env.local
 ```
 
-4. Intialize the database:
+4. Configure your environment:
+
+The application requires two environment variables:
+
+-   `DB_FILE_NAME`: The SQLite database file location
+    -   Recommended value: `file:sqlite.db`
+-   `VITE_OPENAI_API_KEY`: Your OpenAI API key
+    -   Get your API key from: https://platform.openai.com/api-keys
+    -   Ensure it has appropriate permissions for chat completions
+
+Example `.env.local`:
+
+```bash
+DB_FILE_NAME=file:sqlite.db
+VITE_OPENAI_API_KEY=your-api-key-here
+```
+
+5. Initialize the database:
 
 ```bash
 pnpm generate

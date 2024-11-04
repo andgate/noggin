@@ -1,4 +1,14 @@
-import * as React from "react";
+import {
+    AppShell,
+    Burger,
+    Group,
+    MantineProvider,
+    NavLink,
+    Text,
+} from "@mantine/core";
+import mantineCssUrl from "@mantine/core/styles.css?url";
+import { IconHome } from "@tabler/icons-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
     createRootRoute,
     Link,
@@ -8,21 +18,15 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { Body, Head, Html, Meta, Scripts } from "@tanstack/start";
 import type { ReactNode } from "react";
-import { MantineProvider } from "@mantine/core";
+import * as React from "react";
 import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary";
 import { NotFound } from "~/components/NotFound";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AppShell, Group, Text, Burger, NavLink } from "@mantine/core";
-
-// core styles are required for all packages
-import "@mantine/core/styles.css";
-import { IconHome } from "@tabler/icons-react";
 
 // other css files are required only if
 // you are using components from the corresponding package
-// import '@mantine/dates/styles.css';
-// import '@mantine/dropzone/styles.css';
-// import '@mantine/code-highlight/styles.css';
+// import datesCssUrl from '@mantine/dates/styles.css?url'
+// import dropzoneCssUrl from '@mantine/dropzone/styles.css?url'
+// import codeHighlightCssUrl from '@mantine/code-highlight/styles.css?url'
 
 // Create a client
 const queryClient = new QueryClient();
@@ -49,6 +53,26 @@ export const Route = createRootRoute({
     },
     notFoundComponent: () => <NotFound />,
     component: RootComponent,
+    links: () => [
+        { rel: "stylesheet", href: mantineCssUrl },
+        // { rel: "stylesheet", href: datesCssUrl },
+        // { rel: "stylesheet", href: dropzoneCssUrl },
+        // { rel: "stylesheet", href: codeHighlightCssUrl },
+    ],
+    // Hack needed to get hot reloading to work in tanstack start (alpha)
+    // See https://github.com/TanStack/router/issues/1992
+    scripts: () =>
+        import.meta.env.DEV
+            ? [
+                  {
+                      type: "module",
+                      children: `import RefreshRuntime from "/_build/@react-refresh";
+    RefreshRuntime.injectIntoGlobalHook(window)
+    window.$RefreshReg$ = () => {}
+    window.$RefreshSig$ = () => (type) => type`,
+                  },
+              ]
+            : [],
 });
 
 function RootComponent() {
@@ -64,6 +88,8 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         <Html>
             <Head>
                 <Meta />
+                {/* TODO: Breaks hydration, see https://github.com/TanStack/router/issues/1917 */}
+                {/* <ColorSchemeScript /> */}
             </Head>
             <Body>
                 <MantineProvider

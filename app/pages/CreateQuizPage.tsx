@@ -28,8 +28,8 @@ export const CreateQuizPage: React.FC = () => {
     const form = useForm<QuizFormData>({
         initialValues: {
             content: "",
-            questionCount: 10,
-            questionTypes: ["multiple-choice"],
+            questionCount: 4,
+            questionTypes: ["multiple-choice", "written"],
         },
         validate: {
             content: (value) => (!value ? "Please enter study content" : null),
