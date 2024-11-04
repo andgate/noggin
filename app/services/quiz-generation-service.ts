@@ -10,12 +10,12 @@ import {
 import { z } from "zod";
 
 const generateQuizQuestionsPrompt = (
-    source: string,
+    sources: string[],
     questions: GeneratedQuestion[],
     questionTypes: string[],
 ): string => `\
     Consider the following content:
-    \n\n${source}
+    \n\n${sources.join("\n\n---\n\n")}
 
     ---
 
@@ -30,11 +30,11 @@ const generateQuizQuestionsPrompt = (
     Write another question that is different from the ones above.`;
 
 const generateQuizTitlePrompt = (
-    source: string,
+    sources: string[],
     questions: GeneratedQuestion[],
 ): string => `\
         Consider the following content:
-        \n\n${source}
+        \n\n${sources.join("\n\n---\n\n")}
     
         ---
         
@@ -48,30 +48,36 @@ export const generateQuiz = createServerFn(
     async ({
         questionCount,
         questionTypes,
-        source,
+        sources,
     }: {
         questionCount: number;
         questionTypes: string[];
-        source: string;
+        sources: string[];
     }): Promise<GeneratedQuiz> => {
+        console.log("Generating quiz");
         const client = new OpenAI({
             apiKey: import.meta.env.VITE_OPENAI_API_KEY,
         });
 
-        const generatedQuestions: GeneratedQuestion[] = await Promise.all(
-            Array(questionCount).map(() =>
-                generateQuestion(
-                    client,
-                    source,
-                    generatedQuestions,
-                    questionTypes,
-                ),
-            ),
+        const generatedQuestions = await Array.from({
+            length: questionCount,
+        }).reduce(
+            (promise: Promise<GeneratedQuestion[]>) =>
+                promise.then(async (questions) => {
+                    const question = await generateQuestion(
+                        client,
+                        sources,
+                        questions,
+                        questionTypes,
+                    );
+                    return [...questions, question];
+                }),
+            Promise.resolve([]),
         );
 
         const title = await generateQuizTitle(
             client,
-            source,
+            sources,
             generatedQuestions,
         );
 
@@ -84,12 +90,12 @@ export const generateQuiz = createServerFn(
 
 export const generateQuestion = async (
     client: OpenAI,
-    source: string,
+    sources: string[],
     questions: GeneratedQuestion[],
     questionTypes: string[],
 ): Promise<GeneratedQuestion> => {
     const prompt = generateQuizQuestionsPrompt(
-        source,
+        sources,
         questions,
         questionTypes,
     );
@@ -123,10 +129,10 @@ export const generateQuestion = async (
 
 export const generateQuizTitle = async (
     client: OpenAI,
-    source: string,
+    sources: string[],
     questions: GeneratedQuestion[],
 ): Promise<string> => {
-    const prompt = generateQuizTitlePrompt(source, questions);
+    const prompt = generateQuizTitlePrompt(sources, questions);
     console.log("generateQuizTitle prompt", prompt);
     const completion = await client.beta.chat.completions.parse({
         model: "gpt-4o",

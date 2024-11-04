@@ -35,11 +35,11 @@ export const gradeQuiz = createServerFn<
     });
 
     const gradedResponses = await Promise.all(
-        responses.map((response) =>
+        responses.map((response, i) =>
             gradeResponse(
                 client,
                 quiz.sources.map((source) => source.content),
-                quiz.questions[0],
+                quiz.questions[i],
                 response,
             ),
         ),

@@ -15,12 +15,38 @@ A modern quiz application built with React, TypeScript, and Mantine.
 -   Node.js (LTS version recommended)
 -   pnpm 9.11.0 or higher
 
-## Getting Started
+## Quick Start
+
+Install dependencies and setup environment
+
+```bash
+pnpm install
+cp .env.example .env.local
+```
+
+Add your OpenAI API key to .env.local
+
+```bash
+VITE_OPENAI_API_KEY=your-api-key-here
+```
+
+Initialize database and start the app
+
+```bash
+pnpm push
+pnpm dev
+```
+
+Visit `http://localhost:5173` to start using Noggin!
+
+Your data is stored in an SQLite database in the root of the project, `sqlite.db`.
+
+## Development Setup
 
 1. Clone the repository:
 
 ```bash
-git clone
+git clone https://github.com/andgate/noggin.git
 cd noggin
 ```
 
@@ -45,6 +71,8 @@ The application requires two environment variables:
 -   `VITE_OPENAI_API_KEY`: Your OpenAI API key
     -   Get your API key from: https://platform.openai.com/api-keys
     -   Ensure it has appropriate permissions for chat completions
+
+The easiest way to set these is to copy `.env.example` to `.env.local` and populate the values.
 
 Example `.env.local`:
 
@@ -126,3 +154,7 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+```
+
+```

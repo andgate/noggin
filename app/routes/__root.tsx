@@ -5,6 +5,7 @@ import {
     MantineProvider,
     NavLink,
     Text,
+    ColorSchemeScript,
 } from "@mantine/core";
 import mantineCssUrl from "@mantine/core/styles.css?url";
 import { IconHome } from "@tabler/icons-react";
@@ -61,18 +62,18 @@ export const Route = createRootRoute({
     ],
     // Hack needed to get hot reloading to work in tanstack start (alpha)
     // See https://github.com/TanStack/router/issues/1992
-    scripts: () =>
-        import.meta.env.DEV
-            ? [
-                  {
-                      type: "module",
-                      children: `import RefreshRuntime from "/_build/@react-refresh";
-    RefreshRuntime.injectIntoGlobalHook(window)
-    window.$RefreshReg$ = () => {}
-    window.$RefreshSig$ = () => (type) => type`,
-                  },
-              ]
-            : [],
+    // scripts: () =>
+    //     import.meta.env.DEV
+    //         ? [
+    //               {
+    //                   type: "module",
+    //                   children: `import RefreshRuntime from "/_build/@react-refresh";
+    // RefreshRuntime.injectIntoGlobalHook(window)
+    // window.$RefreshReg$ = () => {}
+    // window.$RefreshSig$ = () => (type) => type`,
+    //               },
+    //           ]
+    //         : [],
 });
 
 function RootComponent() {
@@ -89,7 +90,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             <Head>
                 <Meta />
                 {/* TODO: Breaks hydration, see https://github.com/TanStack/router/issues/1917 */}
-                {/* <ColorSchemeScript /> */}
+                <ColorSchemeScript />
             </Head>
             <Body>
                 <MantineProvider

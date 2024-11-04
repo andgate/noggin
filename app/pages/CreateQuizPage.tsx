@@ -41,12 +41,16 @@ export const CreateQuizPage: React.FC = () => {
     });
 
     const handleSubmit = async (values: QuizFormData) => {
+        if (loading) {
+            return;
+        }
+
         setLoading(true);
         try {
             const generatedQuiz = await generateQuiz({
                 questionCount: values.questionCount,
                 questionTypes: values.questionTypes,
-                source: values.content,
+                sources: [values.content],
             });
             const newQuizId = await createQuiz({
                 generatedQuiz,

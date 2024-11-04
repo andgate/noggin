@@ -12,6 +12,7 @@ import { useForm } from "@mantine/form";
 import { Quiz, Question } from "~/types/quiz-view-types";
 import { submitQuiz } from "~/services/submission-service";
 import { gradeQuiz } from "~/services/grading-service";
+import { useState } from "react";
 
 // Component for multiple choice questions
 const MultiChoiceQuestionItem: React.FC<{
@@ -83,6 +84,7 @@ const QuestionItem: React.FC<{
 
 export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     const navigate = useNavigate({ from: `/quiz/practice/$quizId` });
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const form = useForm({
         initialValues: quiz.questions.reduce(
             (acc, question) => ({
@@ -94,11 +96,20 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     });
 
     const handleSubmit = async (values: Record<string, string>) => {
-        console.log("Submitting quiz", values);
-        const responses = Object.values(values);
-        const gradedSubmission = await gradeQuiz({ quiz, responses });
-        const submissionId = await submitQuiz({ quiz, gradedSubmission });
-        navigate({ to: `/quiz/submission/${submissionId}` });
+        if (isSubmitting) {
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+            console.log("Submitting quiz", values);
+            const responses = Object.values(values);
+            const gradedSubmission = await gradeQuiz({ quiz, responses });
+            const submissionId = await submitQuiz({ quiz, gradedSubmission });
+            navigate({ to: `/quiz/submission/${submissionId}` });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -118,7 +129,7 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
                             />
                         </Card>
                     ))}
-                    <Button type="submit" size="lg">
+                    <Button type="submit" size="lg" loading={isSubmitting}>
                         Submit Quiz
                     </Button>
                 </Stack>
