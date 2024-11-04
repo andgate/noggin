@@ -59,6 +59,10 @@ export const generateQuiz = createServerFn(
             apiKey: import.meta.env.VITE_OPENAI_API_KEY,
         });
 
+        // TODO: Refactor to use async/await instead of reduce for better readability
+        // TODO: Add input validation for sources and question count
+        // TODO: Add rate limiting for API calls
+        // TODO: Consider implementing response streaming for better UX
         const generatedQuestions = await Array.from({
             length: questionCount,
         }).reduce(

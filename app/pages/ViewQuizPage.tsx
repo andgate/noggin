@@ -1,3 +1,7 @@
+// TODO: Add submission history section
+// TODO: Implement submission statistics visualization
+// TODO: Add filtering/sorting for submissions
+// TODO: Consider adding export functionality for submission data
 import { Title, Text, Card, Stack, Button } from "@mantine/core";
 import { useNavigate } from "@tanstack/react-router";
 import { Question, Quiz } from "~/types/quiz-view-types";
@@ -30,6 +34,8 @@ const QuizQuestionPreview: React.FC<{ question: Question; index: number }> = ({
     );
 };
 
+// TODO: Add loading states for quiz preview
+// TODO: Add error boundary for quiz preview
 const QuizPreview: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     return (
         <Stack gap="md">
@@ -44,6 +50,13 @@ const QuizPreview: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     );
 };
 
+// TODO: Implement SSR for quiz and submission data
+// TODO: Add loading states for dynamic content
+// TODO: Add error boundaries for failed quiz loads
+// TODO: Implement retry mechanism for failed data fetches
+// TODO: Add fallback UI for partial quiz data
+// TODO: Implement progressive enhancement for statistics
+// TODO: Add error recovery for failed quiz renders
 export const ViewQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     const navigate = useNavigate({ from: "/quiz/view/$quizId" });
 
@@ -58,6 +71,10 @@ export const ViewQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
                 <Stack gap="lg" data-testid="quiz-questions-list">
                     <Title order={2}>{quiz.title}</Title>
 
+                    {/* TODO: Add quiz metadata (created date, attempts, avg score) */}
+                    {/* TODO: Add quiz description/instructions section */}
+                    {/* TODO: Add ability to view sources (new page or as a panel*/}
+
                     <Button
                         onClick={() =>
                             navigate({
@@ -70,6 +87,10 @@ export const ViewQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
                     </Button>
 
                     <QuizPreview quiz={quiz} />
+
+                    {/* TODO: Add SubmissionsList component here */}
+                    {/* TODO: Add pagination for submissions */}
+                    {/* TODO: Add submission performance trends */}
                 </Stack>
             </Card>
         </div>

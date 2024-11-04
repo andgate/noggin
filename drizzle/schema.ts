@@ -98,6 +98,11 @@ export const multipleChoiceOptionsRelations = relations(
 /**
  * Quiz Table
  */
+
+// TODO: Add indexes for frequently queried fields
+// TODO: Implement versioning for quiz content
+// TODO: Add audit logging for schema changes
+// TODO: Consider adding user management tables
 export const quizzes = sqliteTable("quizzes", {
     id: integer("id").primaryKey(),
     title: text("title").notNull(),

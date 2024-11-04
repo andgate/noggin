@@ -1,3 +1,7 @@
+// TODO: Add theme switching capability
+// TODO: Implement user preferences storage
+// TODO: Add loading states for route transitions
+// TODO: Consider adding offline support
 import {
     AppShell,
     Burger,

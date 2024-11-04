@@ -20,11 +20,22 @@ import { deleteQuiz } from "~/services/quiz-service";
 import { Quiz } from "~/types/quiz-view-types";
 import { notifications } from "@mantine/notifications";
 
+// TODO: Add search functionality
+// TODO: Implement quiz categories/tags
+// TODO: Add bulk operations support
+// TODO: Consider adding quiz templates
+// TODO: Add SSR prefetching for initial quiz list
+// TODO: Add loading skeletons for quiz cards during client-side updates
+// TODO: Implement optimistic updates for delete operations
+// TODO: Add error recovery UI for failed quiz loading
+// TODO: Add retry mechanism for failed operations
 const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
     const queryClient = useQueryClient();
     const navigate = useNavigate({ from: "/" });
 
     const deleteMutation = useMutation({
+        // TODO: Improve error messages with specific failure reasons
+        // TODO: Add undo capability for deletions
         mutationFn: (quizId: number) => deleteQuiz(quizId),
         onSuccess: () => {
             notifications.show({

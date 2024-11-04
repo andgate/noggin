@@ -82,6 +82,14 @@ const QuestionItem: React.FC<{
     );
 };
 
+// TODO: Add keyboard navigation support
+// TODO: Add progress saving functionality
+// TODO: Implement time tracking for quiz attempts
+// TODO: Add accessibility attributes to form elements
+// TODO: Implement SSR for initial quiz data
+// TODO: Add optimistic UI updates for submissions
+// TODO: Add offline support with local storage
+// TODO: Implement progressive loading for large quizzes
 export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     const navigate = useNavigate({ from: "/quiz/practice/$quizId" });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,6 +104,10 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     });
 
     const handleSubmit = async (values: Record<string, string>) => {
+        // TODO: Add detailed error states for grading failures
+        // TODO: Implement retry logic for failed submissions
+        // TODO: Add partial submission saving
+        // TODO: Add user-friendly error recovery options
         if (isSubmitting) {
             return;
         }
@@ -110,6 +122,11 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
                 to: "/quiz/submission/$submissionId",
                 params: { submissionId: `${submissionId}` },
             });
+        } catch (error) {
+            // TODO: Add detailed error states for grading failures
+            // TODO: Implement retry logic for failed submissions
+            // TODO: Add partial submission saving
+            console.error(error);
         } finally {
             setIsSubmitting(false);
         }

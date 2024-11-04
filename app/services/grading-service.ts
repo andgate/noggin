@@ -30,6 +30,9 @@ export const gradeQuiz = createServerFn<
     GradedSubmission
 >("POST", async ({ quiz, responses }) => {
     console.log("grading quiz", { quiz, responses });
+    // TODO: Extract OpenAI interaction into a dedicated service
+    // TODO: Add retry logic for API calls
+    // TODO: Add detailed error logging
     const client = new OpenAI({
         apiKey: import.meta.env.VITE_OPENAI_API_KEY,
     });

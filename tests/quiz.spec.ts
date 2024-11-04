@@ -52,4 +52,9 @@ test.describe("Quiz", () => {
             page.locator('div:has-text("Question 1:") + div'),
         ).not.toBeEmpty();
     });
+
+    // TODO: Add more test cases for edge cases
+    // TODO: Implement API mocking for consistent testing
+    // TODO: Add performance benchmarking tests
+    // TODO: Add visual regression testing
 });

@@ -1,3 +1,7 @@
+// TODO: Implement caching strategy for frequently accessed quizzes
+// TODO: Add pagination support for quiz listing
+// TODO: Add sorting and filtering capabilities
+// TODO: Consider implementing soft delete
 /* eslint-disable indent */
 import { createServerFn } from "@tanstack/start";
 import { eq } from "drizzle-orm";

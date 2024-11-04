@@ -21,6 +21,10 @@ interface QuizFormData {
     questionTypes: string[];
 }
 
+// TODO: Add progressive enhancement for non-JS environments
+// TODO: Implement partial form saving to prevent data loss
+// TODO: Add detailed error states for API/generation failures
+// TODO: Add fallback UI for when OpenAI is unavailable
 export const CreateQuizPage: React.FC = () => {
     const navigate = useNavigate({ from: "/quiz/create" });
     const [loading, setLoading] = useState(false);
@@ -41,6 +45,9 @@ export const CreateQuizPage: React.FC = () => {
     });
 
     const handleSubmit = async (values: QuizFormData) => {
+        // TODO: Add step-by-step progress indicators
+        // TODO: Implement graceful degradation for timeouts
+        // TODO: Add recovery options for failed generations
         if (loading) {
             return;
         }
@@ -61,6 +68,8 @@ export const CreateQuizPage: React.FC = () => {
                 params: { quizId: `${newQuizId}` },
             });
         } catch (error) {
+            // TODO: Add specific error handling for different failure modes
+            // TODO: Provide user guidance for common errors
             console.error(error);
         } finally {
             setLoading(false);

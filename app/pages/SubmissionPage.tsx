@@ -1,9 +1,20 @@
 import { Title, Text, Card, Stack, Container } from "@mantine/core";
 import { Submission } from "~/types/quiz-view-types";
 
+// TODO: Add detailed analytics for quiz performance
+// TODO: Implement answer comparison visualization
+// TODO: Add export functionality for results
+// TODO: Consider adding share capabilities
+// TODO: Implement SSR for submission data
+// TODO: Add loading states for score calculations
+// TODO: Add error boundaries for failed submission loads
+// TODO: Implement retry mechanism for failed data fetches
 export const SubmissionPage: React.FC<{
     submission: Submission;
 }> = ({ submission }) => {
+    // TODO: Add fallback UI for partial submission data
+    // TODO: Implement progressive enhancement for analytics
+    // TODO: Add error recovery for failed score displays
     console.log("submission", submission);
     return (
         <Container size="md" py="xl">

@@ -53,6 +53,10 @@ export const responseSchema = z.object({
 
 export const submissionIdSchema = z.number();
 
+// TODO: Add validation for score ranges
+// TODO: Consider adding custom type guards
+// TODO: Add serialization helpers
+// TODO: Implement stricter validation rules
 export const submissionSchema = z.object({
     id: submissionIdSchema,
     createdAt: z.string(),
