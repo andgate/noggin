@@ -51,6 +51,24 @@ Start the development server:
 pnpm dev
 ```
 
+## Database Migrations
+
+When you make changes to the database schema:
+
+1. Generate a new migration:
+
+```bash
+pnpm generate
+```
+
+2. Apply the migration to your database:
+
+```bash
+pnpm push
+```
+
+Note: Always review generated migrations before applying them to ensure they match your intended changes.
+
 ## Testing
 
 Run the test suite:
