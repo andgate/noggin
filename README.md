@@ -1,6 +1,8 @@
+TODO Add shields for github actions, discord, license, and npm release (or current version)
+
 # Noggin
 
-A modern quiz application built with React, TypeScript, and Mantine.
+A modern quiz application built with Electron, React, and TypeScript.
 
 ## Features
 
@@ -15,7 +17,7 @@ A modern quiz application built with React, TypeScript, and Mantine.
 ## Prerequisites
 
 -   Node.js (LTS version recommended)
--   pnpm 9.11.0 or higher
+-   pnpm 9.12.3 or higher
 
 ## Quick Start
 
@@ -32,16 +34,15 @@ Add your OpenAI API key to .env.local
 VITE_OPENAI_API_KEY=your-api-key-here
 ```
 
-Initialize database and start the app
+From a blank project, initialize database (`sqlite.db`) and start the development app
 
 ```bash
+# Creat database
 pnpm push
+
+# Start development server
 pnpm dev
 ```
-
-Visit `http://localhost:5173` to start using Noggin!
-
-Your data is stored in an SQLite database in the root of the project, `sqlite.db`.
 
 ## Development Setup
 
@@ -98,6 +99,19 @@ Start the development server:
 pnpm dev
 ```
 
+To build the application:
+
+```bash
+# For Windows
+pnpm build:win32
+
+# For macOS
+pnpm build:mac
+
+# For Linux
+pnpm build:linux
+```
+
 ## Database Migrations
 
 When you make changes to the database schema:
@@ -127,25 +141,36 @@ pnpm test
 ### Available Scripts
 
 -   `pnpm dev` - Start development server
--   `pnpm build` - Build for production
 -   `pnpm start` - Start production server
+-   `pnpm build` - Build for production
+-   `pnpm build:unpack` - Build and unpack without packaging
+-   `pnpm build:win32` - Build for Windows
+-   `pnpm build:mac` - Build for macOS
+-   `pnpm build:linux` - Build for Linux
+-   `pnpm check:node` - Type check Node.js code in watch mode
+-   `pnpm check:web` - Type check web code in watch mode
 -   `pnpm generate` - Generate database migrations
 -   `pnpm push` - Push database changes
 -   `pnpm studio` - Open Drizzle Studio
--   `pnpm test` - Run tests
--   `pnpm lint` - Run linting
+-   `pnpm test` - Run Playwright tests
+-   `pnpm test:ui` - Run Playwright tests with UI
+-   `pnpm lint` - Run ESLint
+-   `pnpm lint:fix` - Run ESLint with auto-fix
+-   `pnpm format` - Format code with Prettier
 
 ## Tech Stack
 
+-   Electron
 -   React 18
--   Vinxi
--   TanStack Router
--   Drizzle ORM
--   SQLite (better-sqlite3)
--   Mantine v7
--   @tabler/icons-react
 -   TypeScript
+-   Mantine v7
+-   TanStack Router & React Query
+-   Drizzle ORM
+-   SQLite
+-   @tabler/icons-react
 -   Playwright (Testing)
+-   electron-vite
+-   Prettier & ESLint
 
 ## License
 
