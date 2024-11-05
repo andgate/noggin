@@ -1,13 +1,14 @@
 // TODO fix automatic migrations
 // see https://github.com/drizzle-team/drizzle-orm/issues/680
+import * as schema from '@noggin/drizzle/schema'
 import Database from 'better-sqlite3'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
 import { app } from 'electron'
 import fs from 'fs'
 import path from 'path'
-import * as schema from '../drizzle/schema'
 
+console.log('Initializing db...', { dev: import.meta.env.DEV })
 const dbPath = import.meta.env.DEV ? 'sqlite.db' : path.join(app.getPath('userData'), 'data.db')
 
 fs.mkdirSync(path.dirname(dbPath), { recursive: true })

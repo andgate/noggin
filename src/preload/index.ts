@@ -1,9 +1,12 @@
 import { electronAPI } from '@electron-toolkit/preload'
+import type { NogginElectronAPI } from '@noggin/types/electron-types'
 import { contextBridge, ipcRenderer } from 'electron'
 
 // Custom APIs for renderer
-const api = {
-    execute: (...args) => ipcRenderer.invoke('db:execute', ...args),
+const api: NogginElectronAPI = {
+    db: {
+        execute: (...args) => ipcRenderer.invoke('db:execute', ...args),
+    },
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

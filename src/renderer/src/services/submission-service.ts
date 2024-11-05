@@ -1,4 +1,4 @@
-import { responses, submissions } from '@noggin/schema'
+import { responses, submissions } from '@noggin/drizzle/schema'
 import db from '@renderer/db'
 import { Quiz, Submission, SubmissionId } from '@renderer/types/quiz-view-types'
 import { eq } from 'drizzle-orm'

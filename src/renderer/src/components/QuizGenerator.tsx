@@ -183,7 +183,6 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
                                 errs[index] = error as Error
                             })
                         )
-                        return
                     }
                 }
 

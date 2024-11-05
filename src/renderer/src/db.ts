@@ -3,14 +3,13 @@
  * The database file is named `sqlite.db` and is located in the `app/db` directory.
  * The `db` object can be used to interact with the SQLite database throughout the application.
  */
+import * as schema from '@noggin/drizzle/schema'
 import { drizzle } from 'drizzle-orm/sqlite-proxy'
-import * as schema from '../../drizzle/schema'
 
 export const db = drizzle(
-    async (...args) => {
+    async (args) => {
         try {
-            // @ts-expect-error
-            const result = await window.api.execute(...args)
+            const result = await window.api.db.execute(...args)
             return { rows: result }
         } catch (e: any) {
             console.error('Error from sqlite proxy server: ', e.response.data)

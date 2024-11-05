@@ -3,7 +3,7 @@
 // TODO: Add sorting and filtering capabilities
 // TODO: Consider implementing soft delete
 /* eslint-disable indent */
-import * as schema from '@noggin/schema'
+import * as schema from '@noggin/drizzle/schema'
 import db from '@renderer/db'
 import { GeneratedQuiz } from '@renderer/types/quiz-generation-types'
 import { Quiz, QuizId } from '@renderer/types/quiz-view-types'

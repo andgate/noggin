@@ -5,16 +5,29 @@ import { resolve } from 'path'
 
 export default defineConfig({
     main: {
+        resolve: {
+            alias: {
+                '@noggin/drizzle': resolve('src/drizzle'),
+                '@noggin/types': resolve('src/types'),
+            },
+        },
         plugins: [externalizeDepsPlugin()],
     },
     preload: {
+        resolve: {
+            alias: {
+                '@noggin/drizzle': resolve('src/drizzle'),
+                '@noggin/types': resolve('src/types'),
+            },
+        },
         plugins: [externalizeDepsPlugin()],
     },
     renderer: {
         resolve: {
             alias: {
                 '@renderer': resolve('src/renderer/src'),
-                '@noggin/schema': resolve('src/drizzle/schema'),
+                '@noggin/drizzle': resolve('src/drizzle'),
+                '@noggin/types': resolve('src/types'),
             },
         },
         plugins: [TanStackRouterVite(), viteReact()],
