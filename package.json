@@ -5,16 +5,18 @@
   "packageManager": "pnpm@9.12.3",
   "type": "module",
   "scripts": {
+    "preinstall": "neu update",
     "dev": "vinxi dev --port 33482",
-    "build": "vinxi build --preset node-server",
-    "start": "vinxi start --preset node-server",
+    "start": "pnpm neu run",
     "check": "tsc --watch --noEmit",
     "generate": "drizzle-kit generate",
     "push": "drizzle-kit push",
     "studio": "drizzle-kit studio",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "neu": "neu",
+    "package": "pnpm neu build --release"
   },
   "dependencies": {
     "@mantine/core": "^7.13.4",
@@ -40,6 +42,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
+    "@neutralinojs/neu": "^11.3.0",
     "@playwright/test": "^1.48.2",
     "@tanstack/router-plugin": "^1.78.0",
     "@types/better-sqlite3": "^7.6.11",

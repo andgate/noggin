@@ -1,0 +1,35 @@
+{
+    "applicationId": "com.noggin.app",
+    "version": "1.0.0",
+    "defaultMode": "window",
+    "port": 0,
+    "documentRoot": "/dist/",
+    "url": "/",
+    "enableServer": true,
+    "enableNativeAPI": true,
+    "tokenSecurity": "one-time",
+    "logging": {
+        "enabled": true,
+        "writeToFile": true
+    },
+    "nativeAllowList": ["app.*", "os.*", "debug.log", "filesystem.*"],
+    "modes": {
+        "window": {
+            "title": "Noggin",
+            "width": 1200,
+            "height": 800,
+            "minWidth": 800,
+            "minHeight": 600,
+            "center": true,
+            "fullScreen": false
+        }
+    },
+    "cli": {
+        "binaryName": "noggin",
+        "resourcesPath": "/dist/",
+        "extensionsPath": "/extensions/",
+        "clientLibrary": "/public/neutralino.js",
+        "binaryVersion": "4.14.1",
+        "clientVersion": "3.12.0"
+    }
+}
