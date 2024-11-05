@@ -1,6 +1,4 @@
 import { createServerFn } from "@tanstack/start";
-import { OpenAI } from "openai";
-import { zodResponseFormat } from "openai/helpers/zod";
 import {
     GeneratedQuestion,
     generatedQuestionSchema,
@@ -8,6 +6,7 @@ import {
     generatedQuizSchema,
 } from "../types/quiz-generation-types";
 import { z } from "zod";
+import { generateChatCompletion } from "./openai-service";
 
 const generateQuizQuestionsPrompt = (
     sources: string[],
@@ -43,21 +42,22 @@ const generateQuizTitlePrompt = (
     
         Write a title for the quiz.`;
 
+export interface GenerateQuizOptions {
+    questionCount: number;
+    questionTypes: string[];
+    sources: string[];
+    controller?: AbortController;
+}
+
 export const generateQuiz = createServerFn(
     "POST",
     async ({
         questionCount,
         questionTypes,
         sources,
-    }: {
-        questionCount: number;
-        questionTypes: string[];
-        sources: string[];
-    }): Promise<GeneratedQuiz> => {
+        controller,
+    }: GenerateQuizOptions): Promise<GeneratedQuiz> => {
         console.log("Generating quiz");
-        const client = new OpenAI({
-            apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-        });
 
         // TODO: Refactor to use async/await instead of reduce for better readability
         // TODO: Add input validation for sources and question count
@@ -68,43 +68,56 @@ export const generateQuiz = createServerFn(
         }).reduce(
             (promise: Promise<GeneratedQuestion[]>) =>
                 promise.then(async (questions) => {
-                    const question = await generateQuestion(
-                        client,
+                    const question = await generateQuestion({
                         sources,
                         questions,
                         questionTypes,
-                    );
+                        controller,
+                    });
                     return [...questions, question];
                 }),
             Promise.resolve([]),
         );
 
-        const title = await generateQuizTitle(
-            client,
+        const title = await generateQuizTitle({
             sources,
-            generatedQuestions,
-        );
+            questions: generatedQuestions,
+            controller,
+        });
 
         return generatedQuizSchema.parse({
             title,
             questions: generatedQuestions,
+            controller,
         });
     },
 );
 
-export const generateQuestion = async (
-    client: OpenAI,
-    sources: string[],
-    questions: GeneratedQuestion[],
-    questionTypes: string[],
-): Promise<GeneratedQuestion> => {
+export interface GenerateQuestionOptions {
+    sources: string[];
+    questions: GeneratedQuestion[];
+    questionTypes: string[];
+    controller?: AbortController;
+}
+
+export const generateQuestion = createServerFn<
+    "POST",
+    GenerateQuestionOptions,
+    GeneratedQuestion
+>("POST", async ({ sources, questions, questionTypes, controller }) => {
+    console.log("generateQuestion called =>", {
+        sources,
+        questions,
+        questionTypes,
+    });
     const prompt = generateQuizQuestionsPrompt(
         sources,
         questions,
         questionTypes,
     );
-    const completion = await client.beta.chat.completions.parse({
-        model: "gpt-4o",
+    const question = await generateChatCompletion({
+        responseFormatName: "questionResponse",
+        schema: z.object({ newQuestion: generatedQuestionSchema }),
         messages: [
             {
                 role: "system",
@@ -116,30 +129,30 @@ export const generateQuestion = async (
                 content: prompt,
             },
         ],
-        response_format: zodResponseFormat(
-            z.object({ newQuestion: generatedQuestionSchema }),
-            "questionResponse",
-        ),
+        controller,
     });
 
-    const message = completion.choices[0]?.message;
-    if (message?.parsed) {
-        return message.parsed.newQuestion;
-    } else {
-        console.error(message.refusal);
-        throw new Error("Failed to generate quiz");
-    }
-};
+    console.log("question generated ==>", question.newQuestion);
 
-export const generateQuizTitle = async (
-    client: OpenAI,
-    sources: string[],
-    questions: GeneratedQuestion[],
-): Promise<string> => {
+    return question.newQuestion;
+});
+
+export interface GenerateQuizTitleOptions {
+    sources: string[];
+    questions: GeneratedQuestion[];
+    controller?: AbortController;
+}
+
+export const generateQuizTitle = createServerFn<
+    "POST",
+    GenerateQuizTitleOptions,
+    string
+>("POST", async ({ sources, questions, controller }) => {
+    console.log("generateQuizTitle called =>", { sources, questions });
     const prompt = generateQuizTitlePrompt(sources, questions);
-    console.log("generateQuizTitle prompt", prompt);
-    const completion = await client.beta.chat.completions.parse({
-        model: "gpt-4o",
+    const completion = await generateChatCompletion({
+        responseFormatName: "quizTitleResponse",
+        schema: z.object({ quizTitle: z.string() }),
         messages: [
             {
                 role: "system",
@@ -151,19 +164,10 @@ export const generateQuizTitle = async (
                 content: prompt,
             },
         ],
-        response_format: zodResponseFormat(
-            z.object({ quizTitle: z.string() }),
-            "quizTitleResponse",
-        ),
+        controller,
     });
 
-    console.log("completion", completion.choices[0]?.message);
+    console.log("quiz title generated ==>", completion.quizTitle);
 
-    const message = completion.choices[0]?.message;
-    if (message?.parsed) {
-        return message.parsed.quizTitle;
-    } else {
-        console.error(message.refusal);
-        throw new Error("Failed to generate quiz");
-    }
-};
+    return completion.quizTitle;
+});

@@ -114,10 +114,12 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
 
         try {
             setIsSubmitting(true);
-            console.log("Submitting quiz", values);
+            console.log("Submitting quiz ==>", values);
             const responses = Object.values(values);
             const gradedSubmission = await gradeQuiz({ quiz, responses });
+            console.log("graded submission ==>", gradedSubmission);
             const submissionId = await submitQuiz({ quiz, gradedSubmission });
+            console.log("stored submission ==>", submissionId);
             navigate({
                 to: "/quiz/submission/$submissionId",
                 params: { submissionId: `${submissionId}` },

@@ -10,7 +10,7 @@ import { NotFound } from "~/components/NotFound";
 export const Route = createFileRoute("/quiz/submission/$submissionId")({
     loader: async ({ params: { submissionId } }) => {
         const submission = await getSubmission(Number(submissionId));
-        return { submission };
+        return submission;
     },
 
     errorComponent: SubmissionErrorComponent,
@@ -25,6 +25,6 @@ export function SubmissionErrorComponent({ error }: ErrorComponentProps) {
 }
 
 function RouteComponent() {
-    const { submission } = Route.useLoaderData();
+    const submission = Route.useLoaderData();
     return <SubmissionPage submission={submission} />;
 }

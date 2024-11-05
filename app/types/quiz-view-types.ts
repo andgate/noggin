@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export type QuestionType = "multiple-choice" | "written";
+
 export const sourceSchema = z.object({
     id: z.number(),
     content: z.string(),

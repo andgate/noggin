@@ -93,64 +93,65 @@ const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
             </Group>
 
             <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="md">
-                {quizzes.map((quiz: Quiz) => (
-                    <Card
-                        key={quiz.id}
-                        shadow="sm"
-                        padding="lg"
-                        radius="md"
-                        withBorder
-                    >
-                        <Card.Section p="md">
-                            <Text fw={500} size="lg">
-                                {quiz.title}
-                            </Text>
-                            <Stack gap="xs" mt="sm">
-                                <Text size="sm">
-                                    {quiz.questions.length} Questions
+                {quizzes &&
+                    quizzes.map((quiz: Quiz) => (
+                        <Card
+                            key={quiz.id}
+                            shadow="sm"
+                            padding="lg"
+                            radius="md"
+                            withBorder
+                        >
+                            <Card.Section p="md">
+                                <Text fw={500} size="lg">
+                                    {quiz.title}
                                 </Text>
-                                <Text size="sm">
-                                    Created:{" "}
-                                    {new Date(
-                                        quiz.createdAt!,
-                                    ).toLocaleDateString()}
-                                </Text>
-                            </Stack>
-                        </Card.Section>
+                                <Stack gap="xs" mt="sm">
+                                    <Text size="sm">
+                                        {quiz.questions.length} Questions
+                                    </Text>
+                                    <Text size="sm">
+                                        Created:{" "}
+                                        {new Date(
+                                            quiz.createdAt!,
+                                        ).toLocaleDateString()}
+                                    </Text>
+                                </Stack>
+                            </Card.Section>
 
-                        <Group justify="space-between" mt="md">
-                            <Button
-                                variant="light"
-                                leftSection={<IconPlayerPlay size={16} />}
-                                onClick={() => handleStartQuiz(quiz.id)}
-                            >
-                                Start
-                            </Button>
-                            <Button
-                                variant="light"
-                                leftSection={<IconEdit size={16} />}
-                                onClick={() => handleViewQuiz(quiz.id)}
-                            >
-                                View
-                            </Button>
-                            <Button
-                                variant="light"
-                                color="red"
-                                leftSection={<IconTrash size={16} />}
-                                onClick={() => {
-                                    const confirmed = window.confirm(
-                                        "Are you sure you want to delete this quiz? This action cannot be undone.",
-                                    );
-                                    if (confirmed) {
-                                        handleDeleteQuiz(quiz.id);
-                                    }
-                                }}
-                            >
-                                Delete
-                            </Button>
-                        </Group>
-                    </Card>
-                ))}
+                            <Group justify="space-between" mt="md">
+                                <Button
+                                    variant="light"
+                                    leftSection={<IconPlayerPlay size={16} />}
+                                    onClick={() => handleStartQuiz(quiz.id)}
+                                >
+                                    Start
+                                </Button>
+                                <Button
+                                    variant="light"
+                                    leftSection={<IconEdit size={16} />}
+                                    onClick={() => handleViewQuiz(quiz.id)}
+                                >
+                                    View
+                                </Button>
+                                <Button
+                                    variant="light"
+                                    color="red"
+                                    leftSection={<IconTrash size={16} />}
+                                    onClick={() => {
+                                        const confirmed = window.confirm(
+                                            "Are you sure you want to delete this quiz? This action cannot be undone.",
+                                        );
+                                        if (confirmed) {
+                                            handleDeleteQuiz(quiz.id);
+                                        }
+                                    }}
+                                >
+                                    Delete
+                                </Button>
+                            </Group>
+                        </Card>
+                    ))}
             </SimpleGrid>
         </Stack>
     );

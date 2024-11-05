@@ -1,125 +1,97 @@
-import { useNavigate } from "@tanstack/react-router";
-import {
-    Button,
-    Card,
-    NumberInput,
-    MultiSelect,
-    Textarea,
-    Title,
-    Stack,
-    Group,
-    Box,
-} from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { useState } from "react";
-import { createQuiz } from "../services/quiz-service";
-import { generateQuiz } from "../services/quiz-generation-service";
+import { Box, Button, Card, Group, MultiSelect, NumberInput, Stack, Textarea, Title } from "@mantine/core";
+import { useForm, zodResolver } from "@mantine/form";
+import { useRef, useState } from "react";
+import { z } from "zod";
+import { QuestionType } from "~/types/quiz-view-types";
+import { QuizGenerator, QuizGeneratorHandle } from "../components/QuizGenerator";
 
-interface QuizFormData {
-    content: string;
-    questionCount: number;
-    questionTypes: string[];
-}
+export const QuizFormSchema = z.object({
+    content: z.string().min(1, "Please enter study content"),
+    questionCount: z.number().min(1, "Must have at least 1 question").max(50, "Maximum 50 questions allowed"),
+    questionTypes: z.array(z.enum(["multiple-choice", "written"])).min(1, "Select at least one question type"),
+});
 
 // TODO: Add progressive enhancement for non-JS environments
 // TODO: Implement partial form saving to prevent data loss
 // TODO: Add detailed error states for API/generation failures
 // TODO: Add fallback UI for when OpenAI is unavailable
 export const CreateQuizPage: React.FC = () => {
-    const navigate = useNavigate({ from: "/quiz/create" });
-    const [loading, setLoading] = useState(false);
+    const [showGenerator, setShowGenerator] = useState(false);
+    const quizGeneratorRef = useRef<QuizGeneratorHandle>(null);
 
-    const form = useForm<QuizFormData>({
+    // TODO consider using zod to validate form data
+    const form = useForm({
         initialValues: {
             content: "",
             questionCount: 4,
             questionTypes: ["multiple-choice", "written"],
         },
-        validate: {
-            content: (value) => (!value ? "Please enter study content" : null),
-            questionCount: (value) =>
-                !value ? "Number of questions is required" : null,
-            questionTypes: (value) =>
-                !value.length ? "Select at least one question type" : null,
-        },
+        validate: zodResolver(QuizFormSchema),
     });
 
-    const handleSubmit = async (values: QuizFormData) => {
-        // TODO: Add step-by-step progress indicators
-        // TODO: Implement graceful degradation for timeouts
-        // TODO: Add recovery options for failed generations
-        if (loading) {
-            return;
+    const handleSubmit = () => {
+        if (!showGenerator) {
+            setShowGenerator(true);
         }
-
-        setLoading(true);
-        try {
-            const generatedQuiz = await generateQuiz({
-                questionCount: values.questionCount,
-                questionTypes: values.questionTypes,
-                sources: [values.content],
-            });
-            const newQuizId = await createQuiz({
-                generatedQuiz,
-                sources: [values.content],
-            });
-            navigate({
-                to: "/quiz/view/$quizId",
-                params: { quizId: `${newQuizId}` },
-            });
-        } catch (error) {
-            // TODO: Add specific error handling for different failure modes
-            // TODO: Provide user guidance for common errors
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
+        quizGeneratorRef.current?.run();
     };
 
     return (
-        <Box maw={800} mx="auto" p="md">
+        <Box maw={1200} mx="auto" p="md">
             <Card withBorder>
                 <Stack>
                     <Title order={2}>Create New Quiz</Title>
 
-                    <form onSubmit={form.onSubmit(handleSubmit)}>
-                        <Stack>
-                            <Textarea
-                                label="Study Content"
-                                placeholder="Paste your study material here"
-                                minRows={6}
-                                {...form.getInputProps("content")}
+                    <Group align="flex-start" gap="xl">
+                        <Box style={{ flex: 1 }}>
+                            <form onSubmit={form.onSubmit(handleSubmit)}>
+                                <Stack>
+                                    <Textarea
+                                        label="Study Content"
+                                        placeholder="Paste your study material here"
+                                        minRows={6}
+                                        {...form.getInputProps("content")}
+                                    />
+
+                                    <Group grow>
+                                        <NumberInput
+                                            label="Number of Questions"
+                                            min={1}
+                                            max={50}
+                                            {...form.getInputProps("questionCount")}
+                                        />
+
+                                        <MultiSelect
+                                            label="Question Types"
+                                            data={[
+                                                {
+                                                    label: "Multiple Choice",
+                                                    value: "multiple-choice",
+                                                },
+                                                {
+                                                    label: "Written Answer",
+                                                    value: "written",
+                                                },
+                                            ]}
+                                            {...form.getInputProps("questionTypes")}
+                                        />
+                                    </Group>
+
+                                    <Button type="submit">Generate Quiz</Button>
+                                </Stack>
+                            </form>
+                        </Box>
+
+                        <Box style={{ flex: 1 }}>
+                            <QuizGenerator
+                                ref={quizGeneratorRef}
+                                show={showGenerator}
+                                questionCount={form.values.questionCount}
+                                questionTypes={form.values.questionTypes as QuestionType[]}
+                                sources={[form.values.content]}
                             />
-
-                            <Group grow>
-                                <NumberInput
-                                    label="Number of Questions"
-                                    min={1}
-                                    max={50}
-                                    {...form.getInputProps("questionCount")}
-                                />
-
-                                <MultiSelect
-                                    label="Question Types"
-                                    data={[
-                                        {
-                                            label: "Multiple Choice",
-                                            value: "multiple-choice",
-                                        },
-                                        {
-                                            label: "Written Answer",
-                                            value: "written",
-                                        },
-                                    ]}
-                                    {...form.getInputProps("questionTypes")}
-                                />
-                            </Group>
-
-                            <Button type="submit" loading={loading}>
-                                Generate Quiz
-                            </Button>
-                        </Stack>
-                    </form>
+                        </Box>
+                    </Group>
                 </Stack>
             </Card>
         </Box>
