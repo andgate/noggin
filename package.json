@@ -3,18 +3,15 @@
     "description": "A learning platform for the modern age",
     "private": true,
     "version": "0.0.0",
-    "packageManager": "pnpm@9.12.3",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/andgate/noggin"
-    },
     "main": "out/main/index.js",
     "type": "module",
+    "packageManager": "pnpm@9.12.3",
     "scripts": {
         "postinstall": "electron-builder install-app-deps",
         "start": "electron-vite preview",
         "dev": "electron-vite dev",
         "build": "electron-vite build",
+        "check": "tsc --noEmit -p tsconfig.node.json --composite false && tsc --noEmit -p tsconfig.web.json --composite false",
         "check:node": "tsc --watch --noEmit -p tsconfig.node.json --composite false",
         "check:web": "tsc --watch --noEmit -p tsconfig.web.json --composite false",
         "generate": "drizzle-kit generate",
@@ -38,15 +35,15 @@
         "@mantine/hooks": "^7.13.4",
         "@mantine/notifications": "^7.13.4",
         "@tabler/icons-react": "^3.21.0",
-        "@tanstack/react-query": "^5.59.19",
+        "@tanstack/react-query": "^5.59.20",
         "@tanstack/react-router": "^1.79.0",
         "@tanstack/router-devtools": "^1.79.0",
         "better-sqlite3": "^11.5.0",
         "dotenv": "^16.4.5",
-        "drizzle-orm": "0.33.0",
+        "drizzle-orm": "0.36.0",
         "drizzle-zod": "^0.5.1",
         "immer": "^10.1.1",
-        "openai": "^4.71.0",
+        "openai": "^4.71.1",
         "p-queue": "^8.0.1",
         "p-retry": "^6.2.0",
         "react": "^18.3.1",
@@ -66,8 +63,8 @@
         "@types/react-dom": "^18.3.1",
         "@vitejs/plugin-react": "^4.3.3",
         "@vitejs/plugin-react-swc": "^3.7.1",
-        "drizzle-kit": "0.22.8",
-        "electron": "^33.0.2",
+        "drizzle-kit": "0.28.0",
+        "electron": "^31.7.3",
         "electron-builder": "^25.1.8",
         "electron-vite": "^2.3.0",
         "eslint": "^9.14.0",
@@ -84,5 +81,15 @@
         "typescript-eslint": "^8.13.0",
         "vite": "^5.4.10",
         "vite-tsconfig-paths": "^5.1.0"
+    },
+    "keywords": [],
+    "author": {
+        "name": "andgate",
+        "email": "the.andgate@gmail.com"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/andgate/noggin"
     }
 }

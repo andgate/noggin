@@ -1,19 +1,18 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { join } from 'path'
-import icon from '../../resources/icon.png?asset'
-import { execute } from './db'
+import * as db from './db'
 
 function createWindow(): void {
+    console.log('createWindow')
     // Create the browser window.
     const mainWindow = new BrowserWindow({
         width: 900,
         height: 670,
         show: false,
         autoHideMenuBar: true,
-        ...(process.platform === 'linux' ? { icon } : {}),
         webPreferences: {
-            preload: join(__dirname, '../preload/index.js'),
+            preload: join(__dirname, '../preload/index.mjs'),
             sandbox: false,
         },
     })
@@ -29,7 +28,7 @@ function createWindow(): void {
 
     // HMR for renderer base on electron-vite cli.
     // Load the remote URL for development or the local html file for production.
-    if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
         mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
     } else {
         mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
@@ -52,7 +51,7 @@ app.whenReady().then(async () => {
 
     // IPC test
     ipcMain.on('ping', () => console.log('pong'))
-    ipcMain.handle('db:execute', execute)
+    ipcMain.handle('db:execute', db.execute)
 
     // TODO fix automatic migrations
     // see https://github.com/drizzle-team/drizzle-orm/issues/680

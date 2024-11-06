@@ -6,7 +6,9 @@
         "src/renderer/src/**/*.tsx",
         "src/preload/*.d.ts",
         "src/drizzle/**/*",
-        "src/types/**/*"
+        "src/drizzle/**/*.tsx",
+        "src/types/**/*",
+        "src/types/**/*.tsx"
     ],
     "compilerOptions": {
         "composite": true,

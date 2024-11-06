@@ -1,5 +1,9 @@
 export type NogginElectronAPI = {
     db: {
-        execute: (...args: any[]) => Promise<any[]>
+        execute: (
+            sql: string,
+            params: any[],
+            method: 'run' | 'all' | 'values' | 'get'
+        ) => Promise<any[]>
     }
 }

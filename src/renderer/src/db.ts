@@ -7,12 +7,18 @@ import * as schema from '@noggin/drizzle/schema'
 import { drizzle } from 'drizzle-orm/sqlite-proxy'
 
 export const db = drizzle(
-    async (args) => {
+    async (sql, params, method) => {
         try {
-            const result = await window.api.db.execute(...args)
-            return { rows: result }
+            console.log('db args ==>', { sql, params, method })
+            const rows = await window.api.db.execute(sql, params, method)
+            return { rows }
         } catch (e: any) {
-            console.error('Error from sqlite proxy server: ', e.response.data)
+            console.error('SQLite Proxy Error:', {
+                message: e.message,
+                responseData: e.response?.data,
+                stack: e.stack,
+                args: args, // Include the original query arguments
+            })
             return { rows: [] }
         }
     },

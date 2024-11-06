@@ -5,6 +5,13 @@ import { resolve } from 'path'
 
 export default defineConfig({
     main: {
+        build: {
+            rollupOptions: {
+                input: {
+                    index: resolve(__dirname, 'src/main/index.ts'),
+                },
+            },
+        },
         resolve: {
             alias: {
                 '@noggin/drizzle': resolve('src/drizzle'),
@@ -14,6 +21,13 @@ export default defineConfig({
         plugins: [externalizeDepsPlugin()],
     },
     preload: {
+        build: {
+            rollupOptions: {
+                input: {
+                    index: resolve(__dirname, 'src/preload/index.ts'),
+                },
+            },
+        },
         resolve: {
             alias: {
                 '@noggin/drizzle': resolve('src/drizzle'),
@@ -23,6 +37,14 @@ export default defineConfig({
         plugins: [externalizeDepsPlugin()],
     },
     renderer: {
+        root: './src/renderer/',
+        build: {
+            rollupOptions: {
+                input: {
+                    index: resolve(__dirname, 'src/renderer/index.html'),
+                },
+            },
+        },
         resolve: {
             alias: {
                 '@renderer': resolve('src/renderer/src'),

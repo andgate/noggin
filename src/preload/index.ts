@@ -5,7 +5,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 // Custom APIs for renderer
 const api: NogginElectronAPI = {
     db: {
-        execute: (...args) => ipcRenderer.invoke('db:execute', ...args),
+        execute: (sql: string, params: any[], method: 'run' | 'all' | 'values' | 'get') =>
+            ipcRenderer.invoke('db:execute', sql, params, method),
     },
 }
 

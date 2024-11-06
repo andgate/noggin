@@ -6,16 +6,38 @@ import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
 import { app } from 'electron'
 import fs from 'fs'
-import path from 'path'
+import path, { resolve } from 'path'
 
-console.log('Initializing db...', { dev: import.meta.env.DEV })
-const dbPath = import.meta.env.DEV ? 'sqlite.db' : path.join(app.getPath('userData'), 'data.db')
+function getDbPath(): string {
+    return import.meta.env.DEV ? 'sqlite.db' : path.join(app.getPath('userData'), 'data.db')
+}
 
-fs.mkdirSync(path.dirname(dbPath), { recursive: true })
+function createSqlite(dbPath: string) {
+    try {
+        fs.mkdirSync(path.dirname(dbPath), { recursive: true })
+        return new Database(resolve(dbPath))
+    } catch (e) {
+        console.error('Error creating sqlite at db path', e)
+        throw new Error('Error creating sqlite at db path', { cause: e })
+    }
+}
 
-const sqlite = new Database(dbPath)
+function createDb(sqlite: Database.Database) {
+    try {
+        return drizzle(sqlite, { schema })
+    } catch (e) {
+        console.error('Error creating db', e)
+        throw new Error('Error creating db', { cause: e })
+    }
+}
 
-export const db = drizzle(sqlite, { schema })
+const dbPath = getDbPath()
+console.log('database path ==>', resolve(dbPath))
+
+const sqlite = createSqlite(dbPath)
+export const db = createDb(sqlite)
+
+console.log('Created db')
 
 function toDrizzleResult(row: Record<string, any>)
 function toDrizzleResult(rows: Record<string, any> | Array<Record<string, any>>) {
@@ -31,8 +53,10 @@ function toDrizzleResult(rows: Record<string, any> | Array<Record<string, any>>)
     }
 }
 
-export const execute = async (e, sqlstr, params, method) => {
-    const result = sqlite.prepare(sqlstr)
+export const execute = async (e, sql, params, method) => {
+    console.log('db:execute ==>', { e, sql, params, method })
+    const result = sqlite.prepare(sql)
+    console.log('result ==>', result)
     const ret = result[method](...params)
     return toDrizzleResult(ret)
 }
