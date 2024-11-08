@@ -1,9 +1,9 @@
 import { Box, Button, Card, Radio, Stack, Textarea, Title } from '@mantine/core'
 import { useForm } from '@mantine/form'
+import { useActiveQuiz } from '@renderer/hooks/use-active-quiz'
+import { useGradesGenerator } from '@renderer/hooks/use-grades-generator'
 import { useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
-import { gradeQuiz } from '../services/grading-service'
-import { submitQuiz } from '../services/submission-service'
+import { useCallback, useState } from 'react'
 import { Question, Quiz } from '../types/quiz-view-types'
 
 // Component for multiple choice questions
@@ -71,6 +71,7 @@ const QuestionItem: React.FC<{
 // TODO: Implement progressive loading for large quizzes
 export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     const navigate = useNavigate({ from: '/quiz/practice/$quizId' })
+    const { setActiveQuizState } = useActiveQuiz()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const form = useForm({
         initialValues: quiz.questions.reduce(
@@ -82,36 +83,26 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
         ),
     })
 
-    const handleSubmit = async (values: Record<string, string>) => {
-        // TODO: Add detailed error states for grading failures
-        // TODO: Implement retry logic for failed submissions
-        // TODO: Add partial submission saving
-        // TODO: Add user-friendly error recovery options
-        if (isSubmitting) {
-            return
-        }
+    const { generateGrades } = useGradesGenerator()
 
-        try {
-            setIsSubmitting(true)
+    const handleSubmit = useCallback<(values: Record<string, string>) => void>(
+        (values: Record<string, string>) => {
             console.log('Submitting quiz ==>', values)
-            const responses = Object.values(values)
-            const gradedSubmission = await gradeQuiz({ quiz, responses })
-            console.log('graded submission ==>', gradedSubmission)
-            const submissionId = await submitQuiz({ quiz, gradedSubmission })
-            console.log('stored submission ==>', submissionId)
             navigate({
-                to: '/quiz/submission/$submissionId',
-                params: { submissionId: `${submissionId}` },
+                to: '/quiz/eval',
+                params: { quizId: `${quiz.id}` },
             })
-        } catch (error) {
-            // TODO: Add detailed error states for grading failures
-            // TODO: Implement retry logic for failed submissions
-            // TODO: Add partial submission saving
-            console.error(error)
-        } finally {
-            setIsSubmitting(false)
-        }
-    }
+        },
+        [isSubmitting, setIsSubmitting, generateGrades, navigate, quiz]
+    )
+
+    const handleFormChange = useCallback<() => void>(() => {
+        setActiveQuizState({
+            questions: quiz.questions,
+            studentResponses: Object.values(form.values),
+            startTime: new Date().toISOString(),
+        })
+    }, [setActiveQuizState, quiz])
 
     return (
         <Box maw={800} mx="auto" p="xl">
@@ -119,7 +110,7 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
                 {quiz.title}
             </Title>
 
-            <form onSubmit={form.onSubmit(handleSubmit)}>
+            <form onSubmit={form.onSubmit(handleSubmit)} onChange={handleFormChange}>
                 <Stack>
                     {quiz.questions.map((question, index) => (
                         <Card key={question.id} withBorder padding="md">

@@ -42,8 +42,8 @@ export type AbortableGenerativeFunction<TInput, TState> = (
  */
 export interface GenerativeContext<TInput, TState> {
     invoke: (input: TInput) => unknown
-    quizState: TState
-    setQuizState: (setter: (state: TState) => TState) => void
+    state: TState
+    setState: (setter: (state: TState) => TState) => void
     isRunning: boolean
     error?: Error
     abort: () => unknown
@@ -53,8 +53,8 @@ export interface GenerativeContext<TInput, TState> {
 // The default generative context.
 const GenerativeContext = createContext<GenerativeContext<any, any>>({
     invoke: function* () {},
-    quizState: {},
-    setQuizState: () => {},
+    state: {},
+    setState: () => {},
     isRunning: false,
     abort: () => {},
     _hasProvider: false,
@@ -93,7 +93,7 @@ export function GenerativeProvider<I, S>({
 }: GenerativeProviderProps<I, S>): React.ReactElement {
     const [isRunning, setIsRunning] = useState(false)
     const [error, setError] = useState<Error>()
-    const [quizState, setQuizState] = useState<Partial<S>>({})
+    const [state, setState] = useState<Partial<S>>({})
     const abortControllerRef = useRef<AbortController>()
 
     const abort = useCallback(() => {
@@ -136,7 +136,7 @@ export function GenerativeProvider<I, S>({
 
                         // Update state with the latest value, if any
                         if (result.value) {
-                            setQuizState(result.value)
+                            setState(result.value)
                         }
                     }
                 }
@@ -146,15 +146,15 @@ export function GenerativeProvider<I, S>({
                 setIsRunning(false)
             }
         },
-        [generativeFunction, setQuizState, setError, abort, signal]
+        [generativeFunction, setState, setError, abort, signal]
     )
 
     return (
         <GenerativeContext.Provider
             value={{
                 invoke,
-                quizState,
-                setQuizState,
+                state,
+                setState,
                 isRunning,
                 error,
                 abort,

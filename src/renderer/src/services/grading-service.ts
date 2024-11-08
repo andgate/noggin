@@ -1,20 +1,20 @@
+import { gradeResponses } from '@renderer/common/grading-helpers'
 import { AbortableGenerativeFunction } from '@renderer/hooks/use-generative'
-import { zodResponseFormat } from 'openai/helpers/zod.mjs'
-import { z } from 'zod'
 import {
     GradedResponse,
-    gradedResponseSchema,
     GradedSubmission,
     gradedSubmissionSchema,
-    PartialGradedSubmission,
 } from '../types/quiz-generation-types'
 import { Question, Quiz } from '../types/quiz-view-types'
 import { generateChatCompletion } from './openai-service'
 
+export const BATCH_SIZE = 30 // Number of questions to grade at a time
+
 const generateGradedSubmissionPrompt = (
     sources: string[],
-    quiz: Quiz,
-    responses: GradedResponse[]
+    quizTitle: string,
+    questions: Question[],
+    studentResponses: string[]
 ): string => `\
     ---
     Sources
@@ -23,92 +23,103 @@ const generateGradedSubmissionPrompt = (
     \n\n${sources.join('\n\n---\n\n')}
 
     ---
-    Student Quiz Submission
-    ---
-    Quiz Title: ${quiz.title}
-    Questions and Responses:
-    ${quiz.questions
-        .map(
-            (q, i) => `
-    Question ${i + 1}: ${q.question}
-    Response: ${responses[i]}
-    ${
-        q.questionType === 'multiple_choice'
-            ? `Options:\n${q.choices.map((c) => `- ${c.optionText}${c.isCorrect ? ' (correct)' : ''}`).join('\n')}`
-            : ''
-    }
-    `
-        )
-        .join('\n---\n')}
-
-    ---
     Grading Instructions
     ---
 
-    Please grade the following quiz responses. For each response:
+    Please grade the following submission from a student.
+
+    For each question response from the student:
     - Provide a score between 0 and 100
     - Provide specific feedback explaining the score
     - Consider the source material (see above) carefully when evaluating answers
+
+
+    ---
+    Student Quiz Submission
+    ---
+
+    Now please grade the following student responses from a quiz submission.
+
+    Quiz Title: ${quizTitle}
+    Questions and Responses:
+    ${questions
+        .map(
+            (q, i) => `
+    Question ${i + 1}: ${q.question}
+    ${q.questionType === 'multiple_choice' ? `Options:\n${q.choices.map((c) => `- ${c.optionText}`).join('\n')}` : ''}
+    Response: ${studentResponses[i]}
+    `
+        )
+        .join('\n---\n')}
 `
 
 export interface GenerateGradesOptions {
     quiz: Quiz
-    responses: GradedResponse[]
+    studentResponses: string[]
     controller?: AbortController
 }
 
 export const generateGradedSubmission: AbortableGenerativeFunction<
     GenerateGradesOptions,
-    PartialGradedSubmission
-> = async function* ({ quiz, responses, controller }, signal) {
+    GradedSubmission
+> = async function* ({ quiz, studentResponses }, signal) {
     // Initialize responses array with undefined values
-    let gradedResponses: (GradedResponse | undefined)[] = Array(responses.length).fill(undefined)
+    let gradedResponses: GradedResponse[] = []
 
-    // Grade each response one at a time
-    for (let i = 0; i < responses.length; i++) {
+    const numBatches = Math.ceil(quiz.questions.length / BATCH_SIZE)
+
+    // Grade submission in batches
+    for (let i = 0; i < numBatches; i++) {
         if (signal.aborted) break
 
-        const response = await generateGradedResponses(
-            quiz.sources.map((source) => source.content),
-            quiz,
-            gradedResponses.filter((r): r is GradedResponse => !!r),
-            controller
-        )
+        const startIndex = i * BATCH_SIZE
+        const endIndex = startIndex + BATCH_SIZE
 
-        gradedResponses[i] = response
+        const submissionBatch = await generateGradedSubmissionBatch({
+            sources: quiz.sources.map((source) => source.content),
+            quizTitle: quiz.title,
+            questions: quiz.questions.slice(startIndex, endIndex),
+            studentResponses: studentResponses.slice(startIndex, endIndex),
+            signal,
+        })
 
-        // Calculate current grade based on completed responses
-        const completedResponses = gradedResponses.filter((r): r is GradedResponse => !!r)
-        const currentGrade =
-            completedResponses.reduce((acc, curr) => acc + curr.score, 0) / responses.length
+        gradedResponses.push(...submissionBatch.responses)
 
         yield {
             responses: gradedResponses,
-            grade: currentGrade,
+            grade: gradeResponses(gradedResponses),
         }
     }
 
-    // Return final graded submission
-    const finalGrade =
-        gradedResponses.reduce((acc, curr) => acc + (curr?.score || 0), 0) / responses.length
     return {
-        responses: gradedResponses as GradedResponse[],
-        grade: finalGrade,
+        responses: gradedResponses,
+        grade: gradeResponses(gradedResponses),
     }
 }
-async function generateGradedResponses(
-    sources: string[],
-    quiz: Quiz,
-    responses: GradedResponse[],
-    controller?: AbortController
-): Promise<GradedSubmission> {
+
+export interface GenerateGradedSubmissionBatchOptions {
+    sources: string[]
+    quizTitle: string
+    questions: Question[]
+    studentResponses: string[]
+    signal?: AbortSignal
+}
+
+async function generateGradedSubmissionBatch({
+    sources,
+    quizTitle,
+    questions,
+    studentResponses,
+    signal,
+}: GenerateGradedSubmissionBatchOptions): Promise<GradedSubmission> {
     console.log('generateGradedResponses called =>', {
         sources,
-        quiz,
-        responses,
+        quizTitle,
+        questions,
+        studentResponses,
     })
-    const prompt = generateGradedSubmissionPrompt(sources, quiz, responses)
-    return generateChatCompletion({
+    const prompt = generateGradedSubmissionPrompt(sources, quizTitle, questions, studentResponses)
+    const completion = await generateChatCompletion({
         responseFormatName: 'gradedSubmissionResponse',
         schema: gradedSubmissionSchema,
         messages: [
@@ -122,6 +133,10 @@ async function generateGradedResponses(
                 content: prompt,
             },
         ],
-        controller,
+        signal,
     })
+
+    console.log('gradedSubmission generated ==>', completion)
+
+    return completion
 }

@@ -1,5 +1,5 @@
-import { Title, Text, Card, Stack, Container } from "@mantine/core";
-import { Submission } from "../types/quiz-view-types";
+import { Card, Container, Stack, Text, Title } from '@mantine/core'
+import { Submission } from '../types/quiz-view-types'
 
 // TODO: Add detailed analytics for quiz performance
 // TODO: Implement answer comparison visualization
@@ -10,12 +10,12 @@ import { Submission } from "../types/quiz-view-types";
 // TODO: Add error boundaries for failed submission loads
 // TODO: Implement retry mechanism for failed data fetches
 export const SubmissionPage: React.FC<{
-    submission: Submission;
+    submission: Submission
 }> = ({ submission }) => {
     // TODO: Add fallback UI for partial submission data
     // TODO: Implement progressive enhancement for analytics
     // TODO: Add error recovery for failed score displays
-    console.log("submission", submission);
+    console.log('submission', submission)
     return (
         <Container size="md" py="xl">
             <Stack gap="lg">
@@ -29,22 +29,22 @@ export const SubmissionPage: React.FC<{
                         <Stack gap="md">
                             <Text fw={600}>{response.question.question}</Text>
 
-                            <Text>Your Answer: {response.response}</Text>
+                            <Text>Your Answer: {response.studentAnswer}</Text>
 
-                            {response.question.questionType === "multiple_choice" && (
-                                <Text c="dimmed">
-                                    Correct Answer: {response.question.choices.find((c) => c.isCorrect)?.optionText}
-                                </Text>
-                            )}
+                            <Text c="dimmed">Correct Answer: {response.correctAnswer}</Text>
 
                             <Stack gap="xs">
-                                <Text fw={500}>Score: {response.score}%</Text>
-                                {response.feedback && <Text c="dimmed">Feedback: {response.feedback}</Text>}
+                                <Text fw={500}>
+                                    Result: {response.verdict === 'pass' ? 'Correct' : 'Incorrect'}
+                                </Text>
+                                {response.feedback && (
+                                    <Text c="dimmed">Feedback: {response.feedback}</Text>
+                                )}
                             </Stack>
                         </Stack>
                     </Card>
                 ))}
             </Stack>
         </Container>
-    );
-};
+    )
+}

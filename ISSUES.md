@@ -16,3 +16,21 @@ The main challenges involve:
 -   Better-sqlite3 requires specific handling for Electron environments
 
 We will monitor these dependencies and upgrade when full compatibility is confirmed.
+
+### NODE_MODULE_VERSION Errors
+
+If you see an error like this:
+
+```
+Error: The module '\\?\C:\Users\andgate\Projects\noggin\node_modules\.pnpm\better-sqlite3@11.5.0\node_modules\better-sqlite3\build\Release\better_sqlite3.node'
+was compiled against a different Node.js version using
+NODE_MODULE_VERSION 125. This version of Node.js requires
+NODE_MODULE_VERSION 127. Please try re-compiling or re-installing
+the module (for instance, using `npm rebuild` or `npm install`).
+```
+
+This is due to a mismatch between the Node.js version used to compile the native module and the version of Node.js that Electron is using.
+
+To fix this, delete the `node_modules` directory and the `pnpm-lock.json` file, then run `pnpm install` again. This will should leave you with a clean build environment and a fresh install of the dependencies.
+
+If that doesn't work, you can try to recompile the native module with the `pnpm rebuild` command.

@@ -1,0 +1,4 @@
+#!/bin/sh
+# See https://github.com/drizzle-team/drizzle-orm/issues/3221
+SCRIPT_DIR=$(dirname "$(realpath "$0")")
+ELECTRON_RUN_AS_NODE=true "$SCRIPT_DIR/../node_modules/electron/dist/Electron.app/Contents/MacOS/Electron" "$@"

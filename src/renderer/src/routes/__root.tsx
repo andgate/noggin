@@ -11,6 +11,7 @@ import {
     NavLink,
     Text,
 } from '@mantine/core'
+import { ActiveQuizProvider } from '@renderer/hooks/use-active-quiz'
 import { IconHome } from '@tabler/icons-react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRootRoute, Link, Outlet, ScrollRestoration } from '@tanstack/react-router'
@@ -71,10 +72,12 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 const RootProvider = ({ children }: Readonly<{ children: ReactNode }>) => {
     return (
         <>
-            <ColorSchemeScript nonce="8IBTHwOdqNKAWeKl7plt8g==" defaultColorScheme="dark" />
-            <MantineProvider defaultColorScheme="dark" theme={theme}>
-                <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-            </MantineProvider>
+            <ActiveQuizProvider>
+                <ColorSchemeScript nonce="8IBTHwOdqNKAWeKl7plt8g==" defaultColorScheme="dark" />
+                <MantineProvider defaultColorScheme="dark" theme={theme}>
+                    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+                </MantineProvider>
+            </ActiveQuizProvider>
         </>
     )
 }

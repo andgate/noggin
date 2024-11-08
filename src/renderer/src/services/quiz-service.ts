@@ -38,6 +38,7 @@ export const getQuiz = async (quizId: QuizId): Promise<Quiz> => {
             id: quiz.id,
             createdAt: quiz.createdAt,
             title: quiz.title,
+            timeLimit: quiz.timeLimit,
             sources: quiz.sources.map((source) => ({
                 id: source.id,
                 content: source.content,
@@ -95,6 +96,7 @@ export const getAllQuizzes = async (): Promise<Quiz[]> => {
             id: quiz.id,
             createdAt: quiz.createdAt,
             title: quiz.title,
+            timeLimit: quiz.timeLimit,
             sources: quiz.sources.map((source) => ({
                 id: source.id,
                 content: source.content,
@@ -133,6 +135,7 @@ export const getAllQuizzes = async (): Promise<Quiz[]> => {
 export interface CreateQuizOptions {
     generatedQuiz: GeneratedQuiz
     sources: string[]
+    timeLimit: number
 }
 
 /**
@@ -142,6 +145,7 @@ export interface CreateQuizOptions {
  */
 export const createQuiz = async ({
     generatedQuiz,
+    timeLimit,
     sources,
 }: CreateQuizOptions): Promise<QuizId> => {
     console.info('Storing generated quiz in database...', generatedQuiz)
@@ -150,7 +154,10 @@ export const createQuiz = async ({
         return await db.transaction(async (tx) => {
             const { title } = generatedQuiz
             // 1. Create the new quiz
-            const [newQuiz] = await tx.insert(schema.quizzes).values({ title }).returning()
+            const [newQuiz] = await tx
+                .insert(schema.quizzes)
+                .values({ title, timeLimit })
+                .returning()
 
             // 2. Upload sources
             for (const source of sources) {
@@ -217,4 +224,8 @@ export const deleteQuiz = async (quizId: number) => {
         console.error('Error deleting quiz:', error)
         throw new Error('Failed to delete quiz')
     }
+}
+
+export const setQuizTimeLimit = async (quizId: QuizId, timeLimit: number) => {
+    await db.update(schema.quizzes).set({ timeLimit }).where(eq(schema.quizzes.id, quizId))
 }

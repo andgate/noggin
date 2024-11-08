@@ -159,6 +159,7 @@ export const responses = sqliteTable('responses', {
     questionId: integer('question_id')
         .references(() => questions.id, { onDelete: 'cascade' })
         .notNull(),
+    studentAnswer: text('student_answer').notNull(),
     correctAnswer: text('correct_answer').notNull(),
     verdict: text('verdict').notNull(),
     feedback: text('feedback').notNull(),

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { gradeSchema, letterGradeSchema } from './grade-types'
 
 export type QuestionType = 'multiple-choice' | 'written'
 
@@ -51,7 +52,7 @@ export const responseSchema = z.object({
     question: questionSchema,
     studentAnswer: z.string(),
     correctAnswer: z.string(),
-    verdict: z.enum(['pass', 'fail']),
+    verdict: z.union([z.literal('pass'), z.literal('fail')]),
     feedback: z.string(),
 })
 
@@ -63,13 +64,13 @@ export const submissionIdSchema = z.number()
 // TODO: Implement stricter validation rules
 export const submissionSchema = z.object({
     id: submissionIdSchema,
-    createdAt: z.string(),
+    completedAt: z.string(),
     quizTitle: z.string(),
     timeElapsed: z.number(),
     timeLimit: z.number(),
     // Grade out of 100
-    grade: z.number(),
-    letterGrade: z.string(),
+    grade: gradeSchema,
+    letterGrade: letterGradeSchema,
     responses: responseSchema.array(),
 })
 

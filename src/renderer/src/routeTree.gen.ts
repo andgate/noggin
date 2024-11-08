@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
+import { Route as QuizEvalImport } from './routes/quiz/eval'
 import { Route as QuizCreateImport } from './routes/quiz/create'
 import { Route as QuizViewQuizIdImport } from './routes/quiz/view.$quizId'
 import { Route as QuizSubmissionSubmissionIdImport } from './routes/quiz/submission.$submissionId'
@@ -22,6 +23,12 @@ import { Route as QuizPracticeQuizIdImport } from './routes/quiz/practice.$quizI
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const QuizEvalRoute = QuizEvalImport.update({
+  id: '/quiz/eval',
+  path: '/quiz/eval',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -69,6 +76,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuizCreateImport
       parentRoute: typeof rootRoute
     }
+    '/quiz/eval': {
+      id: '/quiz/eval'
+      path: '/quiz/eval'
+      fullPath: '/quiz/eval'
+      preLoaderRoute: typeof QuizEvalImport
+      parentRoute: typeof rootRoute
+    }
     '/quiz/practice/$quizId': {
       id: '/quiz/practice/$quizId'
       path: '/quiz/practice/$quizId'
@@ -98,6 +112,7 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/quiz/create': typeof QuizCreateRoute
+  '/quiz/eval': typeof QuizEvalRoute
   '/quiz/practice/$quizId': typeof QuizPracticeQuizIdRoute
   '/quiz/submission/$submissionId': typeof QuizSubmissionSubmissionIdRoute
   '/quiz/view/$quizId': typeof QuizViewQuizIdRoute
@@ -106,6 +121,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/quiz/create': typeof QuizCreateRoute
+  '/quiz/eval': typeof QuizEvalRoute
   '/quiz/practice/$quizId': typeof QuizPracticeQuizIdRoute
   '/quiz/submission/$submissionId': typeof QuizSubmissionSubmissionIdRoute
   '/quiz/view/$quizId': typeof QuizViewQuizIdRoute
@@ -115,6 +131,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/quiz/create': typeof QuizCreateRoute
+  '/quiz/eval': typeof QuizEvalRoute
   '/quiz/practice/$quizId': typeof QuizPracticeQuizIdRoute
   '/quiz/submission/$submissionId': typeof QuizSubmissionSubmissionIdRoute
   '/quiz/view/$quizId': typeof QuizViewQuizIdRoute
@@ -125,6 +142,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/quiz/create'
+    | '/quiz/eval'
     | '/quiz/practice/$quizId'
     | '/quiz/submission/$submissionId'
     | '/quiz/view/$quizId'
@@ -132,6 +150,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/quiz/create'
+    | '/quiz/eval'
     | '/quiz/practice/$quizId'
     | '/quiz/submission/$submissionId'
     | '/quiz/view/$quizId'
@@ -139,6 +158,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/quiz/create'
+    | '/quiz/eval'
     | '/quiz/practice/$quizId'
     | '/quiz/submission/$submissionId'
     | '/quiz/view/$quizId'
@@ -148,6 +168,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   QuizCreateRoute: typeof QuizCreateRoute
+  QuizEvalRoute: typeof QuizEvalRoute
   QuizPracticeQuizIdRoute: typeof QuizPracticeQuizIdRoute
   QuizSubmissionSubmissionIdRoute: typeof QuizSubmissionSubmissionIdRoute
   QuizViewQuizIdRoute: typeof QuizViewQuizIdRoute
@@ -156,6 +177,7 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   QuizCreateRoute: QuizCreateRoute,
+  QuizEvalRoute: QuizEvalRoute,
   QuizPracticeQuizIdRoute: QuizPracticeQuizIdRoute,
   QuizSubmissionSubmissionIdRoute: QuizSubmissionSubmissionIdRoute,
   QuizViewQuizIdRoute: QuizViewQuizIdRoute,
@@ -173,6 +195,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/quiz/create",
+        "/quiz/eval",
         "/quiz/practice/$quizId",
         "/quiz/submission/$submissionId",
         "/quiz/view/$quizId"
@@ -183,6 +206,9 @@ export const routeTree = rootRoute
     },
     "/quiz/create": {
       "filePath": "quiz/create.tsx"
+    },
+    "/quiz/eval": {
+      "filePath": "quiz/eval.tsx"
     },
     "/quiz/practice/$quizId": {
       "filePath": "quiz/practice.$quizId.tsx"

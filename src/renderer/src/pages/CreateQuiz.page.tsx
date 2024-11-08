@@ -24,6 +24,10 @@ export const QuizFormSchema = z.object({
     questionTypes: z
         .array(z.enum(['multiple-choice', 'written']))
         .min(1, 'Select at least one question type'),
+    timeLimit: z
+        .number()
+        .min(0, 'Time limit cannot be negative')
+        .max(180, 'Maximum time limit is 180 minutes'),
 })
 
 // TODO: Add progressive enhancement for non-JS environments
@@ -40,6 +44,7 @@ export const CreateQuizPage: React.FC = () => {
             content: '',
             questionCount: 4,
             questionTypes: ['multiple-choice', 'written'],
+            timeLimit: 10,
         },
         validate: zodResolver(QuizFormSchema),
     })
@@ -90,6 +95,14 @@ export const CreateQuizPage: React.FC = () => {
                                             ]}
                                             {...form.getInputProps('questionTypes')}
                                         />
+
+                                        <NumberInput
+                                            label="Time Limit (minutes)"
+                                            description="0 for no limit"
+                                            min={0}
+                                            max={180}
+                                            {...form.getInputProps('timeLimit')}
+                                        />
                                     </Group>
 
                                     <Button type="submit">Generate Quiz</Button>
@@ -104,6 +117,7 @@ export const CreateQuizPage: React.FC = () => {
                                 questionCount={form.values.questionCount}
                                 questionTypes={form.values.questionTypes as QuestionType[]}
                                 sources={[form.values.content]}
+                                timeLimit={form.values.timeLimit}
                             />
                         </Box>
                     </Group>

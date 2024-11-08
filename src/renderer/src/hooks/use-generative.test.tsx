@@ -12,7 +12,7 @@ async function* mockGenerator({}) {
 }
 
 const InnerChildTestComponent = () => {
-    const { quizState: state, invoke } = useGenerative<{}, { message: string }>()
+    const { state, invoke } = useGenerative<{}, { message: string }>()
     return (
         <>
             <button onClick={() => invoke({})}>Generate</button>
@@ -70,7 +70,7 @@ async function* fibGenerator(
 }
 
 const InnerFibTestComponent = () => {
-    const { quizState: state, invoke } = useGenerative<FibInput, FibState>()
+    const { state, invoke } = useGenerative<FibInput, FibState>()
     return (
         <>
             <button onClick={() => invoke({ limit: 5 })}>Generate</button>

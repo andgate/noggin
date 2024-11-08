@@ -1,19 +1,26 @@
 import { responses, submissions } from '@noggin/drizzle/schema'
+import { asLetterGrade, gradeResponses } from '@renderer/common/grading-helpers'
 import db from '@renderer/db'
+import { gradeSchema, letterGradeSchema } from '@renderer/types/grade-types'
 import { Quiz, Submission, SubmissionId } from '@renderer/types/quiz-view-types'
 import { eq } from 'drizzle-orm'
-import { GradedSubmission } from '../types/quiz-generation-types'
+import { z } from 'zod'
+import { GradedResponse } from '../types/quiz-generation-types'
 
 export interface SubmitQuizOptions {
     quiz: Quiz
-    gradedSubmission: GradedSubmission
+    gradedResponses: GradedResponse[]
+    timeElapsed: number
 }
 
 export const submitQuiz = async ({
     quiz,
-    gradedSubmission,
+    gradedResponses,
+    timeElapsed,
 }: SubmitQuizOptions): Promise<SubmissionId> => {
-    console.log('evaluating quiz', { quiz, gradedSubmission })
+    console.log('evaluating quiz', { quiz, gradedResponses })
+    const grade = gradeResponses(gradedResponses)
+    const letterGrade = asLetterGrade(grade)
     // Wrap operations in a transaction
     const submission = await db.transaction(async (tx) => {
         // 1. Store the submission in the database
@@ -21,18 +28,22 @@ export const submitQuiz = async ({
             .insert(submissions)
             .values({
                 quizId: quiz.id,
-                grade: gradedSubmission.grade,
+                timeLimit: quiz.timeLimit,
+                timeElapsed: timeElapsed,
+                grade: grade,
+                letterGrade: letterGrade,
             })
             .returning()
 
         // 2. Store the responses in the database
         await tx.insert(responses).values(
-            gradedSubmission.responses.map((response, index) => ({
+            gradedResponses.map((response, index) => ({
                 quizId: quiz.id,
                 submissionId: newSubmission.id,
                 questionId: quiz.questions[index].id,
-                response: response.response,
-                score: response.score,
+                studentAnswer: response.studentAnswer,
+                correctAnswer: response.correctAnswer,
+                verdict: response.verdict,
                 feedback: response.feedback,
             }))
         )
@@ -66,9 +77,12 @@ export const getSubmission = async (submissionId: SubmissionId): Promise<Submiss
 
     return {
         id: submission.id,
-        createdAt: submission.createdAt,
+        completedAt: submission.completedAt,
         quizTitle: submission.quiz.title,
-        grade: submission.grade,
+        timeElapsed: submission.timeElapsed,
+        timeLimit: submission.timeLimit,
+        grade: gradeSchema.parse(submission.grade),
+        letterGrade: letterGradeSchema.parse(submission.letterGrade),
         responses: submission.responses.map((response) => ({
             id: response.id,
             createdAt: response.createdAt,
@@ -91,8 +105,9 @@ export const getSubmission = async (submissionId: SubmissionId): Promise<Submiss
                           id: response.question.id,
                           question: response.question.question,
                       },
-            response: response.response,
-            score: response.score,
+            studentAnswer: response.studentAnswer,
+            correctAnswer: response.correctAnswer,
+            verdict: z.union([z.literal('pass'), z.literal('fail')]).parse(response.verdict),
             feedback: response.feedback,
         })),
     }

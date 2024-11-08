@@ -30,11 +30,11 @@ export const gradedResponseSchema = z.object({
     question: z.string(),
     studentAnswer: z.string(),
     correctAnswer: z.string(),
-    verdict: z.enum(['pass', 'fail']),
+    verdict: z.union([z.literal('pass'), z.literal('fail')]),
     feedback: z.string(),
 })
 
-export const gradedResponseListSchema = z.object({
+export const gradedSubmissionSchema = z.object({
     responses: gradedResponseSchema.array(),
 })
 
@@ -45,7 +45,7 @@ export type GeneratedQuestion = z.infer<typeof generatedQuestionSchema>
 export type GeneratedQuiz = z.infer<typeof generatedQuizSchema>
 
 export type GradedResponse = z.infer<typeof gradedResponseSchema>
-export type GradedResponseList = z.infer<typeof gradedResponseListSchema>
+export type GradedSubmission = z.infer<typeof gradedSubmissionSchema>
 
 export type PartialGeneratedQuiz = {
     title: string | undefined
@@ -54,5 +54,4 @@ export type PartialGeneratedQuiz = {
 
 export type PartialGradedSubmission = {
     responses: (GradedResponse | undefined)[]
-    grade: number | undefined
 }
