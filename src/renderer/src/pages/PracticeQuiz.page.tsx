@@ -1,16 +1,16 @@
-import { useNavigate } from "@tanstack/react-router";
-import { Radio, Textarea, Card, Stack, Title, Button, Box } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { Quiz, Question } from "../types/quiz-view-types";
-import { submitQuiz } from "../services/submission-service";
-import { gradeQuiz } from "../services/grading-service";
-import { useState } from "react";
+import { Box, Button, Card, Radio, Stack, Textarea, Title } from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { useNavigate } from '@tanstack/react-router'
+import { useState } from 'react'
+import { gradeQuiz } from '../services/grading-service'
+import { submitQuiz } from '../services/submission-service'
+import { Question, Quiz } from '../types/quiz-view-types'
 
 // Component for multiple choice questions
 const MultiChoiceQuestionItem: React.FC<{
-    question: Extract<Question, { questionType: "multiple_choice" }>;
-    questionLabel: string;
-    form: ReturnType<typeof useForm>;
+    question: Extract<Question, { questionType: 'multiple_choice' }>
+    questionLabel: string
+    form: ReturnType<typeof useForm>
 }> = ({ question, questionLabel, form }) => (
     <Box mb="md">
         <Title order={4} mb="xs">
@@ -24,13 +24,13 @@ const MultiChoiceQuestionItem: React.FC<{
             </Stack>
         </Radio.Group>
     </Box>
-);
+)
 
 // Component for written questions
 const WrittenQuestionItem: React.FC<{
-    question: Extract<Question, { questionType: "written" }>;
-    questionLabel: string;
-    form: ReturnType<typeof useForm>;
+    question: Extract<Question, { questionType: 'written' }>
+    questionLabel: string
+    form: ReturnType<typeof useForm>
 }> = ({ question, questionLabel, form }) => (
     <Box mb="md">
         <Title order={4} mb="xs">
@@ -38,22 +38,28 @@ const WrittenQuestionItem: React.FC<{
         </Title>
         <Textarea {...form.getInputProps(`question_${question.id}`)} minRows={4} />
     </Box>
-);
+)
 
 // Main QuestionItem component that delegates to specific question type components
 const QuestionItem: React.FC<{
-    question: Question;
-    index: number;
-    form: ReturnType<typeof useForm>;
+    question: Question
+    index: number
+    form: ReturnType<typeof useForm>
 }> = ({ question, index, form }) => {
-    const questionLabel = `${index + 1}. ${question.question}`;
+    const questionLabel = `${index + 1}. ${question.question}`
 
-    if (question.questionType === "multiple_choice") {
-        return <MultiChoiceQuestionItem question={question} questionLabel={questionLabel} form={form} />;
+    if (question.questionType === 'multiple_choice') {
+        return (
+            <MultiChoiceQuestionItem
+                question={question}
+                questionLabel={questionLabel}
+                form={form}
+            />
+        )
     }
 
-    return <WrittenQuestionItem question={question} questionLabel={questionLabel} form={form} />;
-};
+    return <WrittenQuestionItem question={question} questionLabel={questionLabel} form={form} />
+}
 
 // TODO: Add keyboard navigation support
 // TODO: Add progress saving functionality
@@ -64,17 +70,17 @@ const QuestionItem: React.FC<{
 // TODO: Add offline support with local storage
 // TODO: Implement progressive loading for large quizzes
 export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
-    const navigate = useNavigate({ from: "/quiz/practice/$quizId" });
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const navigate = useNavigate({ from: '/quiz/practice/$quizId' })
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const form = useForm({
         initialValues: quiz.questions.reduce(
             (acc, question) => ({
                 ...acc,
-                [`question_${question.id}`]: "",
+                [`question_${question.id}`]: '',
             }),
-            {},
+            {}
         ),
-    });
+    })
 
     const handleSubmit = async (values: Record<string, string>) => {
         // TODO: Add detailed error states for grading failures
@@ -82,30 +88,30 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
         // TODO: Add partial submission saving
         // TODO: Add user-friendly error recovery options
         if (isSubmitting) {
-            return;
+            return
         }
 
         try {
-            setIsSubmitting(true);
-            console.log("Submitting quiz ==>", values);
-            const responses = Object.values(values);
-            const gradedSubmission = await gradeQuiz({ quiz, responses });
-            console.log("graded submission ==>", gradedSubmission);
-            const submissionId = await submitQuiz({ quiz, gradedSubmission });
-            console.log("stored submission ==>", submissionId);
+            setIsSubmitting(true)
+            console.log('Submitting quiz ==>', values)
+            const responses = Object.values(values)
+            const gradedSubmission = await gradeQuiz({ quiz, responses })
+            console.log('graded submission ==>', gradedSubmission)
+            const submissionId = await submitQuiz({ quiz, gradedSubmission })
+            console.log('stored submission ==>', submissionId)
             navigate({
-                to: "/quiz/submission/$submissionId",
+                to: '/quiz/submission/$submissionId',
                 params: { submissionId: `${submissionId}` },
-            });
+            })
         } catch (error) {
             // TODO: Add detailed error states for grading failures
             // TODO: Implement retry logic for failed submissions
             // TODO: Add partial submission saving
-            console.error(error);
+            console.error(error)
         } finally {
-            setIsSubmitting(false);
+            setIsSubmitting(false)
         }
-    };
+    }
 
     return (
         <Box maw={800} mx="auto" p="xl">
@@ -126,5 +132,5 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
                 </Stack>
             </form>
         </Box>
-    );
-};
+    )
+}

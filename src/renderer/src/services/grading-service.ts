@@ -1,93 +1,127 @@
-import OpenAI from 'openai'
+import { AbortableGenerativeFunction } from '@renderer/hooks/use-generative'
 import { zodResponseFormat } from 'openai/helpers/zod.mjs'
 import { z } from 'zod'
 import {
     GradedResponse,
     gradedResponseSchema,
     GradedSubmission,
+    gradedSubmissionSchema,
+    PartialGradedSubmission,
 } from '../types/quiz-generation-types'
 import { Question, Quiz } from '../types/quiz-view-types'
+import { generateChatCompletion } from './openai-service'
 
-const gradeQuizQuestionPrompt = (
+const generateGradedSubmissionPrompt = (
     sources: string[],
-    question: Question,
-    response: string
+    quiz: Quiz,
+    responses: GradedResponse[]
 ): string => `\
+    ---
+    Sources
+    ---
+    Please focus on the following source material(s):
     \n\n${sources.join('\n\n---\n\n')}
 
     ---
+    Student Quiz Submission
+    ---
+    Quiz Title: ${quiz.title}
+    Questions and Responses:
+    ${quiz.questions
+        .map(
+            (q, i) => `
+    Question ${i + 1}: ${q.question}
+    Response: ${responses[i]}
+    ${
+        q.questionType === 'multiple_choice'
+            ? `Options:\n${q.choices.map((c) => `- ${c.optionText}${c.isCorrect ? ' (correct)' : ''}`).join('\n')}`
+            : ''
+    }
+    `
+        )
+        .join('\n---\n')}
 
-    Please grade the following question and response based on the content above.
+    ---
+    Grading Instructions
+    ---
 
-    Question: ${question.question}
-    Response: ${response}
+    Please grade the following quiz responses. For each response:
+    - Provide a score between 0 and 100
+    - Provide specific feedback explaining the score
+    - Consider the source material (see above) carefully when evaluating answers
 `
 
-export interface GradeQuizOptions {
+export interface GenerateGradesOptions {
     quiz: Quiz
-    responses: string[]
+    responses: GradedResponse[]
+    controller?: AbortController
 }
 
-export const gradeQuiz = async ({
-    quiz,
-    responses,
-}: GradeQuizOptions): Promise<GradedSubmission> => {
-    console.log('grading quiz', { quiz, responses })
-    // TODO: Extract OpenAI interaction into a dedicated service
-    // TODO: Add retry logic for API calls
-    // TODO: Add detailed error logging
-    const client = new OpenAI({
-        apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-        dangerouslyAllowBrowser: true,
-    })
+export const generateGradedSubmission: AbortableGenerativeFunction<
+    GenerateGradesOptions,
+    PartialGradedSubmission
+> = async function* ({ quiz, responses, controller }, signal) {
+    // Initialize responses array with undefined values
+    let gradedResponses: (GradedResponse | undefined)[] = Array(responses.length).fill(undefined)
 
-    const gradedResponses = await Promise.all(
-        responses.map((response, i) =>
-            gradeResponse(
-                client,
-                quiz.sources.map((source) => source.content),
-                quiz.questions[i],
-                response
-            )
+    // Grade each response one at a time
+    for (let i = 0; i < responses.length; i++) {
+        if (signal.aborted) break
+
+        const response = await generateGradedResponses(
+            quiz.sources.map((source) => source.content),
+            quiz,
+            gradedResponses.filter((r): r is GradedResponse => !!r),
+            controller
         )
-    )
 
-    // We could also
-    const grade = gradedResponses.reduce((acc, curr) => acc + curr.score, 0)
+        gradedResponses[i] = response
 
-    return { responses: gradedResponses, grade }
+        // Calculate current grade based on completed responses
+        const completedResponses = gradedResponses.filter((r): r is GradedResponse => !!r)
+        const currentGrade =
+            completedResponses.reduce((acc, curr) => acc + curr.score, 0) / responses.length
+
+        yield {
+            responses: gradedResponses,
+            grade: currentGrade,
+        }
+    }
+
+    // Return final graded submission
+    const finalGrade =
+        gradedResponses.reduce((acc, curr) => acc + (curr?.score || 0), 0) / responses.length
+    return {
+        responses: gradedResponses as GradedResponse[],
+        grade: finalGrade,
+    }
 }
-
-export const gradeResponse = async (
-    client: OpenAI,
+async function generateGradedResponses(
     sources: string[],
-    question: Question,
-    response: string
-): Promise<GradedResponse> => {
-    const prompt = gradeQuizQuestionPrompt(sources, question, response)
-    const completion = await client.beta.chat.completions.parse({
-        model: 'gpt-4o',
+    quiz: Quiz,
+    responses: GradedResponse[],
+    controller?: AbortController
+): Promise<GradedSubmission> {
+    console.log('generateGradedResponses called =>', {
+        sources,
+        quiz,
+        responses,
+    })
+    const prompt = generateGradedSubmissionPrompt(sources, quiz, responses)
+    return generateChatCompletion({
+        responseFormatName: 'gradedSubmissionResponse',
+        schema: gradedSubmissionSchema,
         messages: [
             {
                 role: 'system',
-                content: 'You are a helpful professor. Only use the schema for graded responses.',
+                content:
+                    'You are a helpful professor. Only use the schema for graded submission responses.',
             },
             {
                 role: 'user',
                 content: prompt,
             },
         ],
-        response_format: zodResponseFormat(
-            z.object({ newQuestion: gradedResponseSchema }),
-            'gradedResponse'
-        ),
+        controller,
     })
-
-    const message = completion.choices[0]?.message
-    if (message?.parsed) {
-        return message.parsed.newQuestion
-    } else {
-        console.error(message.refusal)
-        throw new Error('Failed to generate quiz')
-    }
 }

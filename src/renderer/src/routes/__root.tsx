@@ -59,14 +59,22 @@ function RootComponent() {
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
     return (
         <>
-            <ColorSchemeScript nonce="8IBTHwOdqNKAWeKl7plt8g==" defaultColorScheme="dark" />
-            <MantineProvider defaultColorScheme="dark" theme={theme}>
-                <QueryClientProvider client={queryClient}>
-                    <AppLayout>{children}</AppLayout>
-                </QueryClientProvider>
-            </MantineProvider>
+            <RootProvider>
+                <AppLayout>{children}</AppLayout>
+            </RootProvider>
             <ScrollRestoration />
             <TanStackRouterDevtools position="bottom-left" />
+        </>
+    )
+}
+
+const RootProvider = ({ children }: Readonly<{ children: ReactNode }>) => {
+    return (
+        <>
+            <ColorSchemeScript nonce="8IBTHwOdqNKAWeKl7plt8g==" defaultColorScheme="dark" />
+            <MantineProvider defaultColorScheme="dark" theme={theme}>
+                <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+            </MantineProvider>
         </>
     )
 }

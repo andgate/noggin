@@ -1,116 +1,112 @@
-// TODO: Consider implementing response streaming for better UX
-import { GeneratedQuestion, generatedQuestionSchema } from "../types/quiz-generation-types";
-import { z } from "zod";
-import { generateChatCompletion } from "./openai-service";
+import { AbortableGenerativeFunction } from '@renderer/hooks/use-generative'
+import {
+    GeneratedQuestion,
+    GeneratedQuiz,
+    generatedQuizSchema,
+    PartialGeneratedQuiz,
+} from '../types/quiz-generation-types'
+import { generateChatCompletion } from './openai-service'
 
-const generateQuizQuestionsPrompt = (
+const generateQuizPrompt = (
     sources: string[],
     questions: GeneratedQuestion[],
-    questionTypes: string[],
+    questionCount: number,
+    questionTypes: string[]
 ): string => `\
-    Consider the following content:
-    \n\n${sources.join("\n\n---\n\n")}
+    ---
+    Sources
+    ---
+    Please focus on the following source material(s):
+    \n\n${sources.join('\n\n---\n\n')}
 
     ---
 
-    We are writing a quiz to test the user's knowledge of the previous content.
-    The quiz questions must be of the following types: ${questionTypes.join(", ")}.
-    
+    We are writing a quiz to test a student's knowledge of the previous content.
+    The quiz questions must be of the following types: ${questionTypes.join(', ')}.
+
     We have already generated the following questions:
-    ${questions.map((question) => question.question).join("\n\n")}
+    ${questions ? questions.map((question) => question.question).join('\n\n') : 'No questions generated yet.'}
 
     ---
 
-    Write another question that is different from the ones above.`;
-
-const generateQuizTitlePrompt = (sources: string[], questions: GeneratedQuestion[]): string => `\
-        Consider the following content:
-        \n\n${sources.join("\n\n---\n\n")}
-    
-        ---
-        
-        Now consider the following quiz:
-        \n\n${questions.map((question) => question.question).join("\n\n")}
-    
-        Write a title for the quiz.`;
+    Write a quiz with a title and ${questionCount > questions.length ? questionCount - questions.length : 0} questions that are different from the ones listed above.`
 
 export interface GenerateQuizOptions {
-    questionCount: number;
-    questionTypes: string[];
-    sources: string[];
-    controller?: AbortController;
+    sources: string[]
+    existingQuestions: GeneratedQuestion[]
+    questionTypes: string[]
+    questionCount: number
+    signal?: AbortSignal
 }
 
-export interface GenerateQuestionOptions {
-    sources: string[];
-    questions: GeneratedQuestion[];
-    questionTypes: string[];
-    controller?: AbortController;
+export const generateQuiz: AbortableGenerativeFunction<GenerateQuizOptions, PartialGeneratedQuiz> =
+    async function* (options) {
+        // Initialize questions array with undefined values.
+        // This is to ensure that we can yield partial results.
+        let questions: (GeneratedQuestion | undefined)[] = Array(options.questionCount).fill(
+            undefined
+        )
+        let title: string = ''
+
+        while (questions.some((q) => q === undefined)) {
+            // Generate batch of questions
+            const { title: quizTitle, questions: batchQuestions } = yield generateQuizBatch(options)
+
+            // Add batch questions to questions array, replacing undefined values
+            const unfilledIndex = questions.findIndex((q) => q === undefined)
+            batchQuestions?.forEach((q, index) => {
+                if (unfilledIndex + index < options.questionCount) {
+                    questions[unfilledIndex + index] = q
+                }
+            })
+
+            title = quizTitle || title // take the latest title
+            yield { title, questions }
+        }
+
+        // Finally, return the full quiz
+        return { title, questions }
+    }
+
+export interface GenerateQuizBatchOptions {
+    sources: string[]
+    existingQuestions: GeneratedQuestion[]
+    questionTypes: string[]
+    questionCount: number
+    signal?: AbortSignal
 }
 
-export const generateQuestion = async ({
+export const generateQuizBatch = async ({
     sources,
-    questions,
+    existingQuestions,
     questionTypes,
-    controller,
-}: GenerateQuestionOptions): Promise<GeneratedQuestion> => {
-    console.log("generateQuestion called =>", {
+    questionCount,
+    signal,
+}: GenerateQuizBatchOptions): Promise<GeneratedQuiz> => {
+    console.log('generateQuizBatch called =>', {
         sources,
-        questions,
+        existingQuestions,
         questionTypes,
-    });
-    const prompt = generateQuizQuestionsPrompt(sources, questions, questionTypes);
-    const question = await generateChatCompletion({
-        responseFormatName: "questionResponse",
-        schema: z.object({ newQuestion: generatedQuestionSchema }),
-        messages: [
-            {
-                role: "system",
-                content: "You are a helpful professor. Only use the schema for question responses.",
-            },
-            {
-                role: "user",
-                content: prompt,
-            },
-        ],
-        controller,
-    });
-
-    console.log("question generated ==>", question.newQuestion);
-
-    return question.newQuestion;
-};
-
-export interface GenerateQuizTitleOptions {
-    sources: string[];
-    questions: GeneratedQuestion[];
-    controller?: AbortController;
-}
-
-export const generateQuizTitle = async ({
-    sources,
-    questions,
-    controller,
-}: GenerateQuizTitleOptions): Promise<string> => {
-    console.log("generateQuizTitle called =>", { sources, questions });
-    const prompt = generateQuizTitlePrompt(sources, questions);
+        questionCount,
+    })
+    const prompt = generateQuizPrompt(sources, existingQuestions, questionCount, questionTypes)
     const completion = await generateChatCompletion({
-        responseFormatName: "quizTitleResponse",
-        schema: z.object({ quizTitle: z.string() }),
+        responseFormatName: 'quizResponse',
+        schema: generatedQuizSchema,
         messages: [
             {
-                role: "system",
-                content: "You are a helpful professor. Only use the schema for quiz title responses.",
+                role: 'system',
+                content: 'You are a helpful professor. Only use the schema for quiz responses.',
             },
             {
-                role: "user",
+                role: 'user',
                 content: prompt,
             },
         ],
-        controller,
-    });
+        signal,
+    })
 
-    console.log("quiz title generated ==>", completion.quizTitle);
+    console.log('quiz generated ==>', completion)
 
-    return completion.quizTitle;
-};
+    return completion
+}

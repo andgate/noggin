@@ -17,7 +17,9 @@ export const db = drizzle(
                 message: e.message,
                 responseData: e.response?.data,
                 stack: e.stack,
-                args: args, // Include the original query arguments
+                sql,
+                params,
+                method,
             })
             return { rows: [] }
         }

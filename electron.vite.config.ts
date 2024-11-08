@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
@@ -58,6 +59,13 @@ export default defineConfig({
         },
         server: {
             port: 33482,
+        },
+        test: {
+            exclude: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/*.e2e.*'],
+            reporters: ['default', 'html'],
+            environment: 'happy-dom',
+            globals: true,
+            setupFiles: [resolve(__dirname, './test/setup.ts')],
         },
     },
 })

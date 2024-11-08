@@ -1,9 +1,9 @@
 // TODO: Add a regenerate button
 import { Alert, Badge, Button, Group, Paper, Skeleton, Stack, Text, Title } from '@mantine/core'
+import { useQuizGenerator } from '@renderer/hooks/use-quiz-generator'
 import { useNavigate } from '@tanstack/react-router'
 import { produce } from 'immer'
 import { forwardRef, useCallback, useImperativeHandle, useMemo, useState } from 'react'
-import { generateQuestion, generateQuizTitle } from '../services/quiz-generation-service'
 import { createQuiz } from '../services/quiz-service'
 import { GeneratedQuestion, GeneratedQuiz } from '../types/quiz-generation-types'
 import { QuestionType } from '../types/quiz-view-types'
@@ -80,11 +80,6 @@ interface QuizGeneratorProps {
     questionCount: number
 }
 
-interface QuizGeneratorState {
-    title?: string
-    questions: (GeneratedQuestion | undefined)[]
-}
-
 // Add this interface for the imperative handle
 export interface QuizGeneratorHandle {
     run: () => void
@@ -103,16 +98,16 @@ export interface QuizGeneratorHandle {
 export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>(
     ({ show, sources, questionTypes, questionCount }, ref) => {
         const navigate = useNavigate({ from: '/quiz/create' })
-        const [quizState, setQuizState] = useState<QuizGeneratorState>({
-            questions: Array(questionCount).fill(undefined),
-        })
         const [isSaving, setIsSaving] = useState(false)
         const [saveError, setSaveError] = useState<Error | undefined>(undefined)
-        const [titleError, setTitleError] = useState<Error | undefined>(undefined)
-        const [questionsErrors, setQuestionsErrors] = useState<(Error | undefined)[]>(
-            Array(questionCount).fill(undefined)
-        )
-        const [isGenerating, setIsGenerating] = useState(false)
+
+        const {
+            invoke,
+            quizState,
+            setQuizState,
+            isRunning: isGenerating,
+            abort: handleCancel,
+        } = useQuizGenerator()
 
         const { title, questions } = useMemo(() => quizState, [quizState])
         const isGenerationComplete = useMemo(
@@ -120,21 +115,10 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
             [title, questions]
         )
 
-        // Create AbortController
-        const controller = useMemo(() => new AbortController(), [])
-
         const setQuestions = useCallback((questions: (GeneratedQuestion | undefined)[]) => {
             setQuizState(
                 produce((draft) => {
                     draft.questions = questions
-                })
-            )
-        }, [])
-
-        const setQuestion = useCallback((index: number, question: GeneratedQuestion) => {
-            setQuizState(
-                produce((draft) => {
-                    draft.questions[index] = question
                 })
             )
         }, [])
@@ -150,74 +134,20 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
         const resetQuizGeneration = useCallback(() => {
             setTitle(undefined)
             setQuestions(Array(questionCount).fill(undefined))
-            setTitleError(undefined)
-            setQuestionsErrors(Array(questionCount).fill(null))
         }, [questionCount, setTitle, setQuestions])
 
         // Add the generation function
         const runGeneration = useCallback<() => Promise<void>>(async () => {
             console.log('[QuizGenerator] Starting quiz generation')
-            setIsGenerating(true)
             resetQuizGeneration()
 
-            try {
-                const questions: GeneratedQuestion[] = []
-
-                for (let index = 0; index < questionCount; index++) {
-                    try {
-                        const question = await generateQuestion({
-                            sources,
-                            questions,
-                            questionTypes,
-                            controller,
-                        })
-                        setQuestion(index, question)
-                        questions.push(question)
-                    } catch (error) {
-                        if (error instanceof DOMException && error.name === 'AbortError') {
-                            console.log('[QuizGenerator] Generation aborted')
-                            return
-                        }
-                        setQuestionsErrors((prev) =>
-                            produce(prev, (errs) => {
-                                errs[index] = error as Error
-                            })
-                        )
-                    }
-                }
-
-                try {
-                    const title = await generateQuizTitle({
-                        sources,
-                        questions,
-                        controller,
-                    })
-                    setTitle(title)
-                } catch (error) {
-                    if (error instanceof DOMException && error.name === 'AbortError') {
-                        console.log('[QuizGenerator] Title generation aborted')
-                        return
-                    }
-                    setTitleError(error as Error)
-                    return
-                }
-            } finally {
-                setIsGenerating(false)
-            }
-        }, [
-            controller,
-            questionCount,
-            questionTypes,
-            resetQuizGeneration,
-            setQuestion,
-            setTitle,
-            sources,
-        ])
-
-        const handleCancel = useCallback(() => {
-            console.log('[QuizGenerator] Cancelling generation')
-            controller.abort()
-        }, [controller])
+            invoke({
+                sources,
+                questionTypes,
+                questionCount,
+                existingQuestions: [],
+            })
+        }, [resetQuizGeneration, invoke, sources, questionTypes, questionCount])
 
         // Expose the run function via useImperativeHandle
         useImperativeHandle(
@@ -228,7 +158,7 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
             [runGeneration]
         )
 
-        const handleSave = async () => {
+        const handleSave = useCallback(async () => {
             if (!title || questions.some((q) => !q)) {
                 console.log('[Save] Cannot save - incomplete quiz:', {
                     title,
@@ -261,12 +191,12 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
             }
 
             return null
-        }
+        }, [title, questions, sources, setIsSaving, setSaveError])
 
-        const handleStartPractice = async () => {
+        const handleStartPractice = useCallback(async () => {
             const quizId = await handleSave()
             if (quizId) navigate({ to: '/quiz/practice/$quizId', params: { quizId: `${quizId}` } })
-        }
+        }, [handleSave, navigate])
 
         if (!show) return <></>
 
@@ -288,14 +218,14 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
                     )}
                 </Group>
 
-                <QuizTitleGenerator title={title} isLoading={!title} error={titleError} />
+                <QuizTitleGenerator title={title} isLoading={!title} />
                 <div>
                     {questions.map((_, index) => (
                         <QuestionGenerator
+                            key={index}
                             index={index}
                             question={questions[index]}
                             isLoading={!questions[index]}
-                            error={questionsErrors[index]}
                         />
                     ))}
                 </div>

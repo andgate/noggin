@@ -51,14 +51,14 @@ export type GenerateChatCompletionOptions<T> = {
     responseFormatName: string
     schema: z.ZodType<T>
     messages: ChatCompletionMessageParam[]
-    controller?: AbortController
+    signal?: AbortSignal
 }
 
 async function runGenerateChatCompletion<T>({
     messages,
     schema,
     responseFormatName,
-    controller,
+    signal,
 }: GenerateChatCompletionOptions<T>): Promise<T> {
     const result: NonNullable<T> | void = await queue.add(
         ({ signal }) => {
@@ -80,8 +80,7 @@ async function runGenerateChatCompletion<T>({
                     })
             )
         },
-
-        { signal: controller?.signal }
+        { signal }
     )
 
     if (!result) throw new Error('Failed to generate completion')
@@ -104,7 +103,7 @@ const RETRY_OPTIONS = {
 export const generateChatCompletion = <T>(options: GenerateChatCompletionOptions<T>): Promise<T> =>
     pRetry(() => runGenerateChatCompletion(options), {
         ...RETRY_OPTIONS,
-        signal: options.controller?.signal,
+        signal: options?.signal,
     })
 
 // Stats retrieval functions
