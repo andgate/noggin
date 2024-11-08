@@ -1,9 +1,8 @@
 import { Box, Button, Card, Radio, Stack, Textarea, Title } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useActiveQuiz } from '@renderer/hooks/use-active-quiz'
-import { useGradesGenerator } from '@renderer/hooks/use-grades-generator'
 import { useNavigate } from '@tanstack/react-router'
-import { useCallback, useState } from 'react'
+import { FormEvent, useCallback, useState } from 'react'
 import { Question, Quiz } from '../types/quiz-view-types'
 
 // Component for multiple choice questions
@@ -73,7 +72,7 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     const navigate = useNavigate({ from: '/quiz/practice/$quizId' })
     const { setActiveQuizState } = useActiveQuiz()
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const form = useForm({
+    const form = useForm<Record<string, string>>({
         initialValues: quiz.questions.reduce(
             (acc, question) => ({
                 ...acc,
@@ -83,26 +82,43 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
         ),
     })
 
-    const { generateGrades } = useGradesGenerator()
+    const handleSubmit = useCallback(
+        (_values: Record<string, string>, event: React.FormEvent<HTMLFormElement> | undefined) => {
+            setIsSubmitting(true)
+            event?.preventDefault()
 
-    const handleSubmit = useCallback<(values: Record<string, string>) => void>(
-        (values: Record<string, string>) => {
-            console.log('Submitting quiz ==>', values)
+            // Update active quiz state with end time
+            setActiveQuizState((prev) => ({
+                ...prev,
+                endTime: new Date().toISOString(),
+            }))
+
+            // Navigate to evaluation page
             navigate({
                 to: '/quiz/eval',
                 params: { quizId: `${quiz.id}` },
             })
         },
-        [isSubmitting, setIsSubmitting, generateGrades, navigate, quiz]
+        [navigate, quiz.id, setActiveQuizState]
     )
 
-    const handleFormChange = useCallback<() => void>(() => {
-        setActiveQuizState({
-            questions: quiz.questions,
-            studentResponses: Object.values(form.values),
-            startTime: new Date().toISOString(),
-        })
-    }, [setActiveQuizState, quiz])
+    const handleFormChange = useCallback(
+        (event: FormEvent<HTMLFormElement>) => {
+            event.preventDefault()
+            // Map form values to responses array in the same order as questions
+            const responses = quiz.questions.map(
+                (question) => form.values[`question_${question.id}`] || ''
+            )
+
+            setActiveQuizState({
+                quiz, // Include the full quiz object
+                questions: quiz.questions,
+                studentResponses: responses,
+                startTime: new Date().toISOString(),
+            })
+        },
+        [setActiveQuizState, quiz]
+    )
 
     return (
         <Box maw={800} mx="auto" p="xl">

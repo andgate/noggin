@@ -29,8 +29,22 @@ NODE_MODULE_VERSION 127. Please try re-compiling or re-installing
 the module (for instance, using `npm rebuild` or `npm install`).
 ```
 
-This is due to a mismatch between the Node.js version used to compile the native module and the version of Node.js that Electron is using.
+This is due to a mismatch between the Node.js version used to compile the native module and the version of Node.js that Electron is using. To handle the different Node.js environments between Electron and drizzle-kit, we use two separate rebuild scripts in our package.json:
 
-To fix this, delete the `node_modules` directory and the `pnpm-lock.json` file, then run `pnpm install` again. This will should leave you with a clean build environment and a fresh install of the dependencies.
+```json
+{
+    "scripts": {
+        "rebuild:drizzle": "pnpm rebuild better-sqlite3",
+        "rebuild:electron": "electron-rebuild -f -w better-sqlite3-electron && electron-builder install-app-deps"
+    }
+}
+```
 
-If that doesn't work, you can try to recompile the native module with the `pnpm rebuild` command.
+Use these scripts accordingly:
+
+-   Run `pnpm run rebuild:electron` when working with the Electron application
+-   Run `pnpm run rebuild:drizzle` before running any drizzle-kit commands
+
+This approach ensures the native module is properly compiled for each environment, though it requires us to manage rebuilding when switching between contexts.
+
+See [this issue](https://github.com/WiseLibs/better-sqlite3/issues/1171) for more details.
