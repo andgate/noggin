@@ -1,5 +1,6 @@
 import { gradeResponses } from '@renderer/common/grading-helpers'
 import { AbortableGenerativeFunction } from '@renderer/hooks/use-generative'
+import { OpenAI } from 'openai'
 import {
     GradedResponse,
     GradedSubmission,
@@ -54,15 +55,16 @@ const generateGradedSubmissionPrompt = (
 `
 
 export interface GenerateGradesOptions {
+    openai: OpenAI
     quiz: Quiz
     studentResponses: string[]
-    controller?: AbortController
+    signal?: AbortSignal
 }
 
 export const generateGradedSubmission: AbortableGenerativeFunction<
     GenerateGradesOptions,
     GradedSubmission
-> = async function* ({ quiz, studentResponses }, signal) {
+> = async function* ({ openai, quiz, studentResponses, signal }) {
     // Initialize responses array with undefined values
     let gradedResponses: GradedResponse[] = []
 
@@ -70,12 +72,13 @@ export const generateGradedSubmission: AbortableGenerativeFunction<
 
     // Grade submission in batches
     for (let i = 0; i < numBatches; i++) {
-        if (signal.aborted) break
+        if (signal && signal.aborted) break
 
         const startIndex = i * BATCH_SIZE
         const endIndex = startIndex + BATCH_SIZE
 
         const submissionBatch = await generateGradedSubmissionBatch({
+            openai,
             sources: quiz.sources.map((source) => source.content),
             quizTitle: quiz.title,
             questions: quiz.questions.slice(startIndex, endIndex),
@@ -98,6 +101,7 @@ export const generateGradedSubmission: AbortableGenerativeFunction<
 }
 
 export interface GenerateGradedSubmissionBatchOptions {
+    openai: OpenAI
     sources: string[]
     quizTitle: string
     questions: Question[]
@@ -106,6 +110,7 @@ export interface GenerateGradedSubmissionBatchOptions {
 }
 
 async function generateGradedSubmissionBatch({
+    openai,
     sources,
     quizTitle,
     questions,
@@ -120,6 +125,7 @@ async function generateGradedSubmissionBatch({
     })
     const prompt = generateGradedSubmissionPrompt(sources, quizTitle, questions, studentResponses)
     const completion = await generateChatCompletion({
+        openai,
         responseFormatName: 'gradedSubmissionResponse',
         schema: gradedSubmissionSchema,
         messages: [

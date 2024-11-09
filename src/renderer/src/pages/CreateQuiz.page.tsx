@@ -15,8 +15,17 @@ import { z } from 'zod'
 import { QuizGenerator, QuizGeneratorHandle } from '../components/QuizGenerator'
 import { QuestionType } from '../types/quiz-view-types'
 
+function countWords(content: string) {
+    return content.split(/\s+/).filter(Boolean).length
+}
+
 export const QuizFormSchema = z.object({
-    content: z.string().min(1, 'Please enter study content'),
+    content: z
+        .string()
+        .min(1, 'Please enter study content')
+        .refine((content) => countWords(content) <= 6000, {
+            message: 'Content cannot exceed 6000 words',
+        }),
     questionCount: z
         .number()
         .min(1, 'Must have at least 1 question')
@@ -30,7 +39,6 @@ export const QuizFormSchema = z.object({
         .max(180, 'Maximum time limit is 180 minutes'),
 })
 
-// TODO: Add progressive enhancement for non-JS environments
 // TODO: Implement partial form saving to prevent data loss
 // TODO: Add detailed error states for API/generation failures
 // TODO: Add fallback UI for when OpenAI is unavailable
@@ -38,7 +46,6 @@ export const CreateQuizPage: React.FC = () => {
     const [showGenerator, setShowGenerator] = useState(false)
     const quizGeneratorRef = useRef<QuizGeneratorHandle>(null)
 
-    // TODO consider using zod to validate form data
     const form = useForm({
         initialValues: {
             content: '',
@@ -69,7 +76,8 @@ export const CreateQuizPage: React.FC = () => {
                                     <Textarea
                                         label="Study Content"
                                         placeholder="Paste your study material here"
-                                        minRows={6}
+                                        rows={10}
+                                        description={`Word count: ${countWords(form.values.content)} / 6000`}
                                         {...form.getInputProps('content')}
                                     />
 

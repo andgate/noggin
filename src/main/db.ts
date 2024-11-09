@@ -54,9 +54,7 @@ function toDrizzleResult(rows: Record<string, any> | Array<Record<string, any>>)
 }
 
 export const execute = async (e, sql, params, method) => {
-    console.log('db:execute ==>', { e, sql, params, method })
     const result = sqlite.prepare(sql)
-    console.log('result ==>', result)
     const ret = result[method](...params)
     return toDrizzleResult(ret)
 }

@@ -1,4 +1,5 @@
 import '@mantine/core/styles.css'
+import '@mantine/notifications/styles.css'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'

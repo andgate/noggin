@@ -180,3 +180,13 @@ export const responsesRelations = relations(responses, ({ one }) => ({
         references: [questions.id],
     }),
 }))
+
+/** User Settings Table */
+export const userSettings = sqliteTable('user_settings', {
+    id: integer('id').primaryKey(), // Will always be 0, since there is only one user ever
+    openaiApiKey: text('openai_api_key'),
+})
+
+// Zod Schemas
+export const insertUserSettingsSchema = createInsertSchema(userSettings)
+export const selectUserSettingsSchema = createSelectSchema(userSettings)

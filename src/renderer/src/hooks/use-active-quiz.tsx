@@ -36,7 +36,7 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
  * When a user starts practicing a quiz, we want to keep track of the current state of the quiz globally.
  * This allows us to resume practice sessions from the same point in the future.
  */
-export function useActiveQuiz() {
+export function useActiveQuiz(): ActiveQuizContext {
     const context = useContext(ActiveQuizContext)
     if (!context) {
         throw new Error('useActiveQuiz must be used within an ActiveQuizProvider')
