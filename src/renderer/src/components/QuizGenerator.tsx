@@ -1,5 +1,7 @@
 // TODO: Add a regenerate button
 import { Alert, Badge, Button, Group, Paper, Skeleton, Stack, Text, Title } from '@mantine/core'
+import { notifications } from '@mantine/notifications'
+import { useOpenAI } from '@renderer/hooks/use-openai'
 import { useQuizGenerator } from '@renderer/hooks/use-quiz-generator'
 import { useNavigate } from '@tanstack/react-router'
 import { forwardRef, useCallback, useImperativeHandle, useMemo, useState } from 'react'
@@ -97,6 +99,7 @@ export interface QuizGeneratorHandle {
  */
 export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>(
     ({ show, sources, questionTypes, questionCount, timeLimit }, ref) => {
+        const { openai } = useOpenAI()
         const navigate = useNavigate({ from: '/quiz/create' })
         const [isSaving, setIsSaving] = useState(false)
         const [saveError, setSaveError] = useState<Error | undefined>(undefined)
@@ -108,7 +111,10 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
             abort: handleCancel,
         } = useQuizGenerator()
 
-        const { title, questions } = useMemo(() => quiz, [quiz])
+        const { title = '', questions = [] } = useMemo(
+            () => quiz || { title: '', questions: [] },
+            [quiz]
+        )
         const isGenerationComplete = useMemo(
             () => title && questions.every(Boolean),
             [title, questions]
@@ -118,12 +124,22 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
         const runGeneration = useCallback<() => Promise<void>>(async () => {
             console.log('[QuizGenerator] Starting quiz generation')
 
-            generateQuiz({
-                sources,
-                questionTypes,
-                questionCount,
-                existingQuestions: [],
-            })
+            try {
+                generateQuiz({
+                    openai,
+                    sources,
+                    questionTypes,
+                    questionCount,
+                    existingQuestions: [],
+                })
+            } catch (error) {
+                console.error('[QuizGenerator] Error generating quiz:', error)
+                notifications.show({
+                    title: 'Error',
+                    message: 'Failed to generate quiz. Please try again.',
+                    color: 'red',
+                })
+            }
         }, [generateQuiz, sources, questionTypes, questionCount])
 
         // Expose the run function via useImperativeHandle
@@ -198,7 +214,7 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
 
                 <QuizTitleGenerator title={title} isLoading={!title} />
                 <div>
-                    {questions.map((_, index) => (
+                    {(questions || []).map((_, index) => (
                         <QuestionGenerator
                             key={index}
                             index={index}

@@ -1,7 +1,5 @@
 // TODO: Add theme switching capability
-// TODO: Implement user preferences storage
-// TODO: Add loading states for route transitions
-// TODO: Consider adding offline support
+// TODO: Add loading states for route transitions via suspense
 import {
     AppShell,
     Burger,
@@ -11,8 +9,11 @@ import {
     NavLink,
     Text,
 } from '@mantine/core'
+import { Notifications } from '@mantine/notifications'
 import { ActiveQuizProvider } from '@renderer/hooks/use-active-quiz'
-import { IconHome } from '@tabler/icons-react'
+import { OpenAIProvider } from '@renderer/hooks/use-openai'
+import { UserSettingsProvider } from '@renderer/hooks/use-user-settings'
+import { IconHome, IconSettings } from '@tabler/icons-react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRootRoute, Link, Outlet, ScrollRestoration } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
@@ -72,12 +73,22 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 const RootProvider = ({ children }: Readonly<{ children: ReactNode }>) => {
     return (
         <>
-            <ActiveQuizProvider>
-                <ColorSchemeScript nonce="8IBTHwOdqNKAWeKl7plt8g==" defaultColorScheme="dark" />
-                <MantineProvider defaultColorScheme="dark" theme={theme}>
-                    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-                </MantineProvider>
-            </ActiveQuizProvider>
+            <UserSettingsProvider>
+                <OpenAIProvider>
+                    <ActiveQuizProvider>
+                        <ColorSchemeScript
+                            nonce="8IBTHwOdqNKAWeKl7plt8g=="
+                            defaultColorScheme="dark"
+                        />
+                        <MantineProvider defaultColorScheme="dark" theme={theme}>
+                            <Notifications />
+                            <QueryClientProvider client={queryClient}>
+                                {children}
+                            </QueryClientProvider>
+                        </MantineProvider>
+                    </ActiveQuizProvider>
+                </OpenAIProvider>
+            </UserSettingsProvider>
         </>
     )
 }
@@ -115,6 +126,12 @@ function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
                     to="/"
                     label="Home"
                     leftSection={<IconHome size={16} />}
+                />
+                <NavLink
+                    component={Link}
+                    to="/settings"
+                    label="Settings"
+                    leftSection={<IconSettings size={16} />}
                 />
                 {/* Add more NavLinks here as needed */}
             </AppShell.Navbar>

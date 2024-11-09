@@ -1,4 +1,5 @@
 import { AbortableGenerativeFunction } from '@renderer/hooks/use-generative'
+import { OpenAI } from 'openai'
 import {
     GeneratedQuestion,
     GeneratedQuiz,
@@ -32,6 +33,7 @@ const generateQuizPrompt = (
     Write a quiz with a title and ${questionCount > questions.length ? questionCount - questions.length : 0} questions that are different from the ones listed above.`
 
 export interface GenerateQuizOptions {
+    openai: OpenAI
     sources: string[]
     existingQuestions: GeneratedQuestion[]
     questionTypes: string[]
@@ -43,32 +45,62 @@ export const generateQuiz: AbortableGenerativeFunction<GenerateQuizOptions, Part
     async function* (options) {
         // Initialize questions array with undefined values.
         // This is to ensure that we can yield partial results.
+        console.log('Starting quiz generation with options:', {
+            questionCount: options.questionCount,
+            questionTypes: options.questionTypes,
+            existingQuestionsCount: options.existingQuestions.length,
+        })
+
         let questions: (GeneratedQuestion | undefined)[] = Array(options.questionCount).fill(
             undefined
         )
         let title: string = ''
 
+        console.log('Initialized questions array with length:', questions.length)
+
         while (questions.some((q) => q === undefined)) {
             // Generate batch of questions
+            const remainingQuestions = questions.filter((q) => q === undefined).length
+            console.log(`Generating batch, ${remainingQuestions} questions remaining`)
+
             const { title: quizTitle, questions: batchQuestions } = yield generateQuizBatch(options)
+
+            console.log('Received batch:', {
+                title: quizTitle,
+                batchSize: batchQuestions?.length ?? 0,
+            })
+
+            if (!batchQuestions) {
+                console.error('Failed to generate questions batch')
+                throw new Error('Failed to generate questions!')
+            }
 
             // Add batch questions to questions array, replacing undefined values
             const unfilledIndex = questions.findIndex((q) => q === undefined)
+            console.log('Filling questions starting at index:', unfilledIndex)
+
             batchQuestions?.forEach((q, index) => {
                 if (unfilledIndex + index < options.questionCount) {
                     questions[unfilledIndex + index] = q
                 }
             })
 
-            title = quizTitle || title // take the latest title
+            title = quizTitle || title // take the latest title, if any
+            console.log('Updated quiz state:', {
+                title,
+                completedQuestions: questions.filter((q) => q !== undefined).length,
+                totalQuestions: questions.length,
+            })
+
             yield { title, questions }
         }
 
-        // Finally, return the full quiz
+        console.log('Quiz generation completed')
         return { title, questions }
     }
 
 export interface GenerateQuizBatchOptions {
+    openai: OpenAI
     sources: string[]
     existingQuestions: GeneratedQuestion[]
     questionTypes: string[]
@@ -77,6 +109,7 @@ export interface GenerateQuizBatchOptions {
 }
 
 export const generateQuizBatch = async ({
+    openai,
     sources,
     existingQuestions,
     questionTypes,
@@ -84,13 +117,14 @@ export const generateQuizBatch = async ({
     signal,
 }: GenerateQuizBatchOptions): Promise<GeneratedQuiz> => {
     console.log('generateQuizBatch called =>', {
-        sources,
-        existingQuestions,
+        sourcesCount: sources.length,
+        existingQuestionsCount: existingQuestions.length,
         questionTypes,
         questionCount,
     })
     const prompt = generateQuizPrompt(sources, existingQuestions, questionCount, questionTypes)
     const completion = await generateChatCompletion({
+        openai,
         responseFormatName: 'quizResponse',
         schema: generatedQuizSchema,
         messages: [
@@ -106,7 +140,10 @@ export const generateQuizBatch = async ({
         signal,
     })
 
-    console.log('quiz generated ==>', completion)
+    console.log('quiz generated ==>', {
+        title: completion.title,
+        questionCount: completion.questions?.length,
+    })
 
     return completion
 }

@@ -25,7 +25,7 @@
  * ```
  */
 
-import { createContext, useCallback, useContext, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useState } from 'react'
 
 /**
  * A stateful generator function type that accepts an AbortSignal.
@@ -34,7 +34,7 @@ import { createContext, useCallback, useContext, useRef, useState } from 'react'
  */
 export type AbortableGenerativeFunction<TInput, TState> = (
     input: TInput,
-    signal: AbortSignal
+    signal?: AbortSignal
 ) => AsyncGenerator<TState, TState, TState>
 
 /**
@@ -89,46 +89,21 @@ export interface GenerativeProviderProps<I, S> {
 export function GenerativeProvider<I, S>({
     generativeFunction,
     children,
-    signal,
 }: GenerativeProviderProps<I, S>): React.ReactElement {
     const [isRunning, setIsRunning] = useState(false)
     const [error, setError] = useState<Error>()
     const [state, setState] = useState<Partial<S>>({})
-    const abortControllerRef = useRef<AbortController>()
-
-    const abort = useCallback(() => {
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort()
-            abortControllerRef.current = undefined
-        }
-    }, [abortControllerRef])
 
     const invoke = useCallback(
         async (input: I) => {
-            // Abort any running generator
-            abort()
-
-            // Create new abort controller for controlling this invocation
-            const internalController = new AbortController()
-            abortControllerRef.current = internalController
-
-            // Combine internal and external abort signals
-            const combinedSignal = signal
-                ? AbortSignal.any([internalController.signal, signal])
-                : internalController.signal
-
             setIsRunning(true)
             setError(undefined)
             try {
-                const generator = generativeFunction(input, combinedSignal)
+                const generator = generativeFunction(input)
                 let result: IteratorResult<S, S> = { done: false, value: {} as S }
                 while (
                     // Generator has not completed
-                    !result.done &&
-                    // Internal controller has not aborted
-                    !internalController.signal.aborted &&
-                    // External controller has not aborted
-                    !signal?.aborted
+                    !result.done
                 ) {
                     if (result) {
                         // Get the next value
@@ -146,7 +121,7 @@ export function GenerativeProvider<I, S>({
                 setIsRunning(false)
             }
         },
-        [generativeFunction, setState, setError, abort, signal]
+        [generativeFunction, setState, setError]
     )
 
     return (
@@ -157,7 +132,7 @@ export function GenerativeProvider<I, S>({
                 setState,
                 isRunning,
                 error,
-                abort,
+                abort: () => {},
                 _hasProvider: true,
             }}
         >

@@ -1,7 +1,20 @@
-import { Alert, Badge, Card, Group, Paper, Skeleton, Stack, Text, Title } from '@mantine/core'
+import {
+    Alert,
+    Badge,
+    Button,
+    Card,
+    Group,
+    Paper,
+    Skeleton,
+    Stack,
+    Text,
+    Title,
+} from '@mantine/core'
 import { useGradesGenerator } from '@renderer/hooks/use-grades-generator'
+import { useOpenAI } from '@renderer/hooks/use-openai'
 import { GradedResponse } from '@renderer/types/quiz-generation-types'
 import { Question } from '@renderer/types/quiz-view-types'
+import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
 import { useActiveQuiz } from '../hooks/use-active-quiz'
 
@@ -38,7 +51,16 @@ const GradedQuestionDisplay: React.FC<GradedQuestionDisplayProps> = ({
                                 key={idx}
                                 withBorder
                                 p="xs"
-                                bg={choice.isCorrect ? 'var(--mantine-color-green-0)' : undefined}
+                                styles={
+                                    choice.isCorrect
+                                        ? {
+                                              root: {
+                                                  borderColor: 'var(--mantine-color-green-6)',
+                                                  borderWidth: 2,
+                                              },
+                                          }
+                                        : undefined
+                                }
                             >
                                 <Text size="sm">{choice.optionText}</Text>
                             </Paper>
@@ -86,26 +108,43 @@ const GradedQuestionDisplay: React.FC<GradedQuestionDisplayProps> = ({
 }
 
 export function GradingPage() {
+    const { openai } = useOpenAI()
+    const navigate = useNavigate()
     const { activeQuizState } = useActiveQuiz()
     const { quiz, studentResponses } = useMemo(() => activeQuizState, [activeQuizState])
 
-    const { generateGrades, gradedSubmission, isRunning, error, abort } = useGradesGenerator()
-    const abortController = new AbortController()
+    const { generateGrades, gradedSubmission, isRunning, error } = useGradesGenerator()
 
     useEffect(() => {
-        // No quiz to grade, return early.
-        if (!activeQuizState.quiz) return
+        console.debug('[GradingPage] Current state:', {
+            activeQuizState,
+            hasQuiz: !!quiz,
+            studentResponses: studentResponses.slice(0, 10),
+            responseCount: studentResponses.length,
+            isRunning,
+            hasError: !!error,
+        })
+    }, [quiz, studentResponses, generateGrades, gradedSubmission, isRunning, error])
+
+    const gradedResponses = useMemo(() => {
+        const responses = gradedSubmission?.responses || []
+        console.debug('[GradingPage] Graded responses:', responses.length)
+        return responses
+    }, [gradedSubmission])
+
+    useEffect(() => {
+        console.debug('[GradingPage] Starting grading process')
+
+        if (!activeQuizState.quiz) {
+            console.debug('[GradingPage] No quiz found, skipping grading')
+            return
+        }
 
         generateGrades({
+            openai,
             quiz: activeQuizState.quiz,
             studentResponses: activeQuizState.studentResponses,
-            controller: abortController,
         })
-
-        return () => {
-            abortController.abort()
-            abort()
-        }
     }, [])
 
     if (!quiz) {
@@ -125,7 +164,7 @@ export function GradingPage() {
     }
 
     return (
-        <Card withBorder p="xl" radius="md">
+        <Card maw={800} mx="auto" withBorder p="xl" radius="md">
             <Stack gap="lg">
                 <Title order={2}>{quiz.title} - Grading</Title>
 
@@ -136,16 +175,42 @@ export function GradingPage() {
                 )}
 
                 <Stack gap="md">
-                    {quiz.questions.map((question, index) => (
+                    {(quiz.questions || []).map((question, index) => (
                         <GradedQuestionDisplay
                             key={index}
                             question={question}
                             studentResponse={studentResponses[index]}
-                            gradedResponse={gradedSubmission?.responses[index]}
+                            gradedResponse={gradedResponses[index] ?? undefined}
                         />
                     ))}
                 </Stack>
             </Stack>
+            <Group justify="space-between" mt="lg">
+                <Group>
+                    <Button
+                        size="lg"
+                        onClick={() => {
+                            navigate({
+                                to: '/quiz/practice/$quizId',
+                                params: { quizId: `${quiz.id}` },
+                            })
+                        }}
+                    >
+                        Retake Quiz
+                    </Button>
+                    <Button
+                        size="lg"
+                        variant="light"
+                        onClick={() => navigate({ to: '/quiz/create' })}
+                    >
+                        New Quiz
+                    </Button>
+                </Group>
+
+                <Button size="lg" variant="subtle" onClick={() => navigate({ to: '/' })}>
+                    Return to Dashboard
+                </Button>
+            </Group>
         </Card>
     )
 }

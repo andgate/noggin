@@ -1,4 +1,5 @@
 import { NotFound } from '@renderer/components/NotFound'
+import { GradesGeneratorProvider } from '@renderer/hooks/use-grades-generator'
 import { GradingPage } from '@renderer/pages/GradingPage'
 import { createFileRoute, ErrorComponent, ErrorComponentProps } from '@tanstack/react-router'
 
@@ -15,5 +16,9 @@ export function SubmissionErrorComponent({ error }: ErrorComponentProps) {
 }
 
 function RouteComponent() {
-    return <GradingPage />
+    return (
+        <GradesGeneratorProvider>
+            <GradingPage />
+        </GradesGeneratorProvider>
+    )
 }

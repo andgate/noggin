@@ -1,8 +1,10 @@
+// TODO quiz timer for practice quiz
 import { Box, Button, Card, Radio, Stack, Textarea, Title } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useActiveQuiz } from '@renderer/hooks/use-active-quiz'
 import { useNavigate } from '@tanstack/react-router'
-import { FormEvent, useCallback, useState } from 'react'
+import { produce } from 'immer'
+import { FormEvent, useCallback, useEffect, useState } from 'react'
 import { Question, Quiz } from '../types/quiz-view-types'
 
 // Component for multiple choice questions
@@ -72,6 +74,7 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     const navigate = useNavigate({ from: '/quiz/practice/$quizId' })
     const { setActiveQuizState } = useActiveQuiz()
     const [isSubmitting, setIsSubmitting] = useState(false)
+
     const form = useForm<Record<string, string>>({
         initialValues: quiz.questions.reduce(
             (acc, question) => ({
@@ -82,16 +85,27 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
         ),
     })
 
+    // On mount, set the active quiz state
+    useEffect(() => {
+        setActiveQuizState({
+            quiz, // Include the full quiz object
+            questions: quiz.questions,
+            studentResponses: [],
+            startTime: new Date().toISOString(),
+        })
+    }, [])
+
     const handleSubmit = useCallback(
         (_values: Record<string, string>, event: React.FormEvent<HTMLFormElement> | undefined) => {
             setIsSubmitting(true)
             event?.preventDefault()
 
             // Update active quiz state with end time
-            setActiveQuizState((prev) => ({
-                ...prev,
-                endTime: new Date().toISOString(),
-            }))
+            setActiveQuizState((prev) =>
+                produce(prev, (draft) => {
+                    draft.endTime = new Date().toISOString()
+                })
+            )
 
             // Navigate to evaluation page
             navigate({
@@ -105,17 +119,20 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     const handleFormChange = useCallback(
         (event: FormEvent<HTMLFormElement>) => {
             event.preventDefault()
+
             // Map form values to responses array in the same order as questions
-            const responses = quiz.questions.map(
-                (question) => form.values[`question_${question.id}`] || ''
+            const formResponses = quiz.questions.map(
+                (question) => form.getValues()[`question_${question.id}`] || ''
             )
 
-            setActiveQuizState({
-                quiz, // Include the full quiz object
-                questions: quiz.questions,
-                studentResponses: responses,
-                startTime: new Date().toISOString(),
-            })
+            console.log('[PracticeQuizPage] Form updated:', formResponses)
+
+            setActiveQuizState((prev) =>
+                produce(prev, (draft) => {
+                    draft.questions = quiz.questions
+                    draft.studentResponses = formResponses
+                })
+            )
         },
         [setActiveQuizState, quiz]
     )
