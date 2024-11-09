@@ -44,14 +44,13 @@ interface FibState {
 
 // Create Fibonacci generator function
 async function* fibGenerator(
-    input: FibInput,
-    signal: AbortSignal
+    input: FibInput
 ): AsyncGenerator<Partial<FibState>, Partial<FibState>, Partial<FibState>> {
     let current = 0
     let next = 1
     const sequence: number[] = [current]
 
-    while (sequence.length < input.limit && !signal.aborted) {
+    while (sequence.length < input.limit) {
         yield {
             current,
             next,
@@ -76,7 +75,11 @@ const InnerFibTestComponent = () => {
     return (
         <>
             <button onClick={() => invoke({ limit: 5 })}>Generate</button>
-            <div data-testid="result">{state.current}</div>
+            <div data-testid="result">
+                <div>Current: {state.current}</div>
+                <div>Next: {state.next}</div>
+                <div>Sequence: {state.sequence?.join(', ')}</div>
+            </div>
         </>
     )
 }
@@ -132,10 +135,12 @@ describe('useGenerative', () => {
                 fireEvent.click(screen.getByText('Generate'))
             })
 
-            await screen.findByText('3')
+            // Wait for the sequence to complete and check multiple values
+            await screen.findByText(/Sequence:.*0, 1, 1, 2, 3/i)
 
-            // Final state check
-            expect(screen.getByText('3')).toBeVisible()
+            // Check specific values
+            expect(screen.getByText(/Current: 3/)).toBeVisible()
+            expect(screen.getByText(/Next: 5/)).toBeVisible()
         })
     })
 })

@@ -7,6 +7,9 @@
 
 A modern quiz application built with Electron, React, and TypeScript.
 
+> **Warning**
+> This software is currently in alpha stage and under active development. Features may be incomplete, unstable, or subject to breaking changes. Use at your own risk.
+
 ## Features
 
 -   Create and manage quizzes
