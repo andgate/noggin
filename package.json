@@ -17,8 +17,10 @@
         "generate": "drizzle-kit generate",
         "push": "pnpm rebuild:drizzle && drizzle-kit push && pnpm rebuild:electron",
         "studio": "drizzle-kit studio",
-        "test": "vitest --ui",
+        "test": "vitest",
         "test:e2e": "playwright test --ui",
+        "test:ci": "vitest run",
+        "test:e2e:ci": "playwright test",
         "format": "prettier --write .",
         "lint": "eslint .",
         "lint:fix": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
@@ -27,7 +29,10 @@
         "build:mac": "pnpm run build && electron-builder --mac",
         "build:linux": "pnpm run build && electron-builder --linux",
         "rebuild:drizzle": "pnpm rebuild better-sqlite3",
-        "rebuild:electron": "electron-rebuild -f -w better-sqlite3-electron && electron-builder install-app-deps"
+        "rebuild:electron": "electron-rebuild -f -w better-sqlite3-electron && electron-builder install-app-deps",
+        "publish:win": "electron-vite build && electron-builder --win --publish always",
+        "publish:mac": "electron-vite build && electron-builder --mac --publish always",
+        "publish:linux": "electron-vite build && electron-builder --linux --publish always"
     },
     "dependencies": {
         "@electron-toolkit/preload": "^3.0.1",

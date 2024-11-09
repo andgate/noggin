@@ -12,10 +12,11 @@ import {
 } from '@mantine/core'
 import { useGradesGenerator } from '@renderer/hooks/use-grades-generator'
 import { useOpenAI } from '@renderer/hooks/use-openai'
+import { storeQuizSubmission } from '@renderer/services/submission-service'
 import { GradedResponse } from '@renderer/types/quiz-generation-types'
 import { Question } from '@renderer/types/quiz-view-types'
 import { useNavigate } from '@tanstack/react-router'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useActiveQuiz } from '../hooks/use-active-quiz'
 
 interface GradedQuestionDisplayProps {
@@ -112,8 +113,10 @@ export function GradingPage() {
     const navigate = useNavigate()
     const { activeQuizState } = useActiveQuiz()
     const { quiz, studentResponses } = useMemo(() => activeQuizState, [activeQuizState])
+    const [isSubmissionSaved, setIsSubmissionSaved] = useState(false)
 
-    const { generateGrades, gradedSubmission, isRunning, error } = useGradesGenerator()
+    const { generateGrades, gradedSubmission, isGradeGeneratorRunning, isDoneGrading, error } =
+        useGradesGenerator()
 
     useEffect(() => {
         console.debug('[GradingPage] Current state:', {
@@ -121,10 +124,22 @@ export function GradingPage() {
             hasQuiz: !!quiz,
             studentResponses: studentResponses.slice(0, 10),
             responseCount: studentResponses.length,
-            isRunning,
+            isGradeGeneratorRunning,
             hasError: !!error,
         })
-    }, [quiz, studentResponses, generateGrades, gradedSubmission, isRunning, error])
+    }, [quiz, studentResponses, generateGrades, gradedSubmission, isGradeGeneratorRunning, error])
+
+    useEffect(() => {
+        if (quiz && isDoneGrading && !isSubmissionSaved) {
+            setIsSubmissionSaved(true) // Immediately set to true to prevent re-saving (is there a race condition here?)
+            console.debug('[GradingPage] Grading process completed. Saving...')
+            storeQuizSubmission({
+                quiz,
+                gradedResponses: gradedSubmission?.responses || [],
+                timeElapsed: activeQuizState.elapsedTime,
+            })
+        }
+    }, [isDoneGrading, isSubmissionSaved, quiz, gradedSubmission, activeQuizState])
 
     const gradedResponses = useMemo(() => {
         const responses = gradedSubmission?.responses || []
@@ -168,7 +183,7 @@ export function GradingPage() {
             <Stack gap="lg">
                 <Title order={2}>{quiz.title} - Grading</Title>
 
-                {isRunning && (
+                {isGradeGeneratorRunning && (
                     <Alert color="blue" title="Grading in Progress">
                         The AI is currently grading your responses...
                     </Alert>
@@ -185,32 +200,38 @@ export function GradingPage() {
                     ))}
                 </Stack>
             </Stack>
-            <Group justify="space-between" mt="lg">
-                <Group>
-                    <Button
-                        size="lg"
-                        onClick={() => {
-                            navigate({
-                                to: '/quiz/practice/$quizId',
-                                params: { quizId: `${quiz.id}` },
-                            })
-                        }}
-                    >
-                        Retake Quiz
-                    </Button>
-                    <Button
-                        size="lg"
-                        variant="light"
-                        onClick={() => navigate({ to: '/quiz/create' })}
-                    >
-                        New Quiz
+            {isDoneGrading && (
+                <Group justify="space-between" mt="lg">
+                    <Group>
+                        <Button
+                            size="lg"
+                            onClick={() => {
+                                navigate({
+                                    to: '/quiz/practice/$quizId',
+                                    params: { quizId: `${quiz.id}` },
+                                })
+                            }}
+                        >
+                            Retake Quiz
+                        </Button>
+                        <Button
+                            size="lg"
+                            variant="light"
+                            onClick={() => navigate({ to: '/quiz/create' })}
+                        >
+                            New Quiz
+                        </Button>
+                    </Group>
+
+                    <Text c="gray" fs="italic">
+                        Submission saved!
+                    </Text>
+
+                    <Button size="lg" variant="subtle" onClick={() => navigate({ to: '/' })}>
+                        Return to Dashboard
                     </Button>
                 </Group>
-
-                <Button size="lg" variant="subtle" onClick={() => navigate({ to: '/' })}>
-                    Return to Dashboard
-                </Button>
-            </Group>
+            )}
         </Card>
     )
 }

@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { useMemo } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { GenerativeProvider, useGenerative } from './use-generative'
 
@@ -13,10 +14,11 @@ async function* mockGenerator({}) {
 
 const InnerChildTestComponent = () => {
     const { state, invoke } = useGenerative<{}, { message: string }>()
+    const message = useMemo(() => state.message, [state.message])
     return (
         <>
             <button onClick={() => invoke({})}>Generate</button>
-            <p data-testid="result">{`${state.message}`}</p>
+            <p data-testid="result">{`${message}`}</p>
         </>
     )
 }

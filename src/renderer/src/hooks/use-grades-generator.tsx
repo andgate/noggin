@@ -8,7 +8,8 @@ import { GenerativeProvider, useGenerative } from './use-generative'
 export interface GradesGenerator {
     generateGrades: (options: GenerateGradesOptions) => void
     gradedSubmission: GradedSubmission
-    isRunning: boolean
+    isGradeGeneratorRunning: boolean
+    isDoneGrading: boolean
     error?: Error
     abort: () => void
 }
@@ -17,11 +18,18 @@ export interface GradesGenerator {
  * Hook that provides quiz grading functionality using the generative context
  */
 export function useGradesGenerator(): GradesGenerator {
-    const { invoke, state, isRunning, error, abort } = useGenerative<
+    const { invoke, state, isDone, isRunning, error, abort } = useGenerative<
         GenerateGradesOptions,
         GradedSubmission
     >()
-    return { generateGrades: invoke, gradedSubmission: state, isRunning, error, abort }
+    return {
+        generateGrades: invoke,
+        gradedSubmission: state,
+        isGradeGeneratorRunning: isRunning,
+        isDoneGrading: isDone,
+        error,
+        abort,
+    }
 }
 
 /**

@@ -45,6 +45,7 @@ export interface GenerativeContext<TInput, TState> {
     state: TState
     setState: (setter: (state: TState) => TState) => void
     isRunning: boolean
+    isDone: boolean
     error?: Error
     abort: () => unknown
     _hasProvider: boolean
@@ -56,6 +57,7 @@ const GenerativeContext = createContext<GenerativeContext<any, any>>({
     state: {},
     setState: () => {},
     isRunning: false,
+    isDone: false,
     abort: () => {},
     _hasProvider: false,
 })
@@ -91,12 +93,14 @@ export function GenerativeProvider<I, S>({
     children,
 }: GenerativeProviderProps<I, S>): React.ReactElement {
     const [isRunning, setIsRunning] = useState(false)
+    const [isDone, setIsDone] = useState(false)
     const [error, setError] = useState<Error>()
     const [state, setState] = useState<Partial<S>>({})
 
     const invoke = useCallback(
         async (input: I) => {
             setIsRunning(true)
+            setIsDone(false)
             setError(undefined)
             try {
                 const generator = generativeFunction(input)
@@ -119,6 +123,7 @@ export function GenerativeProvider<I, S>({
                 setError(e instanceof Error ? e : new Error(String(e)))
             } finally {
                 setIsRunning(false)
+                setIsDone(true)
             }
         },
         [generativeFunction, setState, setError]
@@ -131,6 +136,7 @@ export function GenerativeProvider<I, S>({
                 state,
                 setState,
                 isRunning,
+                isDone: isDone,
                 error,
                 abort: () => {},
                 _hasProvider: true,

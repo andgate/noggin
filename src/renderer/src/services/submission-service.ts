@@ -13,12 +13,12 @@ export interface SubmitQuizOptions {
     timeElapsed: number
 }
 
-export const submitQuiz = async ({
+export const storeQuizSubmission = async ({
     quiz,
     gradedResponses,
     timeElapsed,
 }: SubmitQuizOptions): Promise<SubmissionId> => {
-    console.log('evaluating quiz', { quiz, gradedResponses })
+    console.log('storing quiz submission', { quiz, gradedResponses })
     const grade = gradeResponses(gradedResponses)
     const letterGrade = asLetterGrade(grade)
     // Wrap operations in a transaction

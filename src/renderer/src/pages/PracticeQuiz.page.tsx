@@ -1,11 +1,19 @@
 // TODO quiz timer for practice quiz
 import { Box, Button, Card, Radio, Stack, Textarea, Title } from '@mantine/core'
 import { useForm } from '@mantine/form'
+import { useInterval } from '@mantine/hooks'
+import { notifications } from '@mantine/notifications'
 import { useActiveQuiz } from '@renderer/hooks/use-active-quiz'
 import { useNavigate } from '@tanstack/react-router'
 import { produce } from 'immer'
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import { Question, Quiz } from '../types/quiz-view-types'
+
+export function formatDuration(seconds: number): string {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+}
 
 // Component for multiple choice questions
 const MultiChoiceQuestionItem: React.FC<{
@@ -72,8 +80,10 @@ const QuestionItem: React.FC<{
 // TODO: Implement progressive loading for large quizzes
 export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     const navigate = useNavigate({ from: '/quiz/practice/$quizId' })
-    const { setActiveQuizState } = useActiveQuiz()
+    const { setActiveQuizState, startQuiz, setStudentResponses, submitActiveQuiz } = useActiveQuiz()
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [elapsedTime, setElapsedTime] = useState(0)
+    const timeLimitInSeconds = quiz.timeLimit * 60 // Convert minutes to seconds
 
     const form = useForm<Record<string, string>>({
         initialValues: quiz.questions.reduce(
@@ -87,12 +97,7 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
 
     // On mount, set the active quiz state
     useEffect(() => {
-        setActiveQuizState({
-            quiz, // Include the full quiz object
-            questions: quiz.questions,
-            studentResponses: [],
-            startTime: new Date().toISOString(),
-        })
+        startQuiz(quiz)
     }, [])
 
     const handleSubmit = useCallback(
@@ -101,11 +106,7 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
             event?.preventDefault()
 
             // Update active quiz state with end time
-            setActiveQuizState((prev) =>
-                produce(prev, (draft) => {
-                    draft.endTime = new Date().toISOString()
-                })
-            )
+            submitActiveQuiz(Object.values(form.values))
 
             // Navigate to evaluation page
             navigate({
@@ -127,6 +128,8 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
 
             console.log('[PracticeQuizPage] Form updated:', formResponses)
 
+            setStudentResponses(formResponses)
+
             setActiveQuizState((prev) =>
                 produce(prev, (draft) => {
                     draft.questions = quiz.questions
@@ -134,14 +137,43 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
                 })
             )
         },
-        [setActiveQuizState, quiz]
+        [setActiveQuizState, quiz, setStudentResponses]
     )
+
+    // Setup timer interval
+    const timer = useInterval(() => {
+        setElapsedTime((prev) => prev + 1)
+    }, 1000)
+
+    // Start timer on mount
+    useEffect(() => {
+        timer.start()
+        return () => timer.stop()
+    }, [])
+
+    // Auto-submit when time limit is reached
+    useEffect(() => {
+        if (elapsedTime >= timeLimitInSeconds) {
+            notifications.show({
+                title: "Time's up!",
+                message: 'Your quiz is being submitted automatically.',
+                color: 'blue',
+            })
+            handleSubmit(form.values, undefined)
+        }
+    }, [elapsedTime, timeLimitInSeconds])
 
     return (
         <Box maw={800} mx="auto" p="xl">
             <Title order={2} mb="lg">
                 {quiz.title}
             </Title>
+
+            <Box mb="md">
+                <Title order={4} c={elapsedTime >= timeLimitInSeconds - 60 ? 'red' : undefined}>
+                    Time Remaining: {formatDuration(Math.max(0, timeLimitInSeconds - elapsedTime))}
+                </Title>
+            </Box>
 
             <form onSubmit={form.onSubmit(handleSubmit)} onChange={handleFormChange}>
                 <Stack>
