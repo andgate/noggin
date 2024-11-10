@@ -1,6 +1,6 @@
 {
     "name": "noggin",
-    "description": "A learning platform for the modern age",
+    "description": "Noggin Learning Platform",
     "private": true,
     "version": "v0.0.15",
     "main": "out/main/index.js",

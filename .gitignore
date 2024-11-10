@@ -33,3 +33,8 @@ out
 .env.local
 
 sqlite.db
+
+# Electron
+src/renderer/html/html.meta.json.gz
+src/renderer/html/assets/index-*.css
+src/renderer/html/assets/index-*.js

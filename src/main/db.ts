@@ -12,18 +12,27 @@ function getDbPath(): string {
     return import.meta.env.DEV ? 'sqlite.db' : path.join(app.getPath('userData'), 'data.db')
 }
 
-function ensureFile(filePath: string) {
+function getMigrationsFolder(): string {
+    return import.meta.env.DEV ? 'migrations' : path.join(app.getPath('userData'), 'migrations')
+}
+
+function ensureDirectory(dir: string) {
     // Ensure the directory exists
-    const dir = path.dirname(filePath)
     if (!fs.existsSync(dir)) {
         console.log(`Directory does not exist. Creating directory at: ${dir}`)
         fs.mkdirSync(dir, { recursive: true })
     }
+}
+
+function ensureFile(filePath: string) {
+    // Ensure the directory exists first
+    ensureDirectory(path.dirname(filePath))
+
     // // Ensure the file exists
-    // if (!fs.existsSync(filePath)) {
-    //     console.log(`Database file does not exist. Creating new database at: ${filePath}`)
-    //     fs.closeSync(fs.openSync(filePath, 'w')) // Create the file
-    // }
+    if (!fs.existsSync(filePath)) {
+        console.log(`Database file does not exist. Creating new database at: ${filePath}`)
+        fs.closeSync(fs.openSync(filePath, 'w')) // Create the file
+    }
 }
 
 function createSqlite(dbPath: string) {
@@ -46,12 +55,10 @@ function createDb(sqlite: Database.Database) {
 }
 
 const dbPath = getDbPath()
-console.log('database path ==>', resolve(dbPath))
-
 const sqlite = createSqlite(dbPath)
 export const db = createDb(sqlite)
 
-console.log('Created db')
+console.log('Database connection establish.')
 
 function toDrizzleResult(row: Record<string, any>)
 function toDrizzleResult(rows: Record<string, any> | Array<Record<string, any>>) {
@@ -74,5 +81,6 @@ export const execute = async (e, sql, params, method) => {
 }
 
 export const runMigrate = async () => {
+    ensureDirectory(getMigrationsFolder())
     return migrate(db, { migrationsFolder: 'migrations' })
 }
