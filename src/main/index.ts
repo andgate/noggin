@@ -33,6 +33,9 @@ function createWindow(): void {
     } else {
         mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
     }
+
+    // Enable remote debugging
+    app.commandLine.appendSwitch('remote-debugging-port', '9222')
 }
 
 // This method will be called when Electron has finished

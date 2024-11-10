@@ -19,7 +19,7 @@ import { routeTree } from './routeTree.gen'
 // Create a new router instance
 const router = createRouter({
     routeTree,
-    defaultPreload: 'intent',
+    defaultPreload: false,
     defaultErrorComponent: DefaultCatchBoundary,
     defaultNotFoundComponent: () => <NotFound />,
 })

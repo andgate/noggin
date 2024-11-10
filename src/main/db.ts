@@ -9,7 +9,13 @@ import fs from 'fs'
 import path, { resolve } from 'path'
 
 function getDbPath(): string {
-    return import.meta.env.DEV ? 'sqlite.db' : path.join(app.getPath('userData'), 'data.db')
+    if (import.meta.env.DEV) {
+        return 'sqlite.db'
+    }
+
+    // Ensure we're using the user data path for production
+    const userDataPath = app.getPath('userData')
+    return path.join(userDataPath, 'noggin.db')
 }
 
 function getMigrationsFolder(): string {
@@ -37,11 +43,15 @@ function ensureFile(filePath: string) {
 
 function createSqlite(dbPath: string) {
     try {
-        ensureDirectory(dbPath)
-        return new Database(resolve(dbPath))
+        ensureFile(dbPath)
+        const absolutePath = path.resolve(dbPath)
+        return new Database(absolutePath)
     } catch (e) {
-        console.error('Error creating sqlite at db path', e)
-        throw new Error('Error creating sqlite at db path', { cause: e })
+        console.error('Error creating sqlite at db path:', {
+            dbPath,
+            error: e,
+        })
+        throw new Error('Error creating sqlite database', { cause: e })
     }
 }
 
