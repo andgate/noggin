@@ -13,7 +13,7 @@ function getDbPath(): string {
 }
 
 function getMigrationsFolder(): string {
-    return import.meta.env.DEV ? 'migrations' : path.join(app.getPath('userData'), 'migrations')
+    return import.meta.env.DEV ? 'migrations' : path.join(app.getAppPath(), 'migrations')
 }
 
 function ensureDirectory(dir: string) {
@@ -37,7 +37,7 @@ function ensureFile(filePath: string) {
 
 function createSqlite(dbPath: string) {
     try {
-        ensureFile(dbPath)
+        ensureDirectory(dbPath)
         return new Database(resolve(dbPath))
     } catch (e) {
         console.error('Error creating sqlite at db path', e)
@@ -81,6 +81,8 @@ export const execute = async (e, sql, params, method) => {
 }
 
 export const runMigrate = async () => {
-    ensureDirectory(getMigrationsFolder())
-    return migrate(db, { migrationsFolder: 'migrations' })
+    const migrationsFolder = getMigrationsFolder()
+    console.log('migrationsFolder found', migrationsFolder)
+    ensureDirectory(migrationsFolder)
+    return migrate(db, { migrationsFolder })
 }
