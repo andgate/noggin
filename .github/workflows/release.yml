@@ -60,6 +60,12 @@ jobs:
           pattern: noggin-dist-*
           merge-multiple: true
 
+      - name: List Directory Structure
+        run: |
+          echo "=== Directory Structure ==="
+          ls -R dist/
+        shell: bash
+
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v2
         env:
