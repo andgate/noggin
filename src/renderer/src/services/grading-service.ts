@@ -1,6 +1,5 @@
 import { gradeResponses } from '@renderer/common/grading-helpers'
 import { AbortableGenerativeFunction } from '@renderer/hooks/use-generative'
-import { OpenAI } from 'openai'
 import {
     GradedResponse,
     GradedSubmission,
@@ -55,7 +54,7 @@ const generateGradedSubmissionPrompt = (
 `
 
 export interface GenerateGradesOptions {
-    openai: OpenAI
+    apiKey: string
     quiz: Quiz
     studentResponses: string[]
     signal?: AbortSignal
@@ -64,7 +63,7 @@ export interface GenerateGradesOptions {
 export const generateGradedSubmission: AbortableGenerativeFunction<
     GenerateGradesOptions,
     GradedSubmission
-> = async function* ({ openai, quiz, studentResponses, signal }) {
+> = async function* ({ apiKey, quiz, studentResponses, signal }) {
     // Initialize responses array with undefined values
     let gradedResponses: GradedResponse[] = []
 
@@ -78,7 +77,7 @@ export const generateGradedSubmission: AbortableGenerativeFunction<
         const endIndex = startIndex + BATCH_SIZE
 
         const submissionBatch = await generateGradedSubmissionBatch({
-            openai,
+            apiKey,
             sources: quiz.sources.map((source) => source.content),
             quizTitle: quiz.title,
             questions: quiz.questions.slice(startIndex, endIndex),
@@ -101,7 +100,7 @@ export const generateGradedSubmission: AbortableGenerativeFunction<
 }
 
 export interface GenerateGradedSubmissionBatchOptions {
-    openai: OpenAI
+    apiKey: string
     sources: string[]
     quizTitle: string
     questions: Question[]
@@ -110,7 +109,7 @@ export interface GenerateGradedSubmissionBatchOptions {
 }
 
 async function generateGradedSubmissionBatch({
-    openai,
+    apiKey,
     sources,
     quizTitle,
     questions,
@@ -125,7 +124,7 @@ async function generateGradedSubmissionBatch({
     })
     const prompt = generateGradedSubmissionPrompt(sources, quizTitle, questions, studentResponses)
     const completion = await generateChatCompletion({
-        openai,
+        apiKey,
         responseFormatName: 'gradedSubmissionResponse',
         schema: gradedSubmissionSchema,
         messages: [

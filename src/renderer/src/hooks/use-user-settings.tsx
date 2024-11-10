@@ -1,9 +1,10 @@
 import { getUserSettings, updateUserSettings } from '@renderer/services/user-settings-service'
 import { UserSettings } from '@renderer/types/user-settings-types'
-import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 export interface UserSettingsContext {
     settings: UserSettings
+    openaiApiKey: string
     setUserSettings: (settings: UserSettings) => void
 }
 
@@ -12,6 +13,11 @@ const UserSettingsContext = createContext<UserSettingsContext | undefined>(undef
 export function UserSettingsProvider({ children }: { children: React.ReactNode }) {
     const [userSettings, setUserSettingsState] = useState<UserSettings>({})
     const [isLoading, setIsLoading] = useState(true)
+
+    const openaiApiKey = useMemo(
+        () => userSettings.openaiApiKey || import.meta.env.VITE_OPENAI_API_KEY || 'My api key',
+        [userSettings]
+    )
 
     // When we mount, we want to load the user settings
     useEffect(() => {
@@ -33,7 +39,9 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
     )
 
     return (
-        <UserSettingsContext.Provider value={{ settings: userSettings, setUserSettings }}>
+        <UserSettingsContext.Provider
+            value={{ settings: userSettings, openaiApiKey, setUserSettings }}
+        >
             {isLoading ? <div>Loading user settings...</div> : children}
         </UserSettingsContext.Provider>
     )

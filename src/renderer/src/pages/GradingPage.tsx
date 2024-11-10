@@ -12,6 +12,7 @@ import {
 } from '@mantine/core'
 import { useGradesGenerator } from '@renderer/hooks/use-grades-generator'
 import { useOpenAI } from '@renderer/hooks/use-openai'
+import { useUserSettings } from '@renderer/hooks/use-user-settings'
 import { storeQuizSubmission } from '@renderer/services/submission-service'
 import { GradedResponse } from '@renderer/types/quiz-generation-types'
 import { Question } from '@renderer/types/quiz-view-types'
@@ -109,8 +110,8 @@ const GradedQuestionDisplay: React.FC<GradedQuestionDisplayProps> = ({
 }
 
 export function GradingPage() {
-    const { openai } = useOpenAI()
     const navigate = useNavigate()
+    const { openaiApiKey } = useUserSettings()
     const { activeQuizState } = useActiveQuiz()
     const { quiz, studentResponses } = useMemo(() => activeQuizState, [activeQuizState])
     const [isSubmissionSaved, setIsSubmissionSaved] = useState(false)
@@ -156,7 +157,7 @@ export function GradingPage() {
         }
 
         generateGrades({
-            openai,
+            apiKey: openaiApiKey,
             quiz: activeQuizState.quiz,
             studentResponses: activeQuizState.studentResponses,
         })

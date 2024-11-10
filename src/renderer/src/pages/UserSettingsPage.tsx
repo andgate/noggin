@@ -2,7 +2,7 @@ import { Button, Paper, Stack, TextInput } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
 import { useUserSettings } from '@renderer/hooks/use-user-settings'
 import { UserSettings } from '@renderer/types/user-settings-types'
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { z } from 'zod'
 
 export interface UserSettingsProps {

@@ -1,10 +1,10 @@
 import { OpenAI } from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
-import { ChatCompletionMessageParam } from 'openai/resources'
+import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
 import { z } from 'zod'
 
 export type GenerateChatCompletionOptions<T> = {
-    openai: OpenAI
+    apiKey: string
     responseFormatName: string
     schema: z.ZodType<T>
     messages: ChatCompletionMessageParam[]
@@ -12,12 +12,13 @@ export type GenerateChatCompletionOptions<T> = {
 }
 
 export async function generateChatCompletion<T>({
-    openai,
+    apiKey,
     messages,
     schema,
     responseFormatName,
     signal,
 }: GenerateChatCompletionOptions<T>): Promise<T> {
+    const openai = new OpenAI({ apiKey })
     const completion = await openai.beta.chat.completions.parse(
         {
             model: 'gpt-4o', // NOTE structured outputs are only supported on gpt-4o

@@ -1,5 +1,4 @@
 import { AbortableGenerativeFunction } from '@renderer/hooks/use-generative'
-import { OpenAI } from 'openai'
 import {
     GeneratedQuestion,
     GeneratedQuiz,
@@ -33,7 +32,7 @@ const generateQuizPrompt = (
     Write a quiz with a title and ${questionCount > questions.length ? questionCount - questions.length : 0} questions that are different from the ones listed above.`
 
 export interface GenerateQuizOptions {
-    openai: OpenAI
+    apiKey: string
     sources: string[]
     existingQuestions: GeneratedQuestion[]
     questionTypes: string[]
@@ -100,7 +99,7 @@ export const generateQuiz: AbortableGenerativeFunction<GenerateQuizOptions, Part
     }
 
 export interface GenerateQuizBatchOptions {
-    openai: OpenAI
+    apiKey: string
     sources: string[]
     existingQuestions: GeneratedQuestion[]
     questionTypes: string[]
@@ -109,7 +108,7 @@ export interface GenerateQuizBatchOptions {
 }
 
 export const generateQuizBatch = async ({
-    openai,
+    apiKey,
     sources,
     existingQuestions,
     questionTypes,
@@ -124,7 +123,7 @@ export const generateQuizBatch = async ({
     })
     const prompt = generateQuizPrompt(sources, existingQuestions, questionCount, questionTypes)
     const completion = await generateChatCompletion({
-        openai,
+        apiKey,
         responseFormatName: 'quizResponse',
         schema: generatedQuizSchema,
         messages: [

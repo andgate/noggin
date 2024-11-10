@@ -3,6 +3,7 @@ import { Alert, Badge, Button, Group, Paper, Skeleton, Stack, Text, Title } from
 import { notifications } from '@mantine/notifications'
 import { useOpenAI } from '@renderer/hooks/use-openai'
 import { useQuizGenerator } from '@renderer/hooks/use-quiz-generator'
+import { useUserSettings } from '@renderer/hooks/use-user-settings'
 import { useNavigate } from '@tanstack/react-router'
 import { forwardRef, useCallback, useImperativeHandle, useMemo, useState } from 'react'
 import { createQuiz } from '../services/quiz-service'
@@ -99,7 +100,7 @@ export interface QuizGeneratorHandle {
  */
 export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>(
     ({ show, sources, questionTypes, questionCount, timeLimit }, ref) => {
-        const { openai } = useOpenAI()
+        const { openaiApiKey } = useUserSettings()
         const navigate = useNavigate({ from: '/quiz/create' })
         const [isSaving, setIsSaving] = useState(false)
         const [saveError, setSaveError] = useState<Error | undefined>(undefined)
@@ -126,7 +127,7 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
 
             try {
                 generateQuiz({
-                    openai,
+                    apiKey: openaiApiKey,
                     sources,
                     questionTypes,
                     questionCount,
