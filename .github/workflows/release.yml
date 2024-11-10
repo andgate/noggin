@@ -2,7 +2,8 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v[0-9]*.[0-9]*.[0-9]*'
+      - '!v*-preview'
 
 jobs:
   build:
@@ -58,6 +59,16 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Set Release Variables
+        id: release_vars
+        run: |
+          if [[ ${{ github.ref_name }} == *-preview ]]; then
+            echo "is_preview=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_preview=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
       - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -78,8 +89,9 @@ jobs:
         with:
           name: Noggin v${{ github.ref_name }} - Preview Release 🚀
           body_path: .github/release-body.md
-          draft: true
-          prerelease: true
+          draft: ${{ steps.release_vars.outputs.is_preview }}
+          prerelease: ${{ steps.release_vars.outputs.is_preview }}
+          make_latest: ${{ steps.release_vars.outputs.is_preview != 'true' }}
           files: |
             ./noggin-${{ github.ref_name }}.AppImage
             ./noggin_${{ github.ref_name }}_amd64.deb
