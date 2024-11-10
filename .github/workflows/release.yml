@@ -33,11 +33,11 @@ jobs:
 
       - name: Build and Publish
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
-            pnpm run publish:linux
+            pnpm build:linux
           else
-            pnpm run publish:win
+            pnpm build:win
           fi
         shell: bash
