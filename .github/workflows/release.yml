@@ -61,7 +61,7 @@ jobs:
       - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
-          path: dist
+          path: ./
           pattern: noggin-dist-*
           merge-multiple: true
 
@@ -81,8 +81,8 @@ jobs:
           draft: true
           prerelease: true
           files: |
-            dist/*.AppImage
-            dist/*.deb
-            dist/*.snap
-            dist/*-setup.exe
+            ./*.AppImage
+            ./*.deb
+            ./*.snap
+            ./*-setup.exe
           fail_on_unmatched_files: true
