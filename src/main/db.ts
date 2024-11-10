@@ -12,9 +12,23 @@ function getDbPath(): string {
     return import.meta.env.DEV ? 'sqlite.db' : path.join(app.getPath('userData'), 'data.db')
 }
 
+function ensureFile(filePath: string) {
+    // Ensure the directory exists
+    const dir = path.dirname(filePath)
+    if (!fs.existsSync(dir)) {
+        console.log(`Directory does not exist. Creating directory at: ${dir}`)
+        fs.mkdirSync(dir, { recursive: true })
+    }
+    // Ensure the file exists
+    if (!fs.existsSync(filePath)) {
+        console.log(`Database file does not exist. Creating new database at: ${filePath}`)
+        fs.closeSync(fs.openSync(filePath, 'w')) // Create the file
+    }
+}
+
 function createSqlite(dbPath: string) {
     try {
-        fs.mkdirSync(path.dirname(dbPath), { recursive: true })
+        ensureFile(dbPath)
         return new Database(resolve(dbPath))
     } catch (e) {
         console.error('Error creating sqlite at db path', e)
