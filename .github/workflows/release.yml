@@ -47,6 +47,7 @@ jobs:
         with:
           name: noggin-dist-${{ runner.os }}
           path: |
+            github/release-body.md
             dist/*.AppImage
             dist/*.deb
             dist/*.snap
