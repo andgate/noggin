@@ -1,6 +1,6 @@
 import { useUserSettings } from '@renderer/hooks/use-user-settings'
 import { OpenAI } from 'openai'
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useEffect } from 'react'
 
 export interface OpenAIContext {
     openai: OpenAI
@@ -12,9 +12,13 @@ export function OpenAIProvider({ children }: { children: React.ReactNode }) {
     const { settings } = useUserSettings()
     console.log('OpenAIProvider settings ==>', settings)
     const openai = new OpenAI({
-        apiKey: import.meta.env.VITE_OPENAI_API_KEY || settings.openaiApiKey || undefined,
+        apiKey: 'My api key',
         dangerouslyAllowBrowser: true,
     })
+    useEffect(() => {
+        // Note, the api key cannot be null and must have a dummy string
+        openai.apiKey = import.meta.env.VITE_OPENAI_API_KEY || settings.openaiApiKey || 'My api key'
+    }, [import.meta.env.VITE_OPENAI_API_KEY, settings.openaiApiKey])
     return <OpenAIContext.Provider value={{ openai }}>{children}</OpenAIContext.Provider>
 }
 
