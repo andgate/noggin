@@ -1,4 +1,4 @@
-![Tests](https://github.com/andgate/noggin/actions/workflows/playwright.yml/badge.svg)
+![Tests](https://github.com/andgate/noggin/actions/workflows/tests.yml/badge.svg)
 [![Discord](https://img.shields.io/discord/1303464423331074139?color=blueviolet&logo=discord)](https://discord.gg/YX88XMcCyC)
 ![license](https://img.shields.io/github/license/andgate/noggin)
 ![status](https://img.shields.io/badge/Status-%20Ready%20for%20Awesome-red.svg)
