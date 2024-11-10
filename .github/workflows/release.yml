@@ -81,7 +81,7 @@ jobs:
         with:
           name: Noggin ${{ github.ref_name }} - Preview Release 🚀
           body_path: templates/RELEASE.md
-          draft: ${{ steps.release_vars.outputs.is_preview }}
+          draft: false
           prerelease: ${{ steps.release_vars.outputs.is_preview }}
           make_latest: ${{ steps.release_vars.outputs.is_preview != 'true' }}
           files: |
