@@ -46,6 +46,13 @@ export const Route = createRootRoute({
             </RootDocument>
         )
     },
+    beforeLoad: ({ location, params }) => {
+        console.log('[RootRoute] beforeLoad:', {
+            pathname: location.pathname,
+            search: location.search,
+            params,
+        })
+    },
     notFoundComponent: () => <NotFound />,
     component: RootComponent,
 })

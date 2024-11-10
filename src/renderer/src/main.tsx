@@ -1,6 +1,11 @@
 import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
-import { RouterProvider, createRouter } from '@tanstack/react-router'
+import {
+    RouterProvider,
+    createBrowserHistory,
+    createHashHistory,
+    createRouter,
+} from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { DefaultCatchBoundary } from './components/DefaultCatchBoundary'
@@ -16,10 +21,13 @@ import { NotFound } from './components/NotFound'
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 
+const hashHistory = import.meta.env.DEV ? createBrowserHistory() : createHashHistory()
+
 // Create a new router instance
 const router = createRouter({
     routeTree,
-    defaultPreload: false,
+    history: hashHistory,
+    defaultPreload: 'intent',
     defaultErrorComponent: DefaultCatchBoundary,
     defaultNotFoundComponent: () => <NotFound />,
 })

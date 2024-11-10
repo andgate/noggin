@@ -14,6 +14,9 @@ function createWindow(): void {
         webPreferences: {
             preload: join(__dirname, '../preload/index.mjs'),
             sandbox: false,
+            allowRunningInsecureContent: true,
+            nodeIntegration: true,
+            contextIsolation: false,
         },
     })
 
@@ -33,9 +36,6 @@ function createWindow(): void {
     } else {
         mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
     }
-
-    // Enable remote debugging
-    app.commandLine.appendSwitch('remote-debugging-port', '9222')
 }
 
 // This method will be called when Electron has finished

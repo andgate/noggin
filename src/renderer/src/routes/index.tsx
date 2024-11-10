@@ -15,6 +15,9 @@ export const Route = createFileRoute('/')({
     notFoundComponent: () => {
         return <NotFound>Quiz not found</NotFound>
     },
+
+    // Consider the route's data fresh for 10 seconds
+    staleTime: 10_000,
 })
 
 function DashboardErrorComponent({ error }: ErrorComponentProps) {
