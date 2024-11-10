@@ -1,7 +1,8 @@
 import { Button, Paper, Stack, TextInput } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
-import { updateUserSettings } from '@renderer/services/user-settings-service'
+import { useUserSettings } from '@renderer/hooks/use-user-settings'
 import { UserSettings } from '@renderer/types/user-settings-types'
+import { useCallback, useMemo } from 'react'
 import { z } from 'zod'
 
 export interface UserSettingsProps {
@@ -17,7 +18,10 @@ const userSettingsSchema = z.object({
 
 type UserSettingsForm = z.infer<typeof userSettingsSchema>
 
-export function UserSettingsPage({ settings }: UserSettingsProps) {
+export function UserSettingsPage() {
+    const { settings, setUserSettings } = useUserSettings()
+
+    // Note, we use a memoized form to avoid recreating the form on every render
     const form = useForm<UserSettingsForm>({
         initialValues: {
             openaiApiKey: settings.openaiApiKey || '',
@@ -25,10 +29,12 @@ export function UserSettingsPage({ settings }: UserSettingsProps) {
         validate: zodResolver(userSettingsSchema),
     })
 
-    const handleSubmit = (values: UserSettingsForm) => {
-        console.log('OpenAI API Key:', values.openaiApiKey)
-        updateUserSettings({ openaiApiKey: values.openaiApiKey })
-    }
+    const handleSubmit = useCallback(
+        (values: UserSettingsForm) => {
+            setUserSettings({ openaiApiKey: values.openaiApiKey })
+        },
+        [setUserSettings]
+    )
 
     return (
         <Paper maw={600} mx="auto" p="md" withBorder>
