@@ -109,10 +109,7 @@ To build the application:
 
 ```bash
 # For Windows
-pnpm build:win32
-
-# For macOS
-pnpm build:mac
+pnpm build:win
 
 # For Linux
 pnpm build:linux
@@ -138,11 +135,34 @@ Note: Always review generated migrations before applying them to ensure they mat
 
 ## Testing
 
-Run the test suite:
+Run the test suites:
 
 ```bash
+# Run Vitest tests
 pnpm test
+
+# Run E2E tests with Playwright
+pnpm test:e2e
 ```
+
+## Release
+
+The release process is mostly automated by GitHub actions, but requires some manual steps.
+
+Before creating a release, ensure you have bumped the version number in `package.json`. Failing to do so may cause the release pipeline to fail.
+
+To trigger a release on the current branch, push a tag to the repository:
+
+```bash
+git tag vx.x.x
+git push origin vx.x.x
+```
+
+The release pipeline will build the application for Windows, and Linux, create a draft release, and upload the built assets.
+
+MacOS builds are not currently supported.
+
+Once the release workflow has completed, you can review the release on the repository's GitHub Releases page. After ensuring everything looks correct, you can publish the release.
 
 ### Available Scripts
 
@@ -150,19 +170,25 @@ pnpm test
 -   `pnpm start` - Start production server
 -   `pnpm build` - Build for production
 -   `pnpm build:unpack` - Build and unpack without packaging
--   `pnpm build:win32` - Build for Windows
--   `pnpm build:mac` - Build for macOS
--   `pnpm build:linux` - Build for Linux
+-   `pnpm build:win` - Build for Windows (without publishing)
+-   `pnpm build:linux` - Build for Linux (without publishing)
+-   `pnpm publish:win` - Build and publish for Windows
+-   `pnpm publish:linux` - Build and publish for Linux
+-   `pnpm check` - Type check all code
 -   `pnpm check:node` - Type check Node.js code in watch mode
--   `pnpm check:web` - Type check web code in watch mode
+-   `pnpm check:ui` - Type check web code in watch mode
 -   `pnpm generate` - Generate database migrations
 -   `pnpm push` - Push database changes
 -   `pnpm studio` - Open Drizzle Studio
--   `pnpm test` - Run Playwright tests
--   `pnpm test:ui` - Run Playwright tests with UI
+-   `pnpm test` - Run Vitest tests
+-   `pnpm test:e2e` - Run Playwright E2E tests with UI
+-   `pnpm test:ci` - Run Vitest tests in CI
+-   `pnpm test:e2e:ci` - Run Playwright tests in CI
 -   `pnpm lint` - Run ESLint
 -   `pnpm lint:fix` - Run ESLint with auto-fix
 -   `pnpm format` - Format code with Prettier
+-   `pnpm rebuild:drizzle` - Rebuild better-sqlite3
+-   `pnpm rebuild:electron` - Rebuild Electron dependencies
 
 ## Tech Stack
 
