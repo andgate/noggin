@@ -11,7 +11,6 @@ import {
 } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
 import { ActiveQuizProvider } from '@renderer/hooks/use-active-quiz'
-import { OpenAIProvider } from '@renderer/hooks/use-openai'
 import { UserSettingsProvider } from '@renderer/hooks/use-user-settings'
 import { IconHome, IconSettings } from '@tabler/icons-react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -81,20 +80,13 @@ const RootProvider = ({ children }: Readonly<{ children: ReactNode }>) => {
     return (
         <>
             <UserSettingsProvider>
-                <OpenAIProvider>
-                    <ActiveQuizProvider>
-                        <ColorSchemeScript
-                            nonce="8IBTHwOdqNKAWeKl7plt8g=="
-                            defaultColorScheme="dark"
-                        />
-                        <MantineProvider defaultColorScheme="dark" theme={theme}>
-                            <Notifications />
-                            <QueryClientProvider client={queryClient}>
-                                {children}
-                            </QueryClientProvider>
-                        </MantineProvider>
-                    </ActiveQuizProvider>
-                </OpenAIProvider>
+                <ActiveQuizProvider>
+                    <ColorSchemeScript nonce="8IBTHwOdqNKAWeKl7plt8g==" defaultColorScheme="dark" />
+                    <MantineProvider defaultColorScheme="dark" theme={theme}>
+                        <Notifications />
+                        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+                    </MantineProvider>
+                </ActiveQuizProvider>
             </UserSettingsProvider>
         </>
     )

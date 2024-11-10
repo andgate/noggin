@@ -1,11 +1,10 @@
 // TODO: Add a regenerate button
 import { Alert, Badge, Button, Group, Paper, Skeleton, Stack, Text, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { useOpenAI } from '@renderer/hooks/use-openai'
 import { useQuizGenerator } from '@renderer/hooks/use-quiz-generator'
 import { useUserSettings } from '@renderer/hooks/use-user-settings'
 import { useNavigate } from '@tanstack/react-router'
-import { forwardRef, useCallback, useImperativeHandle, useMemo, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react'
 import { createQuiz } from '../services/quiz-service'
 import { GeneratedQuestion, GeneratedQuiz } from '../types/quiz-generation-types'
 import { QuestionType } from '../types/quiz-view-types'
@@ -109,6 +108,7 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
             generateQuiz,
             quiz,
             isRunning: isGenerating,
+            quizGenerationError,
             abort: handleCancel,
         } = useQuizGenerator()
 
@@ -125,23 +125,24 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
         const runGeneration = useCallback<() => Promise<void>>(async () => {
             console.log('[QuizGenerator] Starting quiz generation')
 
-            try {
-                generateQuiz({
-                    apiKey: openaiApiKey,
-                    sources,
-                    questionTypes,
-                    questionCount,
-                    existingQuestions: [],
-                })
-            } catch (error) {
-                console.error('[QuizGenerator] Error generating quiz:', error)
+            generateQuiz({
+                apiKey: openaiApiKey,
+                sources,
+                questionTypes,
+                questionCount,
+                existingQuestions: [],
+            })
+        }, [generateQuiz, openaiApiKey, sources, questionTypes, questionCount])
+
+        useEffect(() => {
+            if (quizGenerationError) {
                 notifications.show({
                     title: 'Error',
                     message: 'Failed to generate quiz. Please try again.',
                     color: 'red',
                 })
             }
-        }, [generateQuiz, sources, questionTypes, questionCount])
+        }, [quizGenerationError])
 
         // Expose the run function via useImperativeHandle
         useImperativeHandle(
@@ -213,23 +214,29 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
                     )}
                 </Group>
 
-                <QuizTitleGenerator title={title} isLoading={!title} />
-                <div>
-                    {(questions || []).map((_, index) => (
-                        <QuestionGenerator
-                            key={index}
-                            index={index}
-                            question={questions[index]}
-                            isLoading={!questions[index]}
-                        />
-                    ))}
-                </div>
+                <Paper maw={500} withBorder p="md" mb="md" radius="md">
+                    {quizGenerationError ? (
+                        <Alert color="red" mt="md" title="Generation Error">
+                            <Text lineClamp={3} size="sm" style={{ wordBreak: 'break-word' }}>
+                                {quizGenerationError.message}
+                            </Text>
+                        </Alert>
+                    ) : (
+                        <QuizTitleGenerator title={title} isLoading={!title} />
+                    )}
 
-                {saveError && (
-                    <Alert color="red" mt="md">
-                        Failed to save quiz: {saveError.message}
-                    </Alert>
-                )}
+                    <div>
+                        {(questions || []).map((_, index) => (
+                            <QuestionGenerator
+                                key={index}
+                                index={index}
+                                question={questions[index]}
+                                isLoading={!questions[index]}
+                                error={quizGenerationError}
+                            />
+                        ))}
+                    </div>
+                </Paper>
             </div>
         )
     }

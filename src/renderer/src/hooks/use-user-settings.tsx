@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 
 export interface UserSettingsContext {
     settings: UserSettings
-    openaiApiKey: string
+    openaiApiKey?: string
     setUserSettings: (settings: UserSettings) => void
 }
 
@@ -15,7 +15,7 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
     const [isLoading, setIsLoading] = useState(true)
 
     const openaiApiKey = useMemo(
-        () => userSettings.openaiApiKey || import.meta.env.VITE_OPENAI_API_KEY || 'My api key',
+        () => userSettings.openaiApiKey || import.meta.env.VITE_OPENAI_API_KEY || undefined,
         [userSettings]
     )
 

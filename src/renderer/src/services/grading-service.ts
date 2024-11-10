@@ -54,7 +54,7 @@ const generateGradedSubmissionPrompt = (
 `
 
 export interface GenerateGradesOptions {
-    apiKey: string
+    apiKey?: string
     quiz: Quiz
     studentResponses: string[]
     signal?: AbortSignal
@@ -100,7 +100,7 @@ export const generateGradedSubmission: AbortableGenerativeFunction<
 }
 
 export interface GenerateGradedSubmissionBatchOptions {
-    apiKey: string
+    apiKey?: string
     sources: string[]
     quizTitle: string
     questions: Question[]

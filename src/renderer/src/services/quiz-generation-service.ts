@@ -32,7 +32,7 @@ const generateQuizPrompt = (
     Write a quiz with a title and ${questionCount > questions.length ? questionCount - questions.length : 0} questions that are different from the ones listed above.`
 
 export interface GenerateQuizOptions {
-    apiKey: string
+    apiKey?: string
     sources: string[]
     existingQuestions: GeneratedQuestion[]
     questionTypes: string[]
@@ -99,7 +99,7 @@ export const generateQuiz: AbortableGenerativeFunction<GenerateQuizOptions, Part
     }
 
 export interface GenerateQuizBatchOptions {
-    apiKey: string
+    apiKey?: string
     sources: string[]
     existingQuestions: GeneratedQuestion[]
     questionTypes: string[]
@@ -116,6 +116,7 @@ export const generateQuizBatch = async ({
     signal,
 }: GenerateQuizBatchOptions): Promise<GeneratedQuiz> => {
     console.log('generateQuizBatch called =>', {
+        apiKey,
         sourcesCount: sources.length,
         existingQuestionsCount: existingQuestions.length,
         questionTypes,

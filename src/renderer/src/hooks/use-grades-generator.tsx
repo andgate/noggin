@@ -10,7 +10,7 @@ export interface GradesGenerator {
     gradedSubmission: GradedSubmission
     isGradeGeneratorRunning: boolean
     isDoneGrading: boolean
-    error?: Error
+    gradingError?: Error
     abort: () => void
 }
 
@@ -27,7 +27,7 @@ export function useGradesGenerator(): GradesGenerator {
         gradedSubmission: state,
         isGradeGeneratorRunning: isRunning,
         isDoneGrading: isDone,
-        error,
+        gradingError: error,
         abort,
     }
 }

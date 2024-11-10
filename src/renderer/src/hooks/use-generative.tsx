@@ -120,6 +120,7 @@ export function GenerativeProvider<I, S>({
                     }
                 }
             } catch (e) {
+                console.error('Error in generative function, saved!', e)
                 setError(e instanceof Error ? e : new Error(String(e)))
             } finally {
                 setIsRunning(false)

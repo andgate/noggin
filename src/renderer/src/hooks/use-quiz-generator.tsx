@@ -6,7 +6,7 @@ export interface QuizGenerator {
     generateQuiz: (options: GenerateQuizOptions) => void
     quiz: PartialGeneratedQuiz
     isRunning: boolean
-    error?: Error
+    quizGenerationError?: Error
     abort: () => void
 }
 
@@ -18,7 +18,7 @@ export function useQuizGenerator(): QuizGenerator {
         GenerateQuizOptions,
         PartialGeneratedQuiz
     >()
-    return { generateQuiz: invoke, quiz: state, isRunning, error, abort }
+    return { generateQuiz: invoke, quiz: state, isRunning, quizGenerationError: error, abort }
 }
 
 /**

@@ -1,3 +1,7 @@
+// TODO Retry grading
+// Add the ability to retry grading a submission, even if it's already been graded and saved.
+// While you're at it, make sure ungraded submissions are also saved.
+// This will GREATLY improve the user experience.
 import {
     Alert,
     Badge,
@@ -11,7 +15,6 @@ import {
     Title,
 } from '@mantine/core'
 import { useGradesGenerator } from '@renderer/hooks/use-grades-generator'
-import { useOpenAI } from '@renderer/hooks/use-openai'
 import { useUserSettings } from '@renderer/hooks/use-user-settings'
 import { storeQuizSubmission } from '@renderer/services/submission-service'
 import { GradedResponse } from '@renderer/types/quiz-generation-types'
@@ -24,6 +27,7 @@ interface GradedQuestionDisplayProps {
     question: Question
     studentResponse: string
     gradedResponse?: GradedResponse
+    error?: Error
 }
 
 // Separate component for rendering individual graded responses
@@ -31,6 +35,7 @@ const GradedQuestionDisplay: React.FC<GradedQuestionDisplayProps> = ({
     question,
     studentResponse,
     gradedResponse,
+    error,
 }) => {
     return (
         <Paper withBorder p="md" mb="md" radius="md">
@@ -77,33 +82,34 @@ const GradedQuestionDisplay: React.FC<GradedQuestionDisplayProps> = ({
                     </Paper>
                 </Stack>
 
-                {gradedResponse ? (
-                    <Stack gap="xs">
-                        <Text fw={500}>Feedback:</Text>
-                        <Paper withBorder p="xs">
-                            <Stack gap="xs">
-                                <Text fw={500}>Correct Answer:</Text>
-                                <Paper withBorder p="xs">
-                                    <Text>{gradedResponse.correctAnswer}</Text>
-                                </Paper>
-                            </Stack>
-                            <Text fw={500} mb={4} tt="capitalize">
-                                {gradedResponse.verdict}
-                            </Text>
-                            <Text>{gradedResponse.feedback}</Text>
-                        </Paper>
-                    </Stack>
-                ) : (
-                    <Stack gap="xs">
-                        <Text fw={500}>Feedback:</Text>
-                        <Paper withBorder p="xs">
-                            <Stack gap="xs">
-                                <Skeleton height={20} />
-                                <Skeleton height={60} />
-                            </Stack>
-                        </Paper>
-                    </Stack>
-                )}
+                {!error &&
+                    (gradedResponse ? (
+                        <Stack gap="xs">
+                            <Text fw={500}>Feedback:</Text>
+                            <Paper withBorder p="xs">
+                                <Stack gap="xs">
+                                    <Text fw={500}>Correct Answer:</Text>
+                                    <Paper withBorder p="xs">
+                                        <Text>{gradedResponse.correctAnswer}</Text>
+                                    </Paper>
+                                </Stack>
+                                <Text fw={500} mb={4} tt="capitalize">
+                                    {gradedResponse.verdict}
+                                </Text>
+                                <Text>{gradedResponse.feedback}</Text>
+                            </Paper>
+                        </Stack>
+                    ) : (
+                        <Stack gap="xs">
+                            <Text fw={500}>Feedback:</Text>
+                            <Paper withBorder p="xs">
+                                <Stack gap="xs">
+                                    <Skeleton height={20} />
+                                    <Skeleton height={60} />
+                                </Stack>
+                            </Paper>
+                        </Stack>
+                    ))}
             </Stack>
         </Paper>
     )
@@ -116,8 +122,13 @@ export function GradingPage() {
     const { quiz, studentResponses } = useMemo(() => activeQuizState, [activeQuizState])
     const [isSubmissionSaved, setIsSubmissionSaved] = useState(false)
 
-    const { generateGrades, gradedSubmission, isGradeGeneratorRunning, isDoneGrading, error } =
-        useGradesGenerator()
+    const {
+        generateGrades,
+        gradedSubmission,
+        isGradeGeneratorRunning,
+        isDoneGrading,
+        gradingError,
+    } = useGradesGenerator()
 
     useEffect(() => {
         console.debug('[GradingPage] Current state:', {
@@ -126,12 +137,19 @@ export function GradingPage() {
             studentResponses: studentResponses.slice(0, 10),
             responseCount: studentResponses.length,
             isGradeGeneratorRunning,
-            hasError: !!error,
+            hasError: !!gradingError,
         })
-    }, [quiz, studentResponses, generateGrades, gradedSubmission, isGradeGeneratorRunning, error])
+    }, [
+        quiz,
+        studentResponses,
+        generateGrades,
+        gradedSubmission,
+        isGradeGeneratorRunning,
+        gradingError,
+    ])
 
     useEffect(() => {
-        if (quiz && isDoneGrading && !isSubmissionSaved) {
+        if (quiz && isDoneGrading && !isSubmissionSaved && !gradingError) {
             setIsSubmissionSaved(true) // Immediately set to true to prevent re-saving (is there a race condition here?)
             console.debug('[GradingPage] Grading process completed. Saving...')
             storeQuizSubmission({
@@ -140,7 +158,7 @@ export function GradingPage() {
                 timeElapsed: activeQuizState.elapsedTime,
             })
         }
-    }, [isDoneGrading, isSubmissionSaved, quiz, gradedSubmission, activeQuizState])
+    }, [isDoneGrading, isSubmissionSaved, quiz, gradedSubmission, activeQuizState, gradingError])
 
     const gradedResponses = useMemo(() => {
         const responses = gradedSubmission?.responses || []
@@ -163,43 +181,44 @@ export function GradingPage() {
         })
     }, [])
 
-    if (!quiz) {
-        return (
-            <Alert color="red" title="Grading Error">
-                No quiz to grade
-            </Alert>
-        )
-    }
-
-    if (error) {
-        return (
-            <Alert color="red" title="Grading Error">
-                Failed to grade quiz: {error.message}
-            </Alert>
-        )
-    }
-
     return (
         <Card maw={800} mx="auto" withBorder p="xl" radius="md">
             <Stack gap="lg">
-                <Title order={2}>{quiz.title} - Grading</Title>
+                {!quiz && (
+                    <Alert color="red" title="Grading Error">
+                        No quiz available to grade.
+                    </Alert>
+                )}
 
-                {isGradeGeneratorRunning && (
+                {quiz && <Title order={2}>{quiz.title} - Grading</Title>}
+
+                {gradingError && (
+                    <Alert color="red" mt="md" title="Generation Error">
+                        <Text lineClamp={3} size="sm" style={{ wordBreak: 'break-word' }}>
+                            {gradingError.message}
+                        </Text>
+                    </Alert>
+                )}
+
+                {isGradeGeneratorRunning && !gradingError && (
                     <Alert color="blue" title="Grading in Progress">
                         The AI is currently grading your responses...
                     </Alert>
                 )}
 
-                <Stack gap="md">
-                    {(quiz.questions || []).map((question, index) => (
-                        <GradedQuestionDisplay
-                            key={index}
-                            question={question}
-                            studentResponse={studentResponses[index]}
-                            gradedResponse={gradedResponses[index] ?? undefined}
-                        />
-                    ))}
-                </Stack>
+                {quiz && (
+                    <Stack gap="md">
+                        {(quiz?.questions || []).map((question, index) => (
+                            <GradedQuestionDisplay
+                                key={index}
+                                question={question}
+                                studentResponse={studentResponses[index]}
+                                gradedResponse={gradedResponses[index] ?? undefined}
+                                error={gradingError}
+                            />
+                        ))}
+                    </Stack>
+                )}
             </Stack>
             {isDoneGrading && (
                 <Group justify="space-between" mt="lg">
@@ -209,7 +228,7 @@ export function GradingPage() {
                             onClick={() => {
                                 navigate({
                                     to: '/quiz/practice/$quizId',
-                                    params: { quizId: `${quiz.id}` },
+                                    params: { quizId: `${quiz!.id}` },
                                 })
                             }}
                         >
@@ -222,11 +241,16 @@ export function GradingPage() {
                         >
                             New Quiz
                         </Button>
+                        {isSubmissionSaved ? (
+                            <Text c="gray" fs="italic">
+                                Submission saved!
+                            </Text>
+                        ) : (
+                            <Text c="red" fs="italic">
+                                Submission not saved.
+                            </Text>
+                        )}
                     </Group>
-
-                    <Text c="gray" fs="italic">
-                        Submission saved!
-                    </Text>
 
                     <Button size="lg" variant="subtle" onClick={() => navigate({ to: '/' })}>
                         Return to Dashboard
