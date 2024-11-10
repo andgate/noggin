@@ -72,9 +72,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./
-          pattern: |
-            .github/*.md
-            noggin-dist-*
+          pattern: noggin-dist-*
           merge-multiple: true
 
       - name: List Directory Structure
