@@ -75,7 +75,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          name: Noggin v${{ github.ref_name }} - Preview Release 🚀
+          body_path: .github/release-body.md
           draft: true
+          prerelease: true
           files: |
             dist/*.AppImage
             dist/*.deb
