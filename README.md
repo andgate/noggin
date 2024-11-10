@@ -27,6 +27,16 @@ A modern quiz application built with Electron, React, and TypeScript.
 
 ## Quick Start
 
+Go to the [releases page](https://github.com/andgate/noggin/releases) and download the latest release for your operating system. Currently only Windows and Linux are supported.
+
+Once downloaded, run the application by double clicking the executable file. The installer will install the application and launch it.
+
+First time running the application you will need to enter a valid OpenAI API key in the settings menu.
+
+To get an OpenAI API key, see [here](https://platform.openai.com/api-keys). You will need to create a new key with permissions for `gpt-4o`. This is not a free service and you will need to load credits to your account.
+
+## Developer Quick Start
+
 Install dependencies and setup environment
 
 ```bash

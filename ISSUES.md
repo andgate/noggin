@@ -48,3 +48,11 @@ Use these scripts accordingly:
 This approach ensures the native module is properly compiled for each environment, though it requires us to manage rebuilding when switching between contexts.
 
 See [this issue](https://github.com/WiseLibs/better-sqlite3/issues/1171) for more details.
+
+## OpenAI API Key Security
+
+Currently, the OpenAI API key is stored in plain text in the database. This is obviously not secure. The key is also leaked into the browser process, and openai calls are made directly from the renderer.
+
+This is typically insecure in most setups. For now, this is not a major concern for us. The environment that our application targets is low security risk. The api key is secure unless some malicious process gains access to the browser page. Then it can read the key from browser. But this is still unlikely.
+
+So while it is not an immediate concern, we should look into moving the openai api calls to the backend to secure the keys in the future. Then it can be stored more securely and calls can be managed by our backend, something which both OpenAI and Electron documentation both recommend as standard practice.
