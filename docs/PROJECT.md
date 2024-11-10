@@ -94,13 +94,13 @@
         - Input fields for study content, file uploads, or URLs.
         - Options for specifying question types and quiz length.
         - Real-time preview of AI-generated questions.
-    - **Quiz Taking Page**:
+    - **Practice Page**:
         - All questions displayed on a single page.
         - Intuitive navigation with scrolling and smooth transitions.
         - Submission button for grading and feedback.
-    - **Results Page**:
+    - **Grading Page**:
         - Displays overall scores and detailed feedback for each question.
-        - Option to review the quiz or return to the dashboard.
+        - Options to retake the quiz, create a new quiz, or return to the dashboard.
 
 ### Features in Development
 
