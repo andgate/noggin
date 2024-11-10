@@ -54,6 +54,14 @@ jobs:
             dist/*-setup.exe
           if-no-files-found: error
 
+      - name: Debug Artifact Contents
+        run: |
+          echo "=== Current Directory ==="
+          ls -la
+          echo "=== .github Directory ==="
+          ls -la .github/
+        shell: bash
+
   release:
     needs: build
     runs-on: ubuntu-latest
