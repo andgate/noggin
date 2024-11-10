@@ -1,4 +1,4 @@
-# \*\*Noggin v0.0.x - Preview Release 🚀
+# Noggin - Preview Release 🚀
 
 Welcome to the first preview release of **Noggin**, a modern quiz application designed to make learning smarter and more interactive. Built with Electron, React, and TypeScript, this release is intended for **testing and feedback purposes**. As an **unstable preview** it may contain **bugs** and **incomplete features**.
 

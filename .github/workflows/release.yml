@@ -54,14 +54,6 @@ jobs:
             ./dist/*-setup.exe
           if-no-files-found: error
 
-      - name: Debug Artifact Contents
-        run: |
-          echo "=== Current Directory ==="
-          ls -la
-          echo "=== dist Directory ==="
-          ls -la ./dist/
-        shell: bash
-
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -82,18 +74,12 @@ jobs:
           pattern: noggin-dist-*
           merge-multiple: true
 
-      - name: List Directory Structure
-        run: |
-          echo "=== Directory Structure ==="
-          ls -R ./
-        shell: bash
-
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Noggin v${{ github.ref_name }} - Preview Release 🚀
+          name: Noggin ${{ github.ref_name }} - Preview Release 🚀
           body_path: templates/RELEASE.md
           draft: ${{ steps.release_vars.outputs.is_preview }}
           prerelease: ${{ steps.release_vars.outputs.is_preview }}
