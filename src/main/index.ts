@@ -55,7 +55,7 @@ app.whenReady().then(async () => {
 
     // TODO fix automatic migrations
     // see https://github.com/drizzle-team/drizzle-orm/issues/680
-    // await runMigrate()
+    await db.runMigrate()
     createWindow()
 
     app.on('activate', function () {

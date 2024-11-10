@@ -19,11 +19,11 @@ function ensureFile(filePath: string) {
         console.log(`Directory does not exist. Creating directory at: ${dir}`)
         fs.mkdirSync(dir, { recursive: true })
     }
-    // Ensure the file exists
-    if (!fs.existsSync(filePath)) {
-        console.log(`Database file does not exist. Creating new database at: ${filePath}`)
-        fs.closeSync(fs.openSync(filePath, 'w')) // Create the file
-    }
+    // // Ensure the file exists
+    // if (!fs.existsSync(filePath)) {
+    //     console.log(`Database file does not exist. Creating new database at: ${filePath}`)
+    //     fs.closeSync(fs.openSync(filePath, 'w')) // Create the file
+    // }
 }
 
 function createSqlite(dbPath: string) {
@@ -74,7 +74,5 @@ export const execute = async (e, sql, params, method) => {
 }
 
 export const runMigrate = async () => {
-    const migrationsFolder = path.join(__dirname, './drizzle')
-    console.log('Running migrations', migrationsFolder)
-    return migrate(db, { migrationsFolder })
+    return migrate(db, { migrationsFolder: 'migrations' })
 }
