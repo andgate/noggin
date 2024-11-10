@@ -1,4 +1,5 @@
-**Noggin Code of Conduct**
+# Noggin Code of Conduct
+
 _Declaring the Malevolent Dictatorship of andgate_
 
 ---
