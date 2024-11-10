@@ -47,11 +47,11 @@ jobs:
         with:
           name: noggin-dist-${{ runner.os }}
           path: |
-            .github/*.md
-            dist/*.AppImage
-            dist/*.debc
-            dist/*.snap
-            dist/*-setup.exe
+            ./templates/*.md
+            ./dist/*.AppImage
+            ./dist/*.debc
+            ./dist/*.snap
+            ./dist/*-setup.exe
           if-no-files-found: error
 
       - name: Debug Artifact Contents
@@ -79,7 +79,6 @@ jobs:
       - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ./
           pattern: noggin-dist-*
           merge-multiple: true
 
@@ -95,13 +94,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: Noggin v${{ github.ref_name }} - Preview Release 🚀
-          body_path: .github/release-body.md
+          body_path: templates/RELEASE.md
           draft: ${{ steps.release_vars.outputs.is_preview }}
           prerelease: ${{ steps.release_vars.outputs.is_preview }}
           make_latest: ${{ steps.release_vars.outputs.is_preview != 'true' }}
           files: |
-            ./dist/noggin-${{ github.ref_name }}.AppImage
-            ./dist/noggin_${{ github.ref_name }}_amd64.debc
-            ./dist/noggin_${{ github.ref_name }}_amd64.snap
-            ./dist/noggin-${{ github.ref_name }}-setup.exe
+            dist/noggin-${{ github.ref_name }}.AppImage
+            dist/noggin_${{ github.ref_name }}_amd64.debc
+            dist/noggin_${{ github.ref_name }}_amd64.snap
+            dist/noggin-${{ github.ref_name }}-setup.exe
           fail_on_unmatched_files: true
