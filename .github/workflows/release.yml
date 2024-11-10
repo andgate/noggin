@@ -48,3 +48,15 @@ jobs:
           name: noggin-dist-${{ runner.os }}
           path: dist/
           if-no-files-found: error
+
+      - name: Create Release and Upload Assets
+        if: runner.os == 'Linux' # Only create release once
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          files: |
+            dist/noggin-${{ github.ref_name }}.AppImage
+            dist/noggin-${{ github.ref_name }}-setup.exe
+          fail_on_unmatched_files: true
