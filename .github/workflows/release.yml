@@ -49,6 +49,17 @@ jobs:
           path: dist/
           if-no-files-found: error
 
+  create-release:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: noggin-dist-*
+          merge-multiple: true
+
       - name: Create Release and Upload Assets
         if: runner.os == 'Linux' # Only create release once
         uses: softprops/action-gh-release@v2
