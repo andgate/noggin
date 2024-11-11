@@ -6,6 +6,7 @@ import { notifications } from '@mantine/notifications'
 import { useActiveQuiz } from '@renderer/hooks/use-active-quiz'
 import { useNavigate } from '@tanstack/react-router'
 import { produce } from 'immer'
+import { debounce } from 'lodash'
 import { FormEvent, useCallback, useEffect, useState } from 'react'
 import { Question, Quiz } from '../types/quiz-view-types'
 
@@ -15,25 +16,39 @@ export function formatDuration(seconds: number): string {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
 }
 
-// Component for multiple choice questions
-const MultiChoiceQuestionItem: React.FC<{
+interface MultiChoiceQuestionItemProps {
     question: Extract<Question, { questionType: 'multiple_choice' }>
     questionLabel: string
     form: ReturnType<typeof useForm>
-}> = ({ question, questionLabel, form }) => (
-    <Box mb="md">
-        <Title order={4} mb="xs">
-            {questionLabel}
-        </Title>
-        <Radio.Group {...form.getInputProps(`question_${question.id}`)}>
-            <Stack>
-                {question.choices.map((choice) => (
-                    <Radio key={choice.id} value={choice.optionText} label={choice.optionText} />
-                ))}
-            </Stack>
-        </Radio.Group>
-    </Box>
-)
+}
+
+// Component for multiple choice questions
+const MultiChoiceQuestionItem: React.FC<MultiChoiceQuestionItemProps> = ({
+    question,
+    questionLabel,
+    form,
+}: MultiChoiceQuestionItemProps) => {
+    const inputProps = form.getInputProps(`question_${question.id}`)
+
+    return (
+        <Box mb="md">
+            <Title order={4} mb="xs">
+                {questionLabel}
+            </Title>
+            <Radio.Group {...inputProps} key={form.key(`question_${question.id}`)}>
+                <Stack>
+                    {question.choices.map((choice) => (
+                        <Radio
+                            key={choice.id}
+                            value={choice.optionText}
+                            label={choice.optionText}
+                        />
+                    ))}
+                </Stack>
+            </Radio.Group>
+        </Box>
+    )
+}
 
 // Component for written questions
 const WrittenQuestionItem: React.FC<{
@@ -45,7 +60,11 @@ const WrittenQuestionItem: React.FC<{
         <Title order={4} mb="xs">
             {questionLabel}
         </Title>
-        <Textarea {...form.getInputProps(`question_${question.id}`)} minRows={4} />
+        <Textarea
+            {...form.getInputProps(`question_${question.id}`)}
+            key={form.key(`question_${question.id}`)}
+            minRows={4}
+        />
     </Box>
 )
 
@@ -86,6 +105,7 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     const timeLimitInSeconds = quiz.timeLimit * 60 // Convert minutes to seconds
 
     const form = useForm<Record<string, string>>({
+        mode: 'uncontrolled',
         initialValues: quiz.questions.reduce(
             (acc, question) => ({
                 ...acc,
@@ -118,15 +138,14 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     )
 
     const handleFormChange = useCallback(
-        (event: FormEvent<HTMLFormElement>) => {
+        debounce((event: FormEvent<HTMLFormElement>) => {
             event.preventDefault()
 
-            // Map form values to responses array in the same order as questions
+            // Map form values to responses array using getValues
+            const formValues = form.getValues()
             const formResponses = quiz.questions.map(
-                (question) => form.getValues()[`question_${question.id}`] || ''
+                (question) => formValues[`question_${question.id}`] || ''
             )
-
-            console.log('[PracticeQuizPage] Form updated:', formResponses)
 
             setStudentResponses(formResponses)
 
@@ -136,7 +155,7 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
                     draft.studentResponses = formResponses
                 })
             )
-        },
+        }, 300),
         [setActiveQuizState, quiz, setStudentResponses]
     )
 
