@@ -3,14 +3,14 @@
 ![license](https://img.shields.io/github/license/andgate/noggin)
 ![status](https://img.shields.io/badge/Status-%20Ready%20for%20Awesome-red.svg)
 
-# Noggin
+# 🧠 Noggin
 
 A modern quiz application built with Electron, React, and TypeScript.
 
 > **Warning**
 > This software is currently in alpha stage and under active development. Features may be incomplete, unstable, or subject to breaking changes. Use at your own risk.
 
-## Features
+## ✨ Features
 
 -   Create and manage quizzes
 -   Quiz generation with OpenAI
@@ -20,12 +20,12 @@ A modern quiz application built with Electron, React, and TypeScript.
 -   Clean, responsive UI using Mantine components
 -   E2E test coverage with Playwright
 
-## Prerequisites
+## 📋 Prerequisites
 
 -   Node.js (LTS version recommended)
 -   pnpm 9.12.3 or higher
 
-## Quick Start
+## 🚀 Quick Start
 
 Go to the [releases page](https://github.com/andgate/noggin/releases) and download the latest release for your operating system. Currently only Windows and Linux are supported.
 
@@ -35,7 +35,7 @@ First time running the application you will need to enter a valid OpenAI API key
 
 To get an OpenAI API key, see [here](https://platform.openai.com/api-keys). You will need to create a new key with permissions for `gpt-4o`. This is not a free service and you will need to load credits to your account.
 
-## Developer Quick Start
+## 👩‍💻 Developer Quick Start
 
 Install dependencies and setup environment
 
@@ -60,7 +60,7 @@ pnpm push
 pnpm dev
 ```
 
-## Development Setup
+## 🛠️ Development Setup
 
 1. Clone the repository:
 
@@ -107,7 +107,7 @@ pnpm generate
 pnpm push
 ```
 
-## Development
+## 💻 Development
 
 Start the development server:
 
@@ -125,7 +125,7 @@ pnpm build:win
 pnpm build:linux
 ```
 
-## Database Migrations
+## 🗃️ Database Migrations
 
 When you make changes to the database schema:
 
@@ -143,7 +143,7 @@ pnpm push
 
 Note: Always review generated migrations before applying them to ensure they match your intended changes.
 
-## Testing
+## 🧪 Testing
 
 Run the test suites:
 
@@ -155,7 +155,7 @@ pnpm test
 pnpm test:e2e
 ```
 
-## Release
+## 📦 Release
 
 The release process is mostly automated by GitHub actions, but requires some manual steps.
 
@@ -174,7 +174,7 @@ MacOS builds are not currently supported.
 
 Once the release workflow has completed, you can review the release on the repository's GitHub Releases page. After ensuring everything looks correct, you can publish the release.
 
-### Available Scripts
+## 📜 Available Scripts
 
 -   `pnpm dev` - Start development server
 -   `pnpm start` - Start production server
@@ -200,7 +200,7 @@ Once the release workflow has completed, you can review the release on the repos
 -   `pnpm rebuild:drizzle` - Rebuild better-sqlite3
 -   `pnpm rebuild:electron` - Rebuild Electron dependencies
 
-## Tech Stack
+## 🔧 Tech Stack
 
 -   Electron
 -   React 18
@@ -214,6 +214,6 @@ Once the release workflow has completed, you can review the release on the repos
 -   electron-vite
 -   Prettier & ESLint
 
-## License
+## ⚖️ License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
