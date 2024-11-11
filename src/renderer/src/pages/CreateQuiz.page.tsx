@@ -10,7 +10,10 @@ import {
     Title,
 } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
-import { useRef, useState } from 'react'
+import { useHover } from '@mantine/hooks'
+import { RainbowWrapper } from '@renderer/components/RainbowWrapper'
+import { useQuizGenerator } from '@renderer/hooks/use-quiz-generator'
+import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import { QuizGenerator, QuizGeneratorHandle } from '../components/QuizGenerator'
 import { QuestionType } from '../types/quiz-view-types'
@@ -45,6 +48,10 @@ export const QuizFormSchema = z.object({
 export const CreateQuizPage: React.FC = () => {
     const [showGenerator, setShowGenerator] = useState(false)
     const quizGeneratorRef = useRef<QuizGeneratorHandle>(null)
+    const { isQuizGeneratorRunning, isQuizGeneratorDone } = useQuizGenerator()
+    const { hovered: generateButtonHovered, ref: generateButtonRef } = useHover()
+    const [isRainbowPlaying, setIsRainbowPlaying] = useState(true)
+    const [isRainbowVisible, setIsRainbowVisible] = useState(false)
 
     const form = useForm({
         initialValues: {
@@ -62,6 +69,53 @@ export const CreateQuizPage: React.FC = () => {
         }
         quizGeneratorRef.current?.run()
     }
+
+    // useEffect(() => {
+    //     if (
+    //         isQuizGeneratorRunning &&
+    //         !isQuizGeneratorDone &&
+    //         !(isRainbowPlaying || isRainbowVisible)
+    //     ) {
+    //         console.log('Quiz started, showing rainbow effect')
+    //         setIsRainbowPlaying(true)
+    //         setIsRainbowVisible(true)
+    //     }
+    // }, [
+    //     isQuizGeneratorRunning,
+    //     isQuizGeneratorDone,
+    //     isRainbowPlaying,
+    //     isRainbowVisible,
+    //     setIsRainbowPlaying,
+    //     setIsRainbowVisible,
+    // ])
+
+    // useEffect(() => {
+    //     if (
+    //         !generateButtonHovered &&
+    //         isQuizGeneratorDone &&
+    //         (isRainbowPlaying || isRainbowVisible)
+    //     ) {
+    //         console.log('Quiz ended, hiding rainbow effect')
+    //         setIsRainbowPlaying(false)
+    //         setIsRainbowVisible(false)
+    //     }
+    // }, [generateButtonHovered, setIsRainbowPlaying, setIsRainbowVisible])
+
+    useEffect(() => {
+        if (generateButtonHovered || isQuizGeneratorRunning) {
+            setIsRainbowPlaying(true)
+            setIsRainbowVisible(true)
+        } else if (!generateButtonHovered || isQuizGeneratorDone) {
+            setIsRainbowPlaying(false)
+            setIsRainbowVisible(false)
+        }
+    }, [
+        generateButtonHovered,
+        isQuizGeneratorRunning,
+        isQuizGeneratorDone,
+        setIsRainbowPlaying,
+        setIsRainbowVisible,
+    ])
 
     return (
         <Box maw={1200} mx="auto" p="md">
@@ -113,7 +167,26 @@ export const CreateQuizPage: React.FC = () => {
                                         />
                                     </Group>
 
-                                    <Button type="submit">Generate Quiz</Button>
+                                    <Group justify="flex-end">
+                                        <div ref={generateButtonRef}>
+                                            <RainbowWrapper
+                                                isPlaying={isRainbowPlaying}
+                                                isVisible={isRainbowVisible}
+                                            >
+                                                <Button
+                                                    variant="gradient"
+                                                    gradient={{
+                                                        from: 'teal',
+                                                        to: 'grape',
+                                                        deg: 48,
+                                                    }}
+                                                    type="submit"
+                                                >
+                                                    Generate Quiz
+                                                </Button>
+                                            </RainbowWrapper>
+                                        </div>
+                                    </Group>
                                 </Stack>
                             </form>
                         </Box>

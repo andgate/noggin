@@ -5,7 +5,8 @@ import { GenerativeProvider, useGenerative } from './use-generative'
 export interface QuizGenerator {
     generateQuiz: (options: GenerateQuizOptions) => void
     quiz: PartialGeneratedQuiz
-    isRunning: boolean
+    isQuizGeneratorRunning: boolean
+    isQuizGeneratorDone: boolean
     quizGenerationError?: Error
     abort: () => void
 }
@@ -14,11 +15,18 @@ export interface QuizGenerator {
  * Hook that provides quiz generation functionality using the generative context
  */
 export function useQuizGenerator(): QuizGenerator {
-    const { invoke, state, isRunning, error, abort } = useGenerative<
+    const { invoke, state, isRunning, isDone, error, abort } = useGenerative<
         GenerateQuizOptions,
         PartialGeneratedQuiz
     >()
-    return { generateQuiz: invoke, quiz: state, isRunning, quizGenerationError: error, abort }
+    return {
+        generateQuiz: invoke,
+        quiz: state,
+        isQuizGeneratorRunning: isRunning,
+        isQuizGeneratorDone: isDone,
+        quizGenerationError: error,
+        abort,
+    }
 }
 
 /**

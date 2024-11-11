@@ -107,7 +107,7 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
         const {
             generateQuiz,
             quiz,
-            isRunning: isGenerating,
+            isQuizGeneratorRunning,
             quizGenerationError,
             abort: handleCancel,
         } = useQuizGenerator()
@@ -207,7 +207,7 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
                     >
                         Practice Now
                     </Button>
-                    {isGenerating && (
+                    {isQuizGeneratorRunning && (
                         <Button onClick={handleCancel} color="red" variant="light">
                             Cancel
                         </Button>

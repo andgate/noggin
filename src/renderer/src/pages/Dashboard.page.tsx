@@ -1,5 +1,7 @@
 import { Button, Card, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
+import { RainbowButton } from '@renderer/components/RainbowButton'
+import { RainbowWrapper } from '@renderer/components/RainbowWrapper'
 import { IconEdit, IconPlayerPlay, IconPlus, IconTrash } from '@tabler/icons-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
