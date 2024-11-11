@@ -32,17 +32,36 @@ const MultiChoiceQuestionItem: React.FC<MultiChoiceQuestionItemProps> = ({
 
     return (
         <Box mb="md">
-            <Title order={4} mb="xs">
-                {questionLabel}
-            </Title>
-            <Radio.Group {...inputProps} key={form.key(`question_${question.id}`)}>
-                <Stack>
+            <Radio.Group
+                {...inputProps}
+                key={form.key(`question_${question.id}`)}
+                label={questionLabel}
+                size="md"
+            >
+                <Stack p="md">
                     {question.choices.map((choice) => (
-                        <Radio
+                        <Card
                             key={choice.id}
-                            value={choice.optionText}
-                            label={choice.optionText}
-                        />
+                            withBorder
+                            padding="sm"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() =>
+                                form.setFieldValue(`question_${question.id}`, choice.optionText)
+                            }
+                        >
+                            <Radio
+                                value={choice.optionText}
+                                label={choice.optionText}
+                                checked={
+                                    form.values[`question_${question.id}`] === choice.optionText
+                                }
+                                styles={{
+                                    radio: { cursor: 'pointer' },
+                                    label: { cursor: 'pointer' },
+                                }}
+                                readOnly
+                            />
+                        </Card>
                     ))}
                 </Stack>
             </Radio.Group>
@@ -57,13 +76,20 @@ const WrittenQuestionItem: React.FC<{
     form: ReturnType<typeof useForm>
 }> = ({ question, questionLabel, form }) => (
     <Box mb="md">
-        <Title order={4} mb="xs">
+        {/* <Title order={4} mb="xs">
             {questionLabel}
-        </Title>
+        </Title> */}
         <Textarea
             {...form.getInputProps(`question_${question.id}`)}
             key={form.key(`question_${question.id}`)}
+            size="md"
+            p="md"
+            autosize
             minRows={4}
+            maxRows={10}
+            label={questionLabel}
+            description="Respond to the question in the space provided."
+            placeholder="Type your answer here..."
         />
     </Box>
 )

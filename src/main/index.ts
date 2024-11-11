@@ -1,5 +1,5 @@
 import { electronApp, optimizer } from '@electron-toolkit/utils'
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, MenuItem, shell } from 'electron'
 import { join } from 'path'
 import * as db from './db'
 
@@ -20,6 +20,8 @@ function createWindow(): void {
         },
     })
 
+    setupContextMenu(mainWindow)
+
     mainWindow.on('ready-to-show', () => {
         mainWindow.show()
     })
@@ -36,6 +38,32 @@ function createWindow(): void {
     } else {
         mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
     }
+}
+
+function setupContextMenu(mainWindow: BrowserWindow) {
+    mainWindow.webContents.on('context-menu', (event, params) => {
+        const menu = new Menu()
+
+        menu.append(
+            new MenuItem({
+                label: 'Copy',
+                role: 'copy', // Built-in role for "Copy"
+                enabled: params.editFlags.canCopy, // Enable only if text is selectable
+            })
+        )
+
+        menu.append(
+            new MenuItem({
+                label: 'Paste',
+                role: 'paste', // Built-in role for "Paste"
+                enabled: params.editFlags.canPaste, // Enable only if paste is possible
+            })
+        )
+
+        menu.popup({
+            window: mainWindow,
+        })
+    })
 }
 
 // This method will be called when Electron has finished
