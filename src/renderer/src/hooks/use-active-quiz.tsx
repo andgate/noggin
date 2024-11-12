@@ -1,4 +1,4 @@
-import { notifications } from '@mantine/notifications'
+import { store } from '@renderer/store'
 import { Question, Quiz } from '@renderer/types/quiz-view-types'
 import { useNavigate } from '@tanstack/react-router'
 import { produce } from 'immer'
@@ -22,7 +22,7 @@ export interface ActiveQuizContext {
     setActiveQuizState: React.Dispatch<React.SetStateAction<ActiveQuizState>>
     isQuizInProgress: boolean
     startQuiz: (newQuiz: Quiz) => void
-    submitActiveQuiz: () => void
+    endQuiz: () => void
     setStudentResponses: (responses: string[]) => void
 }
 
@@ -30,11 +30,14 @@ const ActiveQuizContext = createContext<ActiveQuizContext | undefined>(undefined
 
 export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) => {
     const navigate = useNavigate()
-    const [activeQuizState, setActiveQuizState] = useState<ActiveQuizState>({
-        questions: [],
-        studentResponses: [],
-        elapsedTime: 0,
-    })
+    const [activeQuizState, setActiveQuizState] = useState<ActiveQuizState>(() =>
+        // Load initial state from electron-store
+        store.get('activeQuizState', {
+            questions: [],
+            studentResponses: [],
+            elapsedTime: 0,
+        })
+    )
 
     const quizId = useMemo(() => activeQuizState.quiz?.id, [activeQuizState.quiz?.id])
 
@@ -61,14 +64,16 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
 
     const startQuiz = useCallback(
         (newQuiz: Quiz) => {
-            setActiveQuizState({
+            const newState = {
                 quiz: newQuiz,
                 questions: newQuiz.questions,
                 studentResponses: [],
                 startTime: new Date().toISOString(),
                 endTime: undefined,
                 elapsedTime: 0,
-            })
+            }
+            setActiveQuizState(newState)
+            store.set('activeQuizState', newState)
         },
         [setActiveQuizState]
     )
@@ -86,6 +91,8 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
             setActiveQuizState(
                 produce((draft) => {
                     draft.studentResponses = responses
+                    // Persist the updated state
+                    store.set('activeQuizState', draft)
                 })
             )
         },
@@ -99,6 +106,8 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
         setActiveQuizState(
             produce((draft) => {
                 draft.endTime = new Date().toISOString()
+                // Persist the updated state
+                store.set('activeQuizState', draft)
             })
         )
 
@@ -120,6 +129,8 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
                 setActiveQuizState(
                     produce((draft) => {
                         draft.elapsedTime += 1
+                        // Persist the updated state
+                        store.set('activeQuizState', draft)
                     })
                 )
             }
@@ -136,7 +147,7 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
                 timeLimit,
                 setActiveQuizState,
                 startQuiz,
-                submitActiveQuiz,
+                endQuiz,
                 setStudentResponses,
                 isQuizInProgress,
             }}

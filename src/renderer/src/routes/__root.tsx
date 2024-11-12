@@ -25,7 +25,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import * as React from 'react'
-import { useCallback, useEffect, type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { DefaultCatchBoundary } from '../components/DefaultCatchBoundary'
 import { NotFound } from '../components/NotFound'
 import { formatDuration } from '../pages/PracticeQuiz.page'

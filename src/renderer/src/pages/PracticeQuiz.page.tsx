@@ -1,13 +1,8 @@
-// TODO quiz timer for practice quiz
 import { Box, Button, Card, Radio, Stack, Textarea, Title } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { useInterval } from '@mantine/hooks'
-import { notifications } from '@mantine/notifications'
 import { useActiveQuiz } from '@renderer/hooks/use-active-quiz'
-import { useNavigate } from '@tanstack/react-router'
-import { produce } from 'immer'
 import { debounce } from 'lodash'
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useMemo } from 'react'
 import { Question, Quiz } from '../types/quiz-view-types'
 
 export function formatDuration(seconds: number): string {
@@ -115,25 +110,19 @@ const QuestionItem: React.FC<{
     return <WrittenQuestionItem question={question} questionLabel={questionLabel} form={form} />
 }
 
+// TODO: Add progress tracker (display completed/remaining questions) (progress bar??)
 // TODO: Add keyboard navigation support
-// TODO: Add progress saving functionality
-// TODO: Implement time tracking for quiz attempts
 // TODO: Add accessibility attributes to form elements
-// TODO: Implement SSR for initial quiz data
-// TODO: Add optimistic UI updates for submissions
-// TODO: Add offline support with local storage
 // TODO: Implement progressive loading for large quizzes
 export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
     const quizId = useMemo(() => quiz.id, [quiz.id])
-    const navigate = useNavigate({ from: '/quiz/practice/$quizId' })
     const {
         isQuizInProgress,
         quizId: activeQuizId,
         activeQuizState,
-        setActiveQuizState,
         startQuiz,
+        endQuiz,
         setStudentResponses,
-        submitActiveQuiz,
     } = useActiveQuiz()
 
     const form = useForm<Record<string, string>>({
@@ -163,15 +152,9 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
             event?.preventDefault()
 
             // Update active quiz state with end time
-            submitActiveQuiz()
-
-            // Navigate to evaluation page
-            navigate({
-                to: '/quiz/eval',
-                params: { quizId: `${quizId}` },
-            })
+            endQuiz()
         },
-        [quizId, setActiveQuizState, submitActiveQuiz, navigate]
+        [endQuiz]
     )
 
     const handleFormChange = useCallback(
@@ -186,7 +169,7 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
 
             setStudentResponses(formResponses)
         }, 300),
-        [setActiveQuizState, quiz, setStudentResponses]
+        [quiz, setStudentResponses]
     )
 
     return (

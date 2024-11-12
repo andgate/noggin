@@ -1,6 +1,6 @@
-import { getUserSettings, updateUserSettings } from '@renderer/services/user-settings-service'
+import { store } from '@renderer/store'
 import { UserSettings } from '@renderer/types/user-settings-types'
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 
 export interface UserSettingsContext {
     settings: UserSettings
@@ -11,29 +11,19 @@ export interface UserSettingsContext {
 const UserSettingsContext = createContext<UserSettingsContext | undefined>(undefined)
 
 export function UserSettingsProvider({ children }: { children: React.ReactNode }) {
-    const [userSettings, setUserSettingsState] = useState<UserSettings>({})
-    const [isLoading, setIsLoading] = useState(true)
+    const [userSettings, setUserSettingsState] = useState<UserSettings>(
+        store.get('userSettings', {})
+    )
 
     const openaiApiKey = useMemo(
         () => userSettings.openaiApiKey || import.meta.env.VITE_OPENAI_API_KEY || undefined,
         [userSettings]
     )
 
-    // When we mount, we want to load the user settings
-    useEffect(() => {
-        // Call an async function to load the settings
-        async function loadSettings() {
-            const settings = await getUserSettings()
-            setUserSettingsState(settings)
-            setIsLoading(false)
-        }
-        loadSettings()
-    }, [])
-
     const setUserSettings = useCallback(
-        async (settings: UserSettings) => {
+        (settings: UserSettings) => {
             setUserSettingsState(settings)
-            await updateUserSettings(settings)
+            store.set('userSettings', settings)
         },
         [setUserSettingsState]
     )
@@ -42,7 +32,7 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
         <UserSettingsContext.Provider
             value={{ settings: userSettings, openaiApiKey, setUserSettings }}
         >
-            {isLoading ? <div>Loading user settings...</div> : children}
+            {children}
         </UserSettingsContext.Provider>
     )
 }
