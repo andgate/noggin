@@ -7,7 +7,7 @@ import { useActiveQuiz } from '@renderer/hooks/use-active-quiz'
 import { useNavigate } from '@tanstack/react-router'
 import { produce } from 'immer'
 import { debounce } from 'lodash'
-import { FormEvent, useCallback, useEffect, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { Question, Quiz } from '../types/quiz-view-types'
 
 export function formatDuration(seconds: number): string {
@@ -124,18 +124,28 @@ const QuestionItem: React.FC<{
 // TODO: Add offline support with local storage
 // TODO: Implement progressive loading for large quizzes
 export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
+    const quizId = useMemo(() => quiz.id, [quiz.id])
     const navigate = useNavigate({ from: '/quiz/practice/$quizId' })
-    const { setActiveQuizState, startQuiz, setStudentResponses, submitActiveQuiz } = useActiveQuiz()
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [elapsedTime, setElapsedTime] = useState(0)
-    const timeLimitInSeconds = quiz.timeLimit * 60 // Convert minutes to seconds
+    const {
+        isQuizInProgress,
+        quizId: activeQuizId,
+        activeQuizState,
+        setActiveQuizState,
+        startQuiz,
+        setStudentResponses,
+        submitActiveQuiz,
+    } = useActiveQuiz()
 
     const form = useForm<Record<string, string>>({
         mode: 'uncontrolled',
         initialValues: quiz.questions.reduce(
-            (acc, question) => ({
+            (acc, question, index) => ({
                 ...acc,
-                [`question_${question.id}`]: '',
+                [`question_${question.id}`]:
+                    // Load existing responses if this is the active quiz
+                    isQuizInProgress && quizId === activeQuizId
+                        ? activeQuizState.studentResponses[index] || ''
+                        : '',
             }),
             {}
         ),
@@ -143,24 +153,25 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
 
     // On mount, set the active quiz state
     useEffect(() => {
-        startQuiz(quiz)
+        if (!isQuizInProgress || quizId !== activeQuizId) {
+            startQuiz(quiz)
+        }
     }, [])
 
     const handleSubmit = useCallback(
         (_values: Record<string, string>, event: React.FormEvent<HTMLFormElement> | undefined) => {
-            setIsSubmitting(true)
             event?.preventDefault()
 
             // Update active quiz state with end time
-            submitActiveQuiz(Object.values(form.values))
+            submitActiveQuiz()
 
             // Navigate to evaluation page
             navigate({
                 to: '/quiz/eval',
-                params: { quizId: `${quiz.id}` },
+                params: { quizId: `${quizId}` },
             })
         },
-        [navigate, quiz.id, setActiveQuizState]
+        [quizId, setActiveQuizState, submitActiveQuiz, navigate]
     )
 
     const handleFormChange = useCallback(
@@ -174,51 +185,15 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
             )
 
             setStudentResponses(formResponses)
-
-            setActiveQuizState((prev) =>
-                produce(prev, (draft) => {
-                    draft.questions = quiz.questions
-                    draft.studentResponses = formResponses
-                })
-            )
         }, 300),
         [setActiveQuizState, quiz, setStudentResponses]
     )
-
-    // Setup timer interval
-    const timer = useInterval(() => {
-        setElapsedTime((prev) => prev + 1)
-    }, 1000)
-
-    // Start timer on mount
-    useEffect(() => {
-        timer.start()
-        return () => timer.stop()
-    }, [])
-
-    // Auto-submit when time limit is reached
-    useEffect(() => {
-        if (elapsedTime >= timeLimitInSeconds) {
-            notifications.show({
-                title: "Time's up!",
-                message: 'Your quiz is being submitted automatically.',
-                color: 'blue',
-            })
-            handleSubmit(form.values, undefined)
-        }
-    }, [elapsedTime, timeLimitInSeconds])
 
     return (
         <Box maw={800} mx="auto" p="xl">
             <Title order={2} mb="lg">
                 {quiz.title}
             </Title>
-
-            <Box mb="md">
-                <Title order={4} c={elapsedTime >= timeLimitInSeconds - 60 ? 'red' : undefined}>
-                    Time Remaining: {formatDuration(Math.max(0, timeLimitInSeconds - elapsedTime))}
-                </Title>
-            </Box>
 
             <form onSubmit={form.onSubmit(handleSubmit)} onChange={handleFormChange}>
                 <Stack>
@@ -227,7 +202,7 @@ export const PracticeQuizPage: React.FC<{ quiz: Quiz }> = ({ quiz }) => {
                             <QuestionItem question={question} index={index} form={form} />
                         </Card>
                     ))}
-                    <Button type="submit" size="lg" loading={isSubmitting}>
+                    <Button type="submit" size="lg">
                         Submit Quiz
                     </Button>
                 </Stack>

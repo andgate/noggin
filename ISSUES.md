@@ -56,3 +56,26 @@ Currently, the OpenAI API key is stored in plain text in the database. This is o
 This is typically insecure in most setups. For now, this is not a major concern for us. The environment that our application targets is low security risk. The api key is secure unless some malicious process gains access to the browser page. Then it can read the key from browser. But this is still unlikely.
 
 So while it is not an immediate concern, we should look into moving the openai api calls to the backend to secure the keys in the future. Then it can be stored more securely and calls can be managed by our backend, something which both OpenAI and Electron documentation both recommend as standard practice.
+
+### Unsigned Binary Distributables
+
+Currently, our application binaries are distributed unsigned. This means users may encounter security warnings when installing or running the application, particularly on Windows and macOS. While this doesn't affect the application's functionality, it may impact user trust and installation experience.
+
+Signing our binaries is planned for the near future and will involve:
+
+-   Obtaining appropriate code signing certificates
+-   Implementing signing in our build pipeline
+-   Testing signed builds across platforms
+
+This is a non-critical issue but will be addressed to improve the user experience and distribution process.
+
+### MacOS Support
+
+MacOS support is currently not available as we lack access to Apple hardware for development and testing. While Electron makes cross-platform development relatively straightforward, we still need to:
+
+-   Verify application behavior on macOS
+-   Test native module compatibility
+-   Ensure proper packaging and distribution
+-   Address platform-specific UI/UX considerations
+
+Once we gain access to macOS development resources, adding support should be relatively straightforward due to Electron's cross-platform capabilities. This remains a future goal but is not currently on our immediate roadmap.

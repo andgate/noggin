@@ -1,7 +1,6 @@
 import { Button, Card, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { RainbowButton } from '@renderer/components/RainbowButton'
-import { RainbowWrapper } from '@renderer/components/RainbowWrapper'
+import { useActiveQuiz } from '@renderer/hooks/use-active-quiz'
 import { IconEdit, IconPlayerPlay, IconPlus, IconTrash } from '@tabler/icons-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
@@ -21,6 +20,8 @@ import { Quiz } from '../types/quiz-view-types'
 const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
     const queryClient = useQueryClient()
     const navigate = useNavigate({ from: '/' })
+
+    const { quizId: activeQuizId } = useActiveQuiz()
 
     const deleteMutation = useMutation({
         // TODO: Improve error messages with specific failure reasons
@@ -100,7 +101,7 @@ const DashboardPage: React.FC<{ quizzes: Quiz[] }> = ({ quizzes }) => {
                                     leftSection={<IconPlayerPlay size={16} />}
                                     onClick={() => handleStartQuiz(quiz.id)}
                                 >
-                                    Start
+                                    {activeQuizId === quiz.id ? 'Continue' : 'Start'}
                                 </Button>
                                 <Button
                                     variant="light"

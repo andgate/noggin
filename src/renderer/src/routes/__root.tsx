@@ -3,23 +3,31 @@
 import {
     AppShell,
     Burger,
+    Button,
     ColorSchemeScript,
     Group,
     MantineProvider,
     NavLink,
     Text,
 } from '@mantine/core'
-import { Notifications } from '@mantine/notifications'
-import { ActiveQuizProvider } from '@renderer/hooks/use-active-quiz'
+import { notifications, Notifications } from '@mantine/notifications'
+import { ActiveQuizProvider, useActiveQuiz } from '@renderer/hooks/use-active-quiz'
 import { UserSettingsProvider } from '@renderer/hooks/use-user-settings'
 import { IconHome, IconSettings } from '@tabler/icons-react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createRootRoute, Link, Outlet, ScrollRestoration } from '@tanstack/react-router'
+import {
+    createRootRoute,
+    Link,
+    Outlet,
+    ScrollRestoration,
+    useNavigate,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import type { ReactNode } from 'react'
 import * as React from 'react'
+import { useCallback, type ReactNode } from 'react'
 import { DefaultCatchBoundary } from '../components/DefaultCatchBoundary'
 import { NotFound } from '../components/NotFound'
+import { formatDuration } from '../pages/PracticeQuiz.page'
 import { theme } from '../theme'
 
 // Create a client
@@ -94,6 +102,44 @@ const RootProvider = ({ children }: Readonly<{ children: ReactNode }>) => {
 
 function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
     const [opened, setOpened] = React.useState(false)
+    const navigate = useNavigate()
+
+    const {
+        activeQuizState,
+        isQuizInProgress,
+        timeLimit,
+        elapsedTime,
+        setActiveQuizState,
+        submitActiveQuiz,
+    } = useActiveQuiz()
+    const quizId = React.useMemo(() => activeQuizState.quiz?.id, [activeQuizState])
+
+    // TODO backend should handle autosubmit
+    // but this is fine for our purposes
+    // Auto-submit when time limit is reached
+    React.useEffect(() => {
+        if (isQuizInProgress && timeLimit && elapsedTime >= timeLimit) {
+            notifications.show({
+                title: "Time's up!",
+                message: 'Your quiz is being submitted automatically.',
+                color: 'blue',
+            })
+
+            setActiveQuizState((prev) => ({
+                ...prev,
+                endTime: new Date().toISOString(),
+            }))
+
+            // Update active quiz state with end time
+            submitActiveQuiz()
+
+            // Navigate to evaluation page
+            navigate({
+                to: '/quiz/eval',
+                params: { quizId: `${quizId}` },
+            })
+        }
+    }, [isQuizInProgress, elapsedTime, timeLimit, quizId, submitActiveQuiz, navigate])
 
     return (
         <AppShell
@@ -106,16 +152,39 @@ function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
             padding="md"
         >
             <AppShell.Header>
-                <Group h="100%" px="md">
-                    <Burger
-                        opened={opened}
-                        onClick={() => setOpened(!opened)}
-                        hiddenFrom="sm"
-                        size="sm"
-                    />
-                    <Text size="lg" fw={700}>
-                        Noggin
-                    </Text>
+                <Group h="100%" px="md" justify="space-between">
+                    <Group>
+                        <Burger
+                            opened={opened}
+                            onClick={() => setOpened(!opened)}
+                            hiddenFrom="sm"
+                            size="sm"
+                        />
+                        <Text size="lg" fw={700}>
+                            Noggin
+                        </Text>
+                    </Group>
+                    <Group>
+                        {quizId !== undefined && (
+                            <Button
+                                variant="subtle"
+                                size="sm"
+                                onClick={() =>
+                                    navigate({
+                                        to: '/quiz/practice/$quizId',
+                                        params: { quizId: `${quizId}` },
+                                    })
+                                }
+                            >
+                                Go to Quiz
+                            </Button>
+                        )}
+                        {isQuizInProgress && timeLimit && (
+                            <Text c={elapsedTime >= timeLimit * 60 - 60 ? 'red' : undefined}>
+                                Time: {formatDuration(Math.max(0, timeLimit * 60 - elapsedTime))}
+                            </Text>
+                        )}
+                    </Group>
                 </Group>
             </AppShell.Header>
 

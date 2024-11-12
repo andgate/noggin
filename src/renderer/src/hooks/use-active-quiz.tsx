@@ -13,10 +13,13 @@ export interface ActiveQuizState {
 
 export interface ActiveQuizContext {
     activeQuizState: ActiveQuizState
+    quizId?: number
+    timeLimit?: number
+    elapsedTime: number
     setActiveQuizState: React.Dispatch<React.SetStateAction<ActiveQuizState>>
     isQuizInProgress: boolean
     startQuiz: (newQuiz: Quiz) => void
-    submitActiveQuiz: (responses: string[]) => void
+    submitActiveQuiz: () => void
     setStudentResponses: (responses: string[]) => void
 }
 
@@ -29,6 +32,18 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
         elapsedTime: 0,
     })
 
+    const quizId = useMemo(() => activeQuizState.quiz?.id, [activeQuizState.quiz?.id])
+
+    const elapsedTime: number = useMemo(
+        () => activeQuizState.elapsedTime,
+        [activeQuizState.elapsedTime]
+    )
+    const timeLimit: number | undefined = useMemo(
+        () => activeQuizState.quiz?.timeLimit,
+        [activeQuizState.quiz?.timeLimit]
+    )
+    const timeLimitInSeconds = useMemo(() => (timeLimit ? timeLimit * 60 : undefined), [timeLimit])
+
     const isQuizInProgress: boolean = useMemo(() => {
         return Boolean(activeQuizState.startTime && !activeQuizState.endTime)
     }, [activeQuizState.startTime, activeQuizState.endTime])
@@ -38,7 +53,7 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
             ...prev,
             elapsedTime: prev.elapsedTime + 1,
         }))
-    }, 1000)
+    }, timeLimitInSeconds || 0)
 
     useEffect(() => {
         if (activeQuizState.startTime && !timer.active) {
@@ -47,7 +62,7 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
             timer.stop()
         }
         return () => timer.stop()
-    }, [activeQuizState.startTime])
+    }, [activeQuizState, timer])
 
     const startQuiz = useCallback(
         (newQuiz: Quiz) => {
@@ -84,6 +99,9 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
         <ActiveQuizContext.Provider
             value={{
                 activeQuizState,
+                quizId,
+                elapsedTime,
+                timeLimit,
                 setActiveQuizState,
                 startQuiz,
                 submitActiveQuiz,
