@@ -6,7 +6,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3'
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
 import { app } from 'electron'
 import fs from 'fs'
-import path, { resolve } from 'path'
+import path from 'path'
 
 function getDbPath(): string {
     if (import.meta.env.DEV) {

@@ -20,11 +20,12 @@ import {
     Link,
     Outlet,
     ScrollRestoration,
+    useMatches,
     useNavigate,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import * as React from 'react'
-import { useCallback, type ReactNode } from 'react'
+import { useCallback, useEffect, type ReactNode } from 'react'
 import { DefaultCatchBoundary } from '../components/DefaultCatchBoundary'
 import { NotFound } from '../components/NotFound'
 import { formatDuration } from '../pages/PracticeQuiz.page'
@@ -104,42 +105,22 @@ function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
     const [opened, setOpened] = React.useState(false)
     const navigate = useNavigate()
 
-    const {
-        activeQuizState,
-        isQuizInProgress,
-        timeLimit,
-        elapsedTime,
-        setActiveQuizState,
-        submitActiveQuiz,
-    } = useActiveQuiz()
+    const { activeQuizState, isQuizInProgress, timeLimit, elapsedTime } = useActiveQuiz()
     const quizId = React.useMemo(() => activeQuizState.quiz?.id, [activeQuizState])
 
-    // TODO backend should handle autosubmit
-    // but this is fine for our purposes
-    // Auto-submit when time limit is reached
-    React.useEffect(() => {
+    // Add this hook to check the route
+    const matches = useMatches()
+    const isQuizPracticePage = matches.some((match) => match.pathname.startsWith('/quiz/practice/'))
+
+    useEffect(() => {
         if (isQuizInProgress && timeLimit && elapsedTime >= timeLimit) {
             notifications.show({
                 title: "Time's up!",
                 message: 'Your quiz is being submitted automatically.',
                 color: 'blue',
             })
-
-            setActiveQuizState((prev) => ({
-                ...prev,
-                endTime: new Date().toISOString(),
-            }))
-
-            // Update active quiz state with end time
-            submitActiveQuiz()
-
-            // Navigate to evaluation page
-            navigate({
-                to: '/quiz/eval',
-                params: { quizId: `${quizId}` },
-            })
         }
-    }, [isQuizInProgress, elapsedTime, timeLimit, quizId, submitActiveQuiz, navigate])
+    }, [isQuizInProgress, timeLimit, elapsedTime])
 
     return (
         <AppShell
@@ -165,10 +146,9 @@ function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
                         </Text>
                     </Group>
                     <Group>
-                        {quizId !== undefined && (
+                        {quizId !== undefined && !isQuizPracticePage && isQuizInProgress && (
                             <Button
-                                variant="subtle"
-                                size="sm"
+                                size="compact-md"
                                 onClick={() =>
                                     navigate({
                                         to: '/quiz/practice/$quizId',
@@ -176,12 +156,12 @@ function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
                                     })
                                 }
                             >
-                                Go to Quiz
+                                Return
                             </Button>
                         )}
                         {isQuizInProgress && timeLimit && (
-                            <Text c={elapsedTime >= timeLimit * 60 - 60 ? 'red' : undefined}>
-                                Time: {formatDuration(Math.max(0, timeLimit * 60 - elapsedTime))}
+                            <Text c={elapsedTime >= timeLimit - 60 ? 'red' : 'green'}>
+                                Time: {formatDuration(Math.max(0, timeLimit - elapsedTime))}
                             </Text>
                         )}
                     </Group>

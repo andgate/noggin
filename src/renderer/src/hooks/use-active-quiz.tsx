@@ -1,6 +1,9 @@
-import { useInterval } from '@mantine/hooks'
+import { notifications } from '@mantine/notifications'
 import { Question, Quiz } from '@renderer/types/quiz-view-types'
+import { useNavigate } from '@tanstack/react-router'
+import { produce } from 'immer'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useInterval } from 'usehooks-ts'
 
 export interface ActiveQuizState {
     quiz?: Quiz
@@ -26,6 +29,7 @@ export interface ActiveQuizContext {
 const ActiveQuizContext = createContext<ActiveQuizContext | undefined>(undefined)
 
 export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) => {
+    const navigate = useNavigate()
     const [activeQuizState, setActiveQuizState] = useState<ActiveQuizState>({
         questions: [],
         studentResponses: [],
@@ -38,61 +42,85 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
         () => activeQuizState.elapsedTime,
         [activeQuizState.elapsedTime]
     )
-    const timeLimit: number | undefined = useMemo(
+    const timeLimitInMinutes: number | undefined = useMemo(
         () => activeQuizState.quiz?.timeLimit,
         [activeQuizState.quiz?.timeLimit]
     )
-    const timeLimitInSeconds = useMemo(() => (timeLimit ? timeLimit * 60 : undefined), [timeLimit])
+    const timeLimit = useMemo(
+        () => (timeLimitInMinutes ? timeLimitInMinutes * 60 : undefined),
+        [timeLimitInMinutes]
+    )
 
     const isQuizInProgress: boolean = useMemo(() => {
         return Boolean(activeQuizState.startTime && !activeQuizState.endTime)
     }, [activeQuizState.startTime, activeQuizState.endTime])
 
-    const timer = useInterval(() => {
-        setActiveQuizState((prev) => ({
-            ...prev,
-            elapsedTime: prev.elapsedTime + 1,
-        }))
-    }, timeLimitInSeconds || 0)
-
     useEffect(() => {
-        if (activeQuizState.startTime && !timer.active) {
-            timer.start()
-        } else if (!activeQuizState.startTime && timer.active) {
-            timer.stop()
-        }
-        return () => timer.stop()
-    }, [activeQuizState, timer])
+        console.log('timeLimitInSeconds', timeLimit)
+    }, [timeLimit])
 
     const startQuiz = useCallback(
         (newQuiz: Quiz) => {
-            setActiveQuizState(() => ({
+            setActiveQuizState({
                 quiz: newQuiz,
                 questions: newQuiz.questions,
                 studentResponses: [],
                 startTime: new Date().toISOString(),
                 endTime: undefined,
                 elapsedTime: 0,
-            }))
+            })
         },
         [setActiveQuizState]
     )
 
     const submitActiveQuiz = useCallback(() => {
-        setActiveQuizState((prev) => ({
-            ...prev,
-            endTime: new Date().toISOString(),
-        }))
+        setActiveQuizState(
+            produce((draft) => {
+                draft.endTime = new Date().toISOString()
+            })
+        )
     }, [setActiveQuizState])
 
     const setStudentResponses = useCallback(
         (responses: string[]) => {
-            setActiveQuizState((prev) => ({
-                ...prev,
-                studentResponses: responses,
-            }))
+            setActiveQuizState(
+                produce((draft) => {
+                    draft.studentResponses = responses
+                })
+            )
         },
         [setActiveQuizState]
+    )
+
+    const endQuiz = useCallback(() => {
+        if (!isQuizInProgress) return
+
+        setActiveQuizState(
+            produce((draft) => {
+                draft.endTime = new Date().toISOString()
+            })
+        )
+
+        // Navigate to evaluation page
+        navigate({
+            to: '/quiz/eval',
+            params: { quizId: `${quizId}` },
+        })
+    }, [isQuizInProgress, timeLimit, quizId, submitActiveQuiz, navigate])
+
+    useInterval(
+        () => {
+            setActiveQuizState(
+                produce((draft) => {
+                    if (isQuizInProgress && timeLimit && draft.elapsedTime >= timeLimit) {
+                        return endQuiz()
+                    } else if (isQuizInProgress) {
+                        draft.elapsedTime += 1
+                    }
+                })
+            )
+        },
+        isQuizInProgress ? 1000 : null
     )
 
     return (
