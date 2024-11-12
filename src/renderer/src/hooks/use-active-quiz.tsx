@@ -93,6 +93,7 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
     )
 
     const endQuiz = useCallback(() => {
+        console.log('endQuiz called')
         if (!isQuizInProgress) return
 
         setActiveQuizState(
@@ -110,15 +111,18 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
 
     useInterval(
         () => {
-            setActiveQuizState(
-                produce((draft) => {
-                    if (isQuizInProgress && timeLimit && draft.elapsedTime >= timeLimit) {
-                        return endQuiz()
-                    } else if (isQuizInProgress) {
+            if (isQuizInProgress && timeLimit && activeQuizState.elapsedTime >= timeLimit) {
+                endQuiz()
+                return
+            }
+
+            if (isQuizInProgress) {
+                setActiveQuizState(
+                    produce((draft) => {
                         draft.elapsedTime += 1
-                    }
-                })
-            )
+                    })
+                )
+            }
         },
         isQuizInProgress ? 1000 : null
     )
