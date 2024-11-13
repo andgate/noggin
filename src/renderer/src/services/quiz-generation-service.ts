@@ -4,7 +4,7 @@ import {
     GeneratedQuiz,
     generatedQuizSchema,
     PartialGeneratedQuiz,
-} from '../types/quiz-generation-types'
+} from '../../../types/quiz-generation-types'
 import { generateChatCompletion } from './openai-service'
 
 const generateQuizPrompt = (

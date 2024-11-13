@@ -1,12 +1,12 @@
 import { Button, Card, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
+import { Quiz } from '@noggin/types/quiz-types'
 import { useActiveQuiz } from '@renderer/hooks/use-active-quiz'
 import { IconEdit, IconPlayerPlay, IconPlus, IconTrash } from '@tabler/icons-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import React from 'react'
 import { deleteQuiz } from '../services/quiz-service'
-import { Quiz } from '../types/quiz-view-types'
 
 // TODO: Add search functionality
 // TODO: Implement quiz categories/tags

@@ -4,9 +4,9 @@
 // TODO: Consider implementing soft delete
 /* eslint-disable indent */
 import * as schema from '@noggin/drizzle/schema'
+import { GeneratedQuiz } from '@noggin/types/quiz-generation-types'
+import { Quiz, QuizId } from '@noggin/types/quiz-types'
 import db from '@renderer/db'
-import { GeneratedQuiz } from '@renderer/types/quiz-generation-types'
-import { Quiz, QuizId } from '@renderer/types/quiz-view-types'
 import { eq } from 'drizzle-orm'
 
 /**

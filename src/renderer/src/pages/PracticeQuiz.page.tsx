@@ -1,9 +1,9 @@
 import { Box, Button, Card, Radio, Stack, Textarea, Title } from '@mantine/core'
 import { useForm } from '@mantine/form'
+import { Question, Quiz } from '@noggin/types/quiz-types'
 import { useActiveQuiz } from '@renderer/hooks/use-active-quiz'
 import { debounce } from 'lodash'
 import { FormEvent, useCallback, useEffect, useMemo } from 'react'
-import { Question, Quiz } from '../types/quiz-view-types'
 
 export function formatDuration(seconds: number): string {
     const minutes = Math.floor(seconds / 60)

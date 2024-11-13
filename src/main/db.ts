@@ -84,15 +84,20 @@ function toDrizzleResult(rows: Record<string, any> | Array<Record<string, any>>)
     }
 }
 
-export const execute = async (e, sql, params, method) => {
+export const execute = async (_event, sql, params, method) => {
     const result = sqlite.prepare(sql)
     const ret = result[method](...params)
     return toDrizzleResult(ret)
 }
 
 export const runMigrate = async () => {
-    const migrationsFolder = getMigrationsFolder()
-    console.log('migrationsFolder found', migrationsFolder)
-    ensureDirectory(migrationsFolder)
-    return migrate(db, { migrationsFolder })
+    try {
+        console.log('attempting migrations')
+        const migrationsFolder = getMigrationsFolder()
+        console.log('migrationsFolder found', migrationsFolder)
+        ensureDirectory(migrationsFolder)
+        return migrate(db, { migrationsFolder })
+    } catch (e) {
+        console.error('Error running migrations, continuing anyways...', e)
+    }
 }

@@ -1,5 +1,5 @@
+import { GradedSubmission } from '../../../types/quiz-generation-types'
 import { generateGradedSubmission, GenerateGradesOptions } from '../services/grading-service'
-import { GradedSubmission } from '../types/quiz-generation-types'
 import { GenerativeProvider, useGenerative } from './use-generative'
 
 /**

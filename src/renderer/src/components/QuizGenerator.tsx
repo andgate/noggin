@@ -1,13 +1,13 @@
 // TODO: Add a regenerate button
 import { Alert, Badge, Button, Group, Paper, Skeleton, Stack, Text, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
+import { GeneratedQuestion, GeneratedQuiz } from '@noggin/types/quiz-generation-types'
+import { QuestionType } from '@noggin/types/quiz-types'
 import { useQuizGenerator } from '@renderer/hooks/use-quiz-generator'
 import { useUserSettings } from '@renderer/hooks/use-user-settings'
 import { useNavigate } from '@tanstack/react-router'
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react'
 import { createQuiz } from '../services/quiz-service'
-import { GeneratedQuestion, GeneratedQuiz } from '../types/quiz-generation-types'
-import { QuestionType } from '../types/quiz-view-types'
 
 export interface QuestionItemProps {
     index: number
@@ -102,7 +102,7 @@ export const QuizGenerator = forwardRef<QuizGeneratorHandle, QuizGeneratorProps>
         const { openaiApiKey } = useUserSettings()
         const navigate = useNavigate({ from: '/quiz/create' })
         const [isSaving, setIsSaving] = useState(false)
-        const [saveError, setSaveError] = useState<Error | undefined>(undefined)
+        const [_saveError, setSaveError] = useState<Error | undefined>(undefined)
 
         const {
             generateQuiz,

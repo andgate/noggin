@@ -130,8 +130,9 @@ export const submissions = sqliteTable('submissions', {
     // Time elapsed in milliseconds
     timeElapsed: integer('time_elapsed').notNull(),
     // Grade between 0 and 100.
-    grade: integer('grade').notNull(),
-    letterGrade: text('letter_grade').notNull(),
+    grade: integer('grade'),
+    letterGrade: text('letter_grade'),
+    status: text('status', { enum: ['pending', 'graded'] }).notNull(),
 })
 
 // Zod Schemas
@@ -160,9 +161,9 @@ export const responses = sqliteTable('responses', {
         .references(() => questions.id, { onDelete: 'cascade' })
         .notNull(),
     studentAnswer: text('student_answer').notNull(),
-    correctAnswer: text('correct_answer').notNull(),
-    verdict: text('verdict').notNull(),
-    feedback: text('feedback').notNull(),
+    correctAnswer: text('correct_answer'),
+    verdict: text('verdict'),
+    feedback: text('feedback'),
 })
 
 // Zod Schemas

@@ -1,11 +1,11 @@
-import { gradeResponses } from '@renderer/common/grading-helpers'
-import { AbortableGenerativeFunction } from '@renderer/hooks/use-generative'
 import {
     GradedResponse,
     GradedSubmission,
     gradedSubmissionSchema,
-} from '../types/quiz-generation-types'
-import { Question, Quiz } from '../types/quiz-view-types'
+} from '@noggin/types/quiz-generation-types'
+import { Question, Quiz } from '@noggin/types/quiz-types'
+import { gradeResponses } from '@renderer/common/grading-helpers'
+import { AbortableGenerativeFunction } from '@renderer/hooks/use-generative'
 import { generateChatCompletion } from './openai-service'
 
 export const BATCH_SIZE = 30 // Number of questions to grade at a time

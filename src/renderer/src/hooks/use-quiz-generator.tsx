@@ -1,5 +1,5 @@
+import { PartialGeneratedQuiz } from '../../../types/quiz-generation-types'
 import { generateQuiz, GenerateQuizOptions } from '../services/quiz-generation-service'
-import { PartialGeneratedQuiz } from '../types/quiz-generation-types'
 import { GenerativeProvider, useGenerative } from './use-generative'
 
 export interface QuizGenerator {

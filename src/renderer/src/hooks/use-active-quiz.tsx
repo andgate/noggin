@@ -1,18 +1,9 @@
-import { store } from '@renderer/store'
-import { Question, Quiz } from '@renderer/types/quiz-view-types'
+import { ActiveQuizState } from '@noggin/types/active-quiz-types'
+import { Quiz } from '@noggin/types/quiz-types'
 import { useNavigate } from '@tanstack/react-router'
 import { produce } from 'immer'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useInterval } from 'usehooks-ts'
-
-export interface ActiveQuizState {
-    quiz?: Quiz
-    questions: Question[]
-    studentResponses: string[]
-    startTime?: string
-    endTime?: string
-    elapsedTime: number
-}
 
 export interface ActiveQuizContext {
     activeQuizState: ActiveQuizState
@@ -24,20 +15,31 @@ export interface ActiveQuizContext {
     startQuiz: (newQuiz: Quiz) => void
     endQuiz: () => void
     setStudentResponses: (responses: string[]) => void
+    clearQuizState: () => void
 }
 
 const ActiveQuizContext = createContext<ActiveQuizContext | undefined>(undefined)
 
 export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) => {
     const navigate = useNavigate()
-    const [activeQuizState, setActiveQuizState] = useState<ActiveQuizState>(() =>
-        // Load initial state from electron-store
-        store.get('activeQuizState', {
-            questions: [],
-            studentResponses: [],
-            elapsedTime: 0,
+    const [activeQuizState, setActiveQuizState] = useState<ActiveQuizState>(() => ({
+        questions: [],
+        studentResponses: [],
+        elapsedTime: 0,
+    }))
+
+    // Load initial state on mount
+    useEffect(() => {
+        window.api.store.get('activeQuizState').then((savedState) => {
+            console.log('activeQuizState loaded ==>', savedState)
+            if (savedState && savedState.endTime) {
+                // If the quiz is already ended, clear the state
+                clearQuizState()
+            } else if (savedState) {
+                setActiveQuizState(savedState)
+            }
         })
-    )
+    }, [])
 
     const quizId = useMemo(() => activeQuizState.quiz?.id, [activeQuizState.quiz?.id])
 
@@ -73,7 +75,7 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
                 elapsedTime: 0,
             }
             setActiveQuizState(newState)
-            store.set('activeQuizState', newState)
+            window.api.store.set('activeQuizState', newState)
         },
         [setActiveQuizState]
     )
@@ -91,23 +93,30 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
             setActiveQuizState(
                 produce((draft) => {
                     draft.studentResponses = responses
-                    // Persist the updated state
-                    store.set('activeQuizState', draft)
+                    window.api.store.set('activeQuizState', draft)
                 })
             )
         },
         [setActiveQuizState]
     )
 
-    const endQuiz = useCallback(() => {
+    const clearQuizState = useCallback(() => {
+        setActiveQuizState({
+            questions: [],
+            studentResponses: [],
+            elapsedTime: 0,
+        })
+        window.api.store.set('activeQuizState', null)
+    }, [])
+
+    const endQuiz = useCallback(async () => {
         console.log('endQuiz called')
         if (!isQuizInProgress) return
 
         setActiveQuizState(
             produce((draft) => {
                 draft.endTime = new Date().toISOString()
-                // Persist the updated state
-                store.set('activeQuizState', draft)
+                window.api.store.set('activeQuizState', draft)
             })
         )
 
@@ -129,8 +138,7 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
                 setActiveQuizState(
                     produce((draft) => {
                         draft.elapsedTime += 1
-                        // Persist the updated state
-                        store.set('activeQuizState', draft)
+                        window.api.store.set('activeQuizState', draft)
                     })
                 )
             }
@@ -150,6 +158,7 @@ export const ActiveQuizProvider = ({ children }: { children: React.ReactNode }) 
                 endQuiz,
                 setStudentResponses,
                 isQuizInProgress,
+                clearQuizState,
             }}
         >
             {children}

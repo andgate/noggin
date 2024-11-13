@@ -1,5 +1,5 @@
+import { gradeSchema, letterGradeSchema } from '@noggin/types/grading-types'
 import { z } from 'zod'
-import { gradeSchema, letterGradeSchema } from './grade-types'
 
 export type QuestionType = 'multiple-choice' | 'written'
 
@@ -44,7 +44,16 @@ export const quizSchema = z.object({
     questions: z.array(questionSchema),
 })
 
-export const responseSchema = z.object({
+export const ungradedResponseSchema = z.object({
+    id: z.number(),
+    createdAt: z.string(),
+    quizId: z.number(),
+    submissionId: z.number(),
+    question: questionSchema,
+    studentAnswer: z.string(),
+})
+
+export const gradedResponseSchema = z.object({
     id: z.number(),
     createdAt: z.string(),
     quizId: z.number(),
@@ -54,14 +63,24 @@ export const responseSchema = z.object({
     correctAnswer: z.string(),
     verdict: z.union([z.literal('pass'), z.literal('fail')]),
     feedback: z.string(),
+    status: z.literal('graded'),
 })
 
+export const responseSchema = z.discriminatedUnion('status', [
+    ungradedResponseSchema.extend({ status: z.literal('pending') }),
+    gradedResponseSchema,
+])
+
 export const submissionIdSchema = z.number()
+
+// Add a new submission status enum
+export const submissionStatusSchema = z.enum(['pending', 'graded'])
 
 // TODO: Add validation for score ranges
 // TODO: Consider adding custom type guards
 // TODO: Add serialization helpers
 // TODO: Implement stricter validation rules
+// Update the submission schema
 export const submissionSchema = z.object({
     id: submissionIdSchema,
     completedAt: z.string(),
@@ -69,9 +88,10 @@ export const submissionSchema = z.object({
     timeElapsed: z.number(),
     timeLimit: z.number(),
     // Grade out of 100
-    grade: gradeSchema,
-    letterGrade: letterGradeSchema,
+    grade: gradeSchema.optional(),
+    letterGrade: letterGradeSchema.optional(),
     responses: responseSchema.array(),
+    status: submissionStatusSchema,
 })
 
 export type Source = z.infer<typeof sourceSchema>

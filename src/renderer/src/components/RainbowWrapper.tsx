@@ -4,9 +4,6 @@ import { useMemo } from 'react'
 const gradientBg =
     'linear-gradient(90deg, #FF4D4D, #F9CB28, #4ADE80, #2DD4BF, #60A5FA, #A78BFA, #FF4D4D)'
 
-const pastelGradientBg =
-    'linear-gradient(90deg, #FFC0CB, #FFB6C1, #ADD8E6, #87CEFA, #98FB98, #FFC0CB)'
-
 interface RainbowWrapperProps {
     children: React.ReactNode
     borderRadius?: number

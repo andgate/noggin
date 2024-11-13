@@ -1,5 +1,7 @@
 import { electronApp, optimizer } from '@electron-toolkit/utils'
+import { NogginStoreSchema } from '@noggin/types/store-types'
 import { app, BrowserWindow, ipcMain, Menu, MenuItem, shell } from 'electron'
+import Store from 'electron-store'
 import { join } from 'path'
 import * as db from './db'
 
@@ -41,7 +43,7 @@ function createWindow(): void {
 }
 
 function setupContextMenu(mainWindow: BrowserWindow) {
-    mainWindow.webContents.on('context-menu', (event, params) => {
+    mainWindow.webContents.on('context-menu', (_event, params) => {
         const menu = new Menu()
 
         menu.append(
@@ -66,6 +68,13 @@ function setupContextMenu(mainWindow: BrowserWindow) {
     })
 }
 
+// Initialize store
+const store = new Store<NogginStoreSchema>({
+    defaults: {
+        userSettings: {},
+    },
+})
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -83,6 +92,14 @@ app.whenReady().then(async () => {
     // IPC test
     ipcMain.on('ping', () => console.log('pong'))
     ipcMain.handle('db:execute', db.execute)
+
+    // Add store IPC handlers
+    ipcMain.handle('store:get', (_, key: keyof NogginStoreSchema) => store.get(key))
+    ipcMain.handle('store:set', (_, key: keyof NogginStoreSchema, value: any) =>
+        store.set(key, value)
+    )
+    ipcMain.handle('store:delete', (_, key: keyof NogginStoreSchema) => store.delete(key))
+    ipcMain.handle('store:clear', () => store.clear())
 
     // TODO fix automatic migrations
     // see https://github.com/drizzle-team/drizzle-orm/issues/680

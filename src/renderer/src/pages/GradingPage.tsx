@@ -14,11 +14,11 @@ import {
     Text,
     Title,
 } from '@mantine/core'
+import { GradedResponse } from '@noggin/types/quiz-generation-types'
+import { Question } from '@noggin/types/quiz-types'
 import { useGradesGenerator } from '@renderer/hooks/use-grades-generator'
 import { useUserSettings } from '@renderer/hooks/use-user-settings'
 import { storeQuizSubmission } from '@renderer/services/submission-service'
-import { GradedResponse } from '@renderer/types/quiz-generation-types'
-import { Question } from '@renderer/types/quiz-view-types'
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { useActiveQuiz } from '../hooks/use-active-quiz'
@@ -118,7 +118,7 @@ const GradedQuestionDisplay: React.FC<GradedQuestionDisplayProps> = ({
 export function GradingPage() {
     const navigate = useNavigate()
     const { openaiApiKey } = useUserSettings()
-    const { activeQuizState } = useActiveQuiz()
+    const { activeQuizState, clearQuizState } = useActiveQuiz()
     const { quiz, studentResponses } = useMemo(() => activeQuizState, [activeQuizState])
     const [isSubmissionSaved, setIsSubmissionSaved] = useState(false)
 
@@ -156,6 +156,9 @@ export function GradingPage() {
                 quiz,
                 gradedResponses: gradedSubmission?.responses || [],
                 timeElapsed: activeQuizState.elapsedTime,
+            }).then(() => {
+                console.debug('[GradingPage] Submission saved. Clearing state...')
+                clearQuizState()
             })
         }
     }, [isDoneGrading, isSubmissionSaved, quiz, gradedSubmission, activeQuizState, gradingError])

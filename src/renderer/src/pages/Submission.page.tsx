@@ -1,5 +1,5 @@
 import { Card, Container, Stack, Text, Title } from '@mantine/core'
-import { Submission } from '../types/quiz-view-types'
+import { Submission } from '@noggin/types/quiz-types'
 
 // TODO: Add detailed analytics for quiz performance
 // TODO: Implement answer comparison visualization

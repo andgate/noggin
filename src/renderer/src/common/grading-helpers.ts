@@ -1,5 +1,5 @@
-import { Grade, gradeSchema, LetterGrade } from '@renderer/types/grade-types'
-import { GradedResponse } from '@renderer/types/quiz-generation-types'
+import { Grade, gradeSchema, LetterGrade } from '@noggin/types/grading-types'
+import { GradedResponse } from '@noggin/types/quiz-generation-types'
 
 /**
  * Calculate the grade from an array of graded responses.

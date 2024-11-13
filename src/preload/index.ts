@@ -1,5 +1,6 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import type { NogginElectronAPI } from '@noggin/types/electron-types'
+import { NogginStoreSchema } from '@noggin/types/store-types'
 import { contextBridge, ipcRenderer } from 'electron'
 
 // Custom APIs for renderer
@@ -7,6 +8,13 @@ const api: NogginElectronAPI = {
     db: {
         execute: (sql: string, params: any[], method: 'run' | 'all' | 'values' | 'get') =>
             ipcRenderer.invoke('db:execute', sql, params, method),
+    },
+    store: {
+        get: (key: keyof NogginStoreSchema) => ipcRenderer.invoke('store:get', key),
+        set: (key: keyof NogginStoreSchema, value: any) =>
+            ipcRenderer.invoke('store:set', key as string, value),
+        delete: (key: keyof NogginStoreSchema) => ipcRenderer.invoke('store:delete', key as string),
+        clear: () => ipcRenderer.invoke('store:clear'),
     },
 }
 

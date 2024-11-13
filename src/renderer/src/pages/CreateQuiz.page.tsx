@@ -11,12 +11,12 @@ import {
 } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
 import { useHover } from '@mantine/hooks'
+import { QuestionType } from '@noggin/types/quiz-types'
 import { RainbowWrapper } from '@renderer/components/RainbowWrapper'
 import { useQuizGenerator } from '@renderer/hooks/use-quiz-generator'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import { QuizGenerator, QuizGeneratorHandle } from '../components/QuizGenerator'
-import { QuestionType } from '../types/quiz-view-types'
 
 function countWords(content: string) {
     return content.split(/\s+/).filter(Boolean).length
