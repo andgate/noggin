@@ -1,11 +1,11 @@
 import { AbortableGenerativeFunction } from '@renderer/hooks/use-generative'
+import { generateChatCompletion } from '../../../main/services/openai-service'
 import {
     GeneratedQuestion,
     GeneratedQuiz,
     generatedQuizSchema,
     PartialGeneratedQuiz,
 } from '../../../types/quiz-generation-types'
-import { generateChatCompletion } from './openai-service'
 
 const generateQuizPrompt = (
     sources: string[],

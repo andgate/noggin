@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as SettingsImport } from './routes/settings'
+import { Route as ModkitLoaderImport } from './routes/modkit-loader'
 import { Route as IndexImport } from './routes/index'
 import { Route as QuizEvalImport } from './routes/quiz/eval'
 import { Route as QuizCreateImport } from './routes/quiz/create'
@@ -24,6 +25,12 @@ import { Route as QuizPracticeQuizIdImport } from './routes/quiz/practice.$quizI
 const SettingsRoute = SettingsImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ModkitLoaderRoute = ModkitLoaderImport.update({
+  id: '/modkit-loader',
+  path: '/modkit-loader',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -76,6 +83,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/modkit-loader': {
+      id: '/modkit-loader'
+      path: '/modkit-loader'
+      fullPath: '/modkit-loader'
+      preLoaderRoute: typeof ModkitLoaderImport
+      parentRoute: typeof rootRoute
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -125,6 +139,7 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/modkit-loader': typeof ModkitLoaderRoute
   '/settings': typeof SettingsRoute
   '/quiz/create': typeof QuizCreateRoute
   '/quiz/eval': typeof QuizEvalRoute
@@ -135,6 +150,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/modkit-loader': typeof ModkitLoaderRoute
   '/settings': typeof SettingsRoute
   '/quiz/create': typeof QuizCreateRoute
   '/quiz/eval': typeof QuizEvalRoute
@@ -146,6 +162,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/modkit-loader': typeof ModkitLoaderRoute
   '/settings': typeof SettingsRoute
   '/quiz/create': typeof QuizCreateRoute
   '/quiz/eval': typeof QuizEvalRoute
@@ -158,6 +175,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/modkit-loader'
     | '/settings'
     | '/quiz/create'
     | '/quiz/eval'
@@ -167,6 +185,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/modkit-loader'
     | '/settings'
     | '/quiz/create'
     | '/quiz/eval'
@@ -176,6 +195,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/modkit-loader'
     | '/settings'
     | '/quiz/create'
     | '/quiz/eval'
@@ -187,6 +207,7 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ModkitLoaderRoute: typeof ModkitLoaderRoute
   SettingsRoute: typeof SettingsRoute
   QuizCreateRoute: typeof QuizCreateRoute
   QuizEvalRoute: typeof QuizEvalRoute
@@ -197,6 +218,7 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ModkitLoaderRoute: ModkitLoaderRoute,
   SettingsRoute: SettingsRoute,
   QuizCreateRoute: QuizCreateRoute,
   QuizEvalRoute: QuizEvalRoute,
@@ -216,6 +238,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/modkit-loader",
         "/settings",
         "/quiz/create",
         "/quiz/eval",
@@ -226,6 +249,9 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/modkit-loader": {
+      "filePath": "modkit-loader.tsx"
     },
     "/settings": {
       "filePath": "settings.tsx"

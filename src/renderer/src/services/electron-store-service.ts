@@ -1,3 +1,5 @@
+// TODO make this a hook, fuck classes
+
 import type { NogginStoreSchema } from '../../../types/store-types'
 
 class Store {

@@ -1,9 +1,9 @@
 import { electronApp, optimizer } from '@electron-toolkit/utils'
-import { NogginStoreSchema } from '@noggin/types/store-types'
-import { app, BrowserWindow, ipcMain, Menu, MenuItem, shell } from 'electron'
-import Store from 'electron-store'
+import { app, BrowserWindow, Menu, MenuItem, shell } from 'electron'
 import { join } from 'path'
-import * as db from './db'
+import { registerModkitIPC } from './ipc/modkit-ipc'
+import { registerOpenAIIPC } from './ipc/openai-ipc'
+import { registerStoreIPC } from './ipc/store-ipc'
 
 function createWindow(): void {
     console.log('createWindow')
@@ -68,13 +68,6 @@ function setupContextMenu(mainWindow: BrowserWindow) {
     })
 }
 
-// Initialize store
-const store = new Store<NogginStoreSchema>({
-    defaults: {
-        userSettings: {},
-    },
-})
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -89,21 +82,11 @@ app.whenReady().then(async () => {
         optimizer.watchWindowShortcuts(window)
     })
 
-    // IPC test
-    ipcMain.on('ping', () => console.log('pong'))
-    ipcMain.handle('db:execute', db.execute)
+    // Register IPC handlers
+    registerStoreIPC()
+    registerModkitIPC()
+    registerOpenAIIPC()
 
-    // Add store IPC handlers
-    ipcMain.handle('store:get', (_, key: keyof NogginStoreSchema) => store.get(key))
-    ipcMain.handle('store:set', (_, key: keyof NogginStoreSchema, value: any) =>
-        store.set(key, value)
-    )
-    ipcMain.handle('store:delete', (_, key: keyof NogginStoreSchema) => store.delete(key))
-    ipcMain.handle('store:clear', () => store.clear())
-
-    // TODO fix automatic migrations
-    // see https://github.com/drizzle-team/drizzle-orm/issues/680
-    await db.runMigrate()
     createWindow()
 
     app.on('activate', function () {

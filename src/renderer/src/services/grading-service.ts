@@ -6,7 +6,7 @@ import {
 import { Question, Quiz } from '@noggin/types/quiz-types'
 import { gradeResponses } from '@renderer/common/grading-helpers'
 import { AbortableGenerativeFunction } from '@renderer/hooks/use-generative'
-import { generateChatCompletion } from './openai-service'
+import { generateChatCompletion } from '../../../main/services/openai-service'
 
 export const BATCH_SIZE = 30 // Number of questions to grade at a time
 

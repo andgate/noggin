@@ -9,7 +9,7 @@
         "src/drizzle/**/*.tsx",
         "src/types/**/*",
         "src/types/**/*.tsx"
-    ],
+, "src/main/services/mod-service.ts", "src/main/services/openai-service.ts", "src/main/services/stega-service.ts"    ],
     "compilerOptions": {
         "composite": true,
         "baseUrl": ".",
