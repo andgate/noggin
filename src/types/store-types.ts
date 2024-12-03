@@ -6,4 +6,5 @@ export interface NogginStoreSchema {
     userSettings: UserSettings
     activeQuizState?: ActiveQuizState
     modkits: ModKitOverview[]
+    activeModkitId?: string
 }

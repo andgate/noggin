@@ -21,6 +21,10 @@ const api: NogginElectronAPI = {
     openai: {
         chat: (options) => ipcRenderer.invoke('openai:chat', options),
     },
+    dialog: {
+        showDirectoryPicker: () => ipcRenderer.invoke('dialog:showDirectoryPicker'),
+        handleFolderDrop: (paths: string[]) => ipcRenderer.invoke('dialog:handleFolderDrop', paths),
+    },
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

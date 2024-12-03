@@ -14,11 +14,6 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as SettingsImport } from './routes/settings'
 import { Route as ModkitLoaderImport } from './routes/modkit-loader'
 import { Route as IndexImport } from './routes/index'
-import { Route as QuizEvalImport } from './routes/quiz/eval'
-import { Route as QuizCreateImport } from './routes/quiz/create'
-import { Route as QuizViewQuizIdImport } from './routes/quiz/view.$quizId'
-import { Route as QuizSubmissionSubmissionIdImport } from './routes/quiz/submission.$submissionId'
-import { Route as QuizPracticeQuizIdImport } from './routes/quiz/practice.$quizId'
 
 // Create/Update Routes
 
@@ -37,38 +32,6 @@ const ModkitLoaderRoute = ModkitLoaderImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const QuizEvalRoute = QuizEvalImport.update({
-  id: '/quiz/eval',
-  path: '/quiz/eval',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const QuizCreateRoute = QuizCreateImport.update({
-  id: '/quiz/create',
-  path: '/quiz/create',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const QuizViewQuizIdRoute = QuizViewQuizIdImport.update({
-  id: '/quiz/view/$quizId',
-  path: '/quiz/view/$quizId',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const QuizSubmissionSubmissionIdRoute = QuizSubmissionSubmissionIdImport.update(
-  {
-    id: '/quiz/submission/$submissionId',
-    path: '/quiz/submission/$submissionId',
-    getParentRoute: () => rootRoute,
-  } as any,
-)
-
-const QuizPracticeQuizIdRoute = QuizPracticeQuizIdImport.update({
-  id: '/quiz/practice/$quizId',
-  path: '/quiz/practice/$quizId',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -97,41 +60,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsImport
       parentRoute: typeof rootRoute
     }
-    '/quiz/create': {
-      id: '/quiz/create'
-      path: '/quiz/create'
-      fullPath: '/quiz/create'
-      preLoaderRoute: typeof QuizCreateImport
-      parentRoute: typeof rootRoute
-    }
-    '/quiz/eval': {
-      id: '/quiz/eval'
-      path: '/quiz/eval'
-      fullPath: '/quiz/eval'
-      preLoaderRoute: typeof QuizEvalImport
-      parentRoute: typeof rootRoute
-    }
-    '/quiz/practice/$quizId': {
-      id: '/quiz/practice/$quizId'
-      path: '/quiz/practice/$quizId'
-      fullPath: '/quiz/practice/$quizId'
-      preLoaderRoute: typeof QuizPracticeQuizIdImport
-      parentRoute: typeof rootRoute
-    }
-    '/quiz/submission/$submissionId': {
-      id: '/quiz/submission/$submissionId'
-      path: '/quiz/submission/$submissionId'
-      fullPath: '/quiz/submission/$submissionId'
-      preLoaderRoute: typeof QuizSubmissionSubmissionIdImport
-      parentRoute: typeof rootRoute
-    }
-    '/quiz/view/$quizId': {
-      id: '/quiz/view/$quizId'
-      path: '/quiz/view/$quizId'
-      fullPath: '/quiz/view/$quizId'
-      preLoaderRoute: typeof QuizViewQuizIdImport
-      parentRoute: typeof rootRoute
-    }
   }
 }
 
@@ -141,22 +69,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/modkit-loader': typeof ModkitLoaderRoute
   '/settings': typeof SettingsRoute
-  '/quiz/create': typeof QuizCreateRoute
-  '/quiz/eval': typeof QuizEvalRoute
-  '/quiz/practice/$quizId': typeof QuizPracticeQuizIdRoute
-  '/quiz/submission/$submissionId': typeof QuizSubmissionSubmissionIdRoute
-  '/quiz/view/$quizId': typeof QuizViewQuizIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/modkit-loader': typeof ModkitLoaderRoute
   '/settings': typeof SettingsRoute
-  '/quiz/create': typeof QuizCreateRoute
-  '/quiz/eval': typeof QuizEvalRoute
-  '/quiz/practice/$quizId': typeof QuizPracticeQuizIdRoute
-  '/quiz/submission/$submissionId': typeof QuizSubmissionSubmissionIdRoute
-  '/quiz/view/$quizId': typeof QuizViewQuizIdRoute
 }
 
 export interface FileRoutesById {
@@ -164,44 +82,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/modkit-loader': typeof ModkitLoaderRoute
   '/settings': typeof SettingsRoute
-  '/quiz/create': typeof QuizCreateRoute
-  '/quiz/eval': typeof QuizEvalRoute
-  '/quiz/practice/$quizId': typeof QuizPracticeQuizIdRoute
-  '/quiz/submission/$submissionId': typeof QuizSubmissionSubmissionIdRoute
-  '/quiz/view/$quizId': typeof QuizViewQuizIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/modkit-loader'
-    | '/settings'
-    | '/quiz/create'
-    | '/quiz/eval'
-    | '/quiz/practice/$quizId'
-    | '/quiz/submission/$submissionId'
-    | '/quiz/view/$quizId'
+  fullPaths: '/' | '/modkit-loader' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/modkit-loader'
-    | '/settings'
-    | '/quiz/create'
-    | '/quiz/eval'
-    | '/quiz/practice/$quizId'
-    | '/quiz/submission/$submissionId'
-    | '/quiz/view/$quizId'
-  id:
-    | '__root__'
-    | '/'
-    | '/modkit-loader'
-    | '/settings'
-    | '/quiz/create'
-    | '/quiz/eval'
-    | '/quiz/practice/$quizId'
-    | '/quiz/submission/$submissionId'
-    | '/quiz/view/$quizId'
+  to: '/' | '/modkit-loader' | '/settings'
+  id: '__root__' | '/' | '/modkit-loader' | '/settings'
   fileRoutesById: FileRoutesById
 }
 
@@ -209,22 +97,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ModkitLoaderRoute: typeof ModkitLoaderRoute
   SettingsRoute: typeof SettingsRoute
-  QuizCreateRoute: typeof QuizCreateRoute
-  QuizEvalRoute: typeof QuizEvalRoute
-  QuizPracticeQuizIdRoute: typeof QuizPracticeQuizIdRoute
-  QuizSubmissionSubmissionIdRoute: typeof QuizSubmissionSubmissionIdRoute
-  QuizViewQuizIdRoute: typeof QuizViewQuizIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ModkitLoaderRoute: ModkitLoaderRoute,
   SettingsRoute: SettingsRoute,
-  QuizCreateRoute: QuizCreateRoute,
-  QuizEvalRoute: QuizEvalRoute,
-  QuizPracticeQuizIdRoute: QuizPracticeQuizIdRoute,
-  QuizSubmissionSubmissionIdRoute: QuizSubmissionSubmissionIdRoute,
-  QuizViewQuizIdRoute: QuizViewQuizIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -239,12 +117,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/modkit-loader",
-        "/settings",
-        "/quiz/create",
-        "/quiz/eval",
-        "/quiz/practice/$quizId",
-        "/quiz/submission/$submissionId",
-        "/quiz/view/$quizId"
+        "/settings"
       ]
     },
     "/": {
@@ -255,21 +128,6 @@ export const routeTree = rootRoute
     },
     "/settings": {
       "filePath": "settings.tsx"
-    },
-    "/quiz/create": {
-      "filePath": "quiz/create.tsx"
-    },
-    "/quiz/eval": {
-      "filePath": "quiz/eval.tsx"
-    },
-    "/quiz/practice/$quizId": {
-      "filePath": "quiz/practice.$quizId.tsx"
-    },
-    "/quiz/submission/$submissionId": {
-      "filePath": "quiz/submission.$submissionId.tsx"
-    },
-    "/quiz/view/$quizId": {
-      "filePath": "quiz/view.$quizId.tsx"
     }
   }
 }

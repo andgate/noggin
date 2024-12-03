@@ -24,4 +24,8 @@ export interface NogginElectronAPI {
             signal?: AbortSignal
         }) => Promise<T>
     }
+    dialog: {
+        showDirectoryPicker: () => Promise<string | undefined>
+        handleFolderDrop: (paths: string[]) => Promise<string[]>
+    }
 }

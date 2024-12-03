@@ -34,6 +34,7 @@
         "@electron-toolkit/utils": "^3.0.0",
         "@libsql/client": "^0.14.0",
         "@mantine/core": "^7.13.4",
+        "@mantine/dropzone": "^7.14.2",
         "@mantine/form": "^7.13.4",
         "@mantine/hooks": "^7.13.4",
         "@mantine/notifications": "^7.13.4",

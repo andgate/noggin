@@ -1,43 +1,39 @@
-import { Button, Card, FileInput, Group, Text } from '@mantine/core'
+import { Stack, Title } from '@mantine/core'
+import { notifications } from '@mantine/notifications'
+import { DirectoryPicker } from '@renderer/components/DirectoryPicker'
 import { useModkit } from '@renderer/hooks/use-mod-kit'
-import { useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 
 export default function ModKitLoaderPage() {
     const { setModkit } = useModkit()
-    const [selectedFolder, setSelectedFolder] = useState<File | null>(null)
+    const navigate = useNavigate()
 
-    const handleFolderSelection = (payload: File | null) => {
-        setSelectedFolder(payload)
-    }
-
-    const handleLoadModkit = async () => {
-        if (!selectedFolder) return
-
+    const handleModkitLoad = async (path: string) => {
         try {
-            await window.api.modkit.add(selectedFolder.path)
-            const modkit = await window.api.modkit.load(selectedFolder.path)
+            await window.api.modkit.add(path)
+            const modkit = await window.api.modkit.load(path)
+            await window.api.store.set('activeModkitId', modkit.id)
             setModkit(modkit)
+            navigate({ to: '/' })
+            notifications.show({
+                title: 'Success',
+                message: 'Modkit loaded successfully',
+                color: 'green',
+            })
         } catch (error) {
             console.error('Failed to load modkit:', error)
-            // Consider adding user feedback for errors
+            notifications.show({
+                title: 'Error',
+                message: 'Failed to load modkit',
+                color: 'red',
+            })
         }
     }
 
     return (
-        <Card shadow="sm" padding="lg">
-            <Text>Select a folder to use as your modkit:</Text>
-
-            <FileInput
-                placeholder="Pick a folder"
-                onChange={handleFolderSelection}
-                accept="application/json"
-            />
-
-            <Group justify="flex-end" mt="lg">
-                <Button onClick={handleLoadModkit} disabled={!selectedFolder}>
-                    Load Modkit
-                </Button>
-            </Group>
-        </Card>
+        <Stack p="md">
+            <Title order={2}>Load Modkit</Title>
+            <DirectoryPicker onSelect={handleModkitLoad} />
+        </Stack>
     )
 }
