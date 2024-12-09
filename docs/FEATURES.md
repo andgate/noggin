@@ -18,6 +18,7 @@ The Practice Feed is the heart of the Noggin interface, guiding users through th
 
 -   **Module Cards**:
     Each loaded module appears as a card in the feed, showing its name and overall status.
+
 -   **Simple Prioritization**:
     Modules are highlighted based on factors like time since last review, encouraging natural spaced repetition. There are no forced schedules—users remain in control.
 
