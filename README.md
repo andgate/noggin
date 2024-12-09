@@ -207,8 +207,6 @@ Once the release workflow has completed, you can review the release on the repos
 -   TypeScript
 -   Mantine v7
 -   TanStack Router & React Query
--   Drizzle ORM
--   SQLite
 -   @tabler/icons-react
 -   Playwright (Testing)
 -   electron-vite

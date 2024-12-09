@@ -11,19 +11,17 @@
  * - Load mod data from JSON files
  * - Save mod data by embedding it into JSON files
  */
-import { Mod, ModGradesFile, modGradesFileSchema, modSchema } from '@noggin/types/mod-types'
+import { Mod, modGradesFileSchema, SourceExtract, topicSchema } from '@noggin/types/mod-types'
 import { quizSchema, submissionSchema } from '@noggin/types/quiz-types'
 import fs from 'fs/promises'
 import { glob } from 'glob'
 import path from 'path'
 import { z } from 'zod'
-import { slugify } from '../utils/string-utils'
 
 // Helper to read and parse JSON with schema
 async function readJsonFile<T>(filePath: string, schema: z.ZodSchema<T>): Promise<T> {
     const rawData = await fs.readFile(filePath, 'utf-8')
-    const parsed = JSON.parse(rawData)
-    return schema.parse(parsed)
+    return schema.parse(rawData)
 }
 
 export async function findMods(dirPath: string): Promise<string[]> {
@@ -51,28 +49,26 @@ export async function loadMod(modPath: string): Promise<Mod> {
     )
 
     // Load sources with new metadata
-    const sourceFiles = await glob('sources/*', { cwd: modPath, absolute: true })
-    const sources = await Promise.all(
-        sourceFiles.map(async (file) => {
-            const originalName = path.basename(file)
+    const extractFiles = await glob('extracts/*', { cwd: modPath, absolute: true })
+    const extracts: SourceExtract[] = await Promise.all(
+        extractFiles.map(async (file): Promise<SourceExtract> => {
+            const content = await fs.readFile(file, 'utf-8')
             return {
-                type: 'text' as const,
-                originalName,
-                slug: slugify(originalName),
-                content: await fs.readFile(file, 'utf-8'),
+                id: path.basename(file),
+                content,
                 createdAt: new Date().toISOString(),
             }
         })
     )
 
+    const outline = await readJsonFile(path.join(modPath, 'outline.json'), topicSchema)
+
     const modId = path.basename(modPath, '.mod')
     return {
         id: modId,
         name: modId,
-        sources,
-        tests: quizzes,
-        submissions,
-        grades,
+        extracts,
+        outline,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     }

@@ -2,10 +2,8 @@ import { z } from 'zod'
 import { gradeSchema } from './grading-types'
 import { questionSchema, responseSchema } from './quiz-types'
 
-export const contentSourceSchema = z.object({
-    type: z.enum(['pdf', 'text', 'url']),
-    originalName: z.string(),
-    slug: z.string(),
+export const sourceExtractSchema = z.object({
+    id: z.string(),
     content: z.string(),
     createdAt: z.string(),
 })
@@ -27,30 +25,43 @@ export const submissionSchema = z.object({
     completedAt: z.string(),
 })
 
+export const topicSchema = z.object({
+    slug: z.string(),
+    title: z.string(),
+    mastery: z.enum(['novice', 'intermediate', 'advanced', 'master']).default('novice'),
+    subtopics: z.lazy(() => z.array(topicSchema)).default([]),
+})
+
+export const reviewScheduleSchema = z.object({
+    nextReviewDate: z.string(),
+    reviewInterval: z.number(), // days
+    lastReviewDate: z.string().optional(),
+})
+
 export const modSchema = z.object({
     id: z.string(),
     name: z.string(),
-    sources: z.array(contentSourceSchema),
-    tests: z.array(testSchema),
+    path: z.string(),
+    extracts: z.array(sourceExtractSchema),
+    outline: topicSchema,
+    questions: z.array(questionSchema),
     submissions: z.array(submissionSchema),
     createdAt: z.string(),
     updatedAt: z.string(),
+    version: z.number().default(1),
+    previousVersions: z.array(z.number()).default([]),
+    reviewSchedule: reviewScheduleSchema.optional(),
+    parentModuleId: z.string().optional(),
+    submoduleIds: z.array(z.string()).default([]),
 })
 
-export const modkitSchema = z.object({
+export const modOverviewSchema = z.object({
     id: z.string(),
     name: z.string(),
     path: z.string(),
-    mods: z.array(modSchema),
-    createdAt: z.string(),
-    updatedAt: z.string(),
-})
-
-export const modKitOverviewSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    path: z.string(),
-    modCount: z.number(),
+    sourcesCount: z.number(),
+    testsCount: z.number(),
+    submissionsCount: z.number(),
     createdAt: z.string(),
     updatedAt: z.string(),
 })
@@ -65,7 +76,7 @@ export const modGradesFileSchema = z.object({
     quizzes: z.record(z.string(), modGradeSchema),
 })
 
+export type SourceExtract = z.infer<typeof sourceExtractSchema>
 export type Mod = z.infer<typeof modSchema>
-export type Modkit = z.infer<typeof modkitSchema>
-export type ModKitOverview = z.infer<typeof modKitOverviewSchema>
+export type ModOverview = z.infer<typeof modOverviewSchema>
 export type ModGradesFile = z.infer<typeof modGradesFileSchema>
