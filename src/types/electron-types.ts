@@ -1,5 +1,6 @@
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
 import { z } from 'zod'
+import { Mod } from './module-types'
 import { NogginStoreSchema } from './store-types'
 
 interface StoreAPI {
@@ -10,10 +11,12 @@ interface StoreAPI {
 }
 
 interface ModuleAPI {
-    list: () => Promise<string[]>
-    load: (modulePath: string) => Promise<any>
-    add: (modulePath: string) => Promise<void>
-    delete: (modulePath: string) => Promise<void>
+    getRegisteredPaths: () => Promise<string[]>
+    registerModulePath: (modulePath: string) => Promise<void>
+    unregisterModulePath: (modulePath: string) => Promise<void>
+    readModuleData: (modulePath: string) => Promise<Mod>
+    writeModuleData: (modulePath: string, mod: Mod) => Promise<void>
+    removeModule: (modulePath: string) => Promise<void>
 }
 
 interface OpenAIChatOptions<T> {

@@ -1,111 +1,117 @@
 /**
  * A service for managing individual learning modules ("mods").
  *
- * Mods are stored as JSON files containing:
- * - Content sources (PDFs, text, or URLs)
- * - Tests with questions
- * - Student submissions and grades
+ * Mods are stored in directories with a .mod extension containing:
+ * - Content sources (PDFs, text files) in the root directory
+ * - Tests with questions in the quizzes/ subdirectory
+ * - Student submissions in the submissions/ subdirectory
  *
  * The service provides functions to:
- * - Find mod files within a directory (recursively)
- * - Load mod data from JSON files
- * - Save mod data by embedding it into JSON files
+ * - List all mods that the system has loadedlist)
+ * - Load mod data from a directory (load)
+ * - Save mod data to a directory (save)
+ * - Delete a mod and its contents (delete_)
  */
-import { Mod, modGradesFileSchema, SourceExtract, topicSchema } from '@noggin/types/mod-types'
+import { Mod } from '@noggin/types/module-types'
 import { quizSchema, submissionSchema } from '@noggin/types/quiz-types'
 import fs from 'fs/promises'
 import { glob } from 'glob'
 import path from 'path'
 import { z } from 'zod'
+import { store } from './store-service'
 
-// Helper to read and parse JSON with schema
+// Helper to read and parse JSON files
 async function readJsonFile<T>(filePath: string, schema: z.ZodSchema<T>): Promise<T> {
     const rawData = await fs.readFile(filePath, 'utf-8')
-    return schema.parse(rawData)
+    return schema.parse(JSON.parse(rawData))
 }
 
-export async function findMods(dirPath: string): Promise<string[]> {
-    return glob('**/*.mod/', {
-        cwd: dirPath,
-        absolute: true,
-    })
+// Helper to ensure directory exists
+async function ensureDir(dirPath: string): Promise<void> {
+    await fs.mkdir(dirPath, { recursive: true })
 }
 
-export async function loadMod(modPath: string): Promise<Mod> {
-    // Load quizzes with new naming convention
-    const quizFiles = await glob('quizzes/*.json', { cwd: modPath, absolute: true })
-    const quizzes = await Promise.all(quizFiles.map((file) => readJsonFile(file, quizSchema)))
+// Path management functions
+export async function getRegisteredPaths(): Promise<string[]> {
+    return store.get('modulePaths', [])
+}
 
-    // Load submissions and grades
-    const submissionFiles = await glob('submissions/*.json', { cwd: modPath, absolute: true })
-    const submissions = await Promise.all(
-        submissionFiles.map((file) => readJsonFile(file, submissionSchema))
+export async function registerModulePath(modPath: string): Promise<void> {
+    const paths = await getRegisteredPaths()
+    if (!paths.includes(modPath)) {
+        store.set('modulePaths', [...paths, modPath])
+    }
+}
+
+export async function unregisterModulePath(modPath: string): Promise<void> {
+    const paths = await getRegisteredPaths()
+    store.set(
+        'modulePaths',
+        paths.filter((p) => p !== modPath)
     )
+}
 
-    // Load graded submissions (new)
-    const gradedFiles = await glob('graded/*.json', { cwd: modPath, absolute: true })
-    const grades = await Promise.all(
-        gradedFiles.map((file) => readJsonFile(file, modGradesFileSchema))
-    )
+// Module data reading functions
+export async function readModuleData(modPath: string): Promise<Mod> {
+    const [quizzes, submissions, sources] = await Promise.all([
+        readQuizzes(modPath),
+        readSubmissions(modPath),
+        readSources(modPath),
+    ])
 
-    // Load sources with new metadata
-    const extractFiles = await glob('extracts/*', { cwd: modPath, absolute: true })
-    const extracts: SourceExtract[] = await Promise.all(
-        extractFiles.map(async (file): Promise<SourceExtract> => {
-            const content = await fs.readFile(file, 'utf-8')
-            return {
-                id: path.basename(file),
-                content,
-                createdAt: new Date().toISOString(),
-            }
-        })
-    )
-
-    const outline = await readJsonFile(path.join(modPath, 'outline.json'), topicSchema)
-
-    const modId = path.basename(modPath, '.mod')
     return {
-        id: modId,
-        name: modId,
-        extracts,
-        outline,
+        id: path.basename(modPath, '.mod'),
+        name: path.basename(modPath, '.mod'),
+        path: modPath,
+        sources,
+        questions: quizzes.flatMap((q) => q.questions),
+        submissions,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     }
 }
 
-export async function saveMod(modPath: string, mod: Mod): Promise<void> {
-    // Create all required directories
-    await Promise.all([
-        fs.mkdir(path.join(modPath, 'quizzes'), { recursive: true }),
-        fs.mkdir(path.join(modPath, 'submissions'), { recursive: true }),
-        fs.mkdir(path.join(modPath, 'sources'), { recursive: true }),
-        fs.mkdir(path.join(modPath, 'graded'), { recursive: true }),
-    ])
+// Module data writing functions
+export async function writeModuleData(modPath: string, mod: Mod): Promise<void> {
+    await ensureModuleDirectories(modPath)
+    await writeSubmissions(modPath, mod.submissions)
+}
 
-    // Save quizzes with slugified names
-    await Promise.all(
-        mod.tests.map(async (quiz) => {
-            const quizPath = path.join(modPath, 'quizzes', `${quiz.slug}.json`)
-            await fs.writeFile(quizPath, JSON.stringify(quiz, null, 2))
-        })
+// File system operations
+export async function removeModule(modPath: string): Promise<void> {
+    await fs.rm(modPath, { recursive: true, force: true })
+    await unregisterModulePath(modPath)
+}
+
+// New helper functions for better separation
+async function readQuizzes(modPath: string) {
+    return glob('quizzes/*.json', { cwd: modPath, absolute: true }).then((files) =>
+        Promise.all(files.map((f) => readJsonFile(f, quizSchema)))
     )
+}
 
-    // Save submissions
+async function readSubmissions(modPath: string) {
+    return glob('submissions/*.json', { cwd: modPath, absolute: true }).then((files) =>
+        Promise.all(files.map((f) => readJsonFile(f, submissionSchema)))
+    )
+}
+
+async function readSources(modPath: string) {
+    return glob('*.{txt,pdf}', { cwd: modPath, absolute: true })
+}
+
+async function ensureModuleDirectories(modPath: string) {
+    await Promise.all([
+        ensureDir(path.join(modPath, 'quizzes')),
+        ensureDir(path.join(modPath, 'submissions')),
+    ])
+}
+
+async function writeSubmissions(modPath: string, submissions: Mod['submissions']) {
     await Promise.all(
-        mod.submissions.map(async (sub) => {
+        submissions.map(async (sub) => {
             const subPath = path.join(modPath, 'submissions', `${sub.id}.json`)
             await fs.writeFile(subPath, JSON.stringify(sub, null, 2))
-        })
-    )
-
-    // Save sources
-    await Promise.all(
-        mod.sources.map(async (source, index) => {
-            if (source.type === 'text') {
-                const sourcePath = path.join(modPath, 'sources', `source_${index}.txt`)
-                await fs.writeFile(sourcePath, source.content)
-            }
         })
     )
 }

@@ -1,5 +1,6 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import type { NogginElectronAPI } from '@noggin/types/electron-types'
+import { Mod } from '@noggin/types/module-types'
 import { NogginStoreSchema } from '@noggin/types/store-types'
 import { contextBridge, ipcRenderer } from 'electron'
 
@@ -12,11 +13,18 @@ const api: NogginElectronAPI = {
         delete: (key: keyof NogginStoreSchema) => ipcRenderer.invoke('store:delete', key as string),
         clear: () => ipcRenderer.invoke('store:clear'),
     },
-    modkit: {
-        list: () => ipcRenderer.invoke('modkit:list'),
-        load: (modkitPath: string) => ipcRenderer.invoke('modkit:load', modkitPath),
-        add: (modkitPath: string) => ipcRenderer.invoke('modkit:add', modkitPath),
-        delete: (modkitPath: string) => ipcRenderer.invoke('modkit:delete', modkitPath),
+    modules: {
+        getRegisteredPaths: () => ipcRenderer.invoke('modules:getRegisteredPaths'),
+        registerModulePath: (modulePath: string) =>
+            ipcRenderer.invoke('modules:registerModulePath', modulePath),
+        unregisterModulePath: (modulePath: string) =>
+            ipcRenderer.invoke('modules:unregisterModulePath', modulePath),
+        readModuleData: (modulePath: string) =>
+            ipcRenderer.invoke('modules:readModuleData', modulePath),
+        writeModuleData: (modulePath: string, mod: Mod) =>
+            ipcRenderer.invoke('modules:writeModuleData', modulePath, mod),
+        removeModule: (modulePath: string) =>
+            ipcRenderer.invoke('modules:removeModule', modulePath),
     },
     openai: {
         chat: (options) => ipcRenderer.invoke('openai:chat', options),
