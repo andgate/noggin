@@ -64,7 +64,7 @@ export async function readModuleData(modPath: string): Promise<Mod> {
         name: path.basename(modPath, '.mod'),
         path: modPath,
         sources,
-        questions: quizzes.flatMap((q) => q.questions),
+        quizzes,
         submissions,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
