@@ -1,7 +1,7 @@
 # Noggin Protocol for Modular, Self-Directed Learning
 
 **Author**: Gabriel Anderson
-**Date**: December 9, 2024
+**Date**: December 12, 2024
 
 ---
 
@@ -61,6 +61,10 @@ This structure ensures that all module-related data is centralized, accessible, 
 #### Storage
 
 Quizzes are stored in the `.mod/quizzes/` folder, with each quiz represented as a standalone file containing the questions and metadata (e.g., topics covered, difficulty). Users can attempt quizzes multiple times, with each attempt stored as a submission in `.mod/submissions/`.
+
+### Quiz Submissions and Grading
+
+Quiz submissions are processed by the AI system, which evaluates the answers and provides feedback. The grades serve only as informal feedback to help guide the learner's self-assessment.
 
 ---
 

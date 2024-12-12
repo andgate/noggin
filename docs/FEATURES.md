@@ -1,5 +1,8 @@
 # Noggin Desktop Application
 
+**Author**: Gabriel Anderson
+**Date**: December 12, 2024
+
 Noggin is a modular, self-directed learning desktop app built with Electron, React, and Mantine. It is designed to provide a streamlined and intuitive experience for learners, encouraging them to study topics through locally stored modules and quizzes.
 
 ## Core Principles
@@ -83,33 +86,63 @@ The Settings Panel offers straightforward customization options:
 
 ---
 
+## AI-Powered Features
+
 ### Module Creation
 
-The Module Creation workflow enables users to build new modules tailored to their learning needs:
+A simple workflow for creating new learning modules:
 
-1. **Add Source Materials**:
-   Drag and drop PDFs, text, or other content files into the new module’s directory.
-2. **Generate Quizzes**:
-   Use integrated AI providers to create quizzes from the provided sources. The quizzes are stored locally and can be practiced immediately.
+-   **Initialize Module**: Create a new module directory with the required structure
+-   **Add Sources**: Import learning materials (PDFs, text files, etc.)
 
-3. **Practice & Track**:
-   Start using the new module right away. Over time, submissions accumulate, painting a detailed picture of the user’s progress.
+### Quiz Generation
+
+Leverages AI to create comprehensive quizzes from module content:
+
+-   **Content Analysis**: Process source materials to identify key concepts
+-   **Question Creation**: Generate both multiple-choice and written response questions
+-   **Local Storage**: Save generated quizzes as static files in `.mod/quizzes/`
+
+### Quiz Grading
+
+Automated assessment of quiz submissions using AI:
+
+-   **Feedback Generation**: Provide detailed explanations for incorrect answers
+-   **Submission Storage**: Save graded attempts to `.mod/submissions/`
 
 ---
 
 ## User Workflows
 
-1. **Studying a Module**:
-   Open the Practice Feed, choose a module card, and start a quiz. View submissions anytime to understand growth and areas for improvement.
+1. **Creating and Setting Up a Module**:
 
-2. **Managing Modules**:
-   Use the Module Explorer to adjust sources, review quizzes, or look at past submissions. Everything is in one place, locally stored, and visible.
+    - Initialize a new module with a descriptive name
+    - Add source materials (PDFs, text files) to the module folder
+    - Review and organize sources as needed
 
-3. **Creating a Module**:
-   Add source materials, create quizzes, and begin practicing. Tailor content to your interests or learning goals without external constraints.
+2. **Generating Learning Content**:
 
-4. **Adjusting Settings**:
-   Open the Settings Panel to tweak appearance, manage AI keys, or import/export modules as needed.
+    - Generate quizzes from module content using AI
+    - Save generated quizzes to the module's quiz folder
+
+3. **Daily Study Practice**:
+
+    - Open the Practice Feed to see suggested modules
+    - Choose a module based on review recommendations
+    - Select and attempt a quiz from the module
+    - Review feedback after submission
+    - Track progress through submission history
+
+4. **Managing Modules**:
+
+    - Use the Module Explorer to view all materials
+    - Review past quiz submissions
+    - Access source materials and quizzes directly
+
+5. **System Configuration**:
+    - Configure AI provider settings and API keys
+    - Customize interface preferences and theme
+    - Import/export modules as needed
 
 ---
 
@@ -126,6 +159,9 @@ The Module Creation workflow enables users to build new modules tailored to thei
 
 -   **electron-vite**:
     Fast and reliable bundling for quick startup times and easy development.
+
+-   **@tabler/icons-react**:
+    Comprehensive icon library providing consistent and customizable UI elements.
 
 ---
 
