@@ -154,9 +154,6 @@ Automated assessment of quiz submissions using AI:
 -   **React 18 & Mantine v7**:
     Modern UI components ensuring a responsive and intuitive user experience.
 
--   **TanStack Query**:
-    Efficient state management and data fetching for smooth navigation and instant updates.
-
 -   **electron-vite**:
     Fast and reliable bundling for quick startup times and easy development.
 

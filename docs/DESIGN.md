@@ -79,7 +79,7 @@ The Settings Panel allows users to customize the app and manage AI provider inte
 
 **Wireframe Description:**
 
--   **Layout:** A dedicated full-page view that replaces the Dashboard.
+-   **Layout:** A modal dialog that overlays the Dashboard, centered on screen.
 -   **Tabs:**
     -   **General:**
         -   Theme selection (light/dark/system).
@@ -97,25 +97,34 @@ The Settings Panel allows users to customize the app and manage AI provider inte
 
 ### 4. Module Creation Wizard
 
-The Module Creation Wizard guides users through the process of creating a new learning module.
+The Module Creation Wizard guides users through creating and saving a new module.
 
 **Wireframe Description:**
 
--   **Layout:** A dedicated full-page view that replaces the Dashboard.
--   **Step 1: Add Source Materials**
-    -   **Title:** "Create New Module"
-    -   **Instructions:** "Select the files you want to use as source materials for this module."
-    -   **Button:** "Choose Files" (opens a file selection dialog).
-    -   **List:** Displays selected files.
--   **Step 2: Module Generation**
-    -   **Title:** "Generating Module..."
-    -   **Progress Bar:** Shows the progress of AI analysis.
-    -   **Status Messages:** Updates on the current stage (analyzing content, generating name).
--   **Step 3: Completion**
-    -   **Title:** "Module Created"
-    -   **Display:** Shows the AI-generated module name.
-    -   **Message:** "Your module has been created successfully."
-    -   "Done" button to return to Dashboard.
+-   **Layout:** A modal dialog that overlays the Dashboard.
+-   **Step 1: Source Selection**
+    -   **Title:** "Select Source Materials"
+    -   **Instructions:** "Choose files to create your module"
+    -   **Button:** "Choose Files" (opens file selection dialog)
+    -   **List:** Shows selected source files
+    -   **Generate** button becomes active when files are selected
+-   **Step 2: Generation**
+    -   **Title:** "Analyzing Content..."
+    -   **Progress Bar:** Shows analysis progress
+    -   **Status Messages:** Updates on current task:
+        -   "Analyzing source materials..."
+        -   "Generating module title..."
+        -   "Creating content overview..."
+-   **Step 3: Review & Save**
+    -   **Title:** "Review Module Details"
+    -   **Display:**
+        -   Generated module title
+        -   Generated overview
+        -   Preview of folder slug
+        -   List of included source files
+    -   **Save Button:** Creates module directory and saves files
+    -   **Edit Button:** Allows manual adjustment of title/overview
+    -   **Cancel Button:** Aborts creation process
 
 ### 5. Quiz Generation Wizard
 

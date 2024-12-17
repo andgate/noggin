@@ -1,60 +1,109 @@
+import { ActionIcon, Button, Card, Group, Menu, SimpleGrid, Text } from '@mantine/core'
+import { notifications } from '@mantine/notifications'
 import { Mod } from '@noggin/types/module-types'
+import { useModule } from '@renderer/hooks/use-module'
+import { IconDotsVertical, IconPlayerPlay, IconTrash } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
-import { useModule } from '../hooks/use-module'
 
-// Component to display a single module card
-function ModuleCard({ mod }: { mod: Mod }) {
-    return (
-        <div className="module-card">
-            <h3>{mod.name}</h3>
-            <div className="status-indicators">{/* Render status indicators here */}</div>
-            <button onClick={() => startQuiz(mod)}>Start Quiz</button>
-            <button onClick={() => reviewSubmissions(mod)}>Review Submissions</button>
-        </div>
-    )
-}
-
-// Function to start a quiz
-function startQuiz(mod: Mod) {
-    console.log(`Starting quiz for module: ${mod.name}`)
-    // Implement quiz start logic
-}
-
-// Function to review submissions
-function reviewSubmissions(mod: Mod) {
-    console.log(`Reviewing submissions for module: ${mod.name}`)
-    // Implement review logic
-}
-
-// Main PracticeFeed component
 export function PracticeFeed() {
-    const { getRegisteredPaths, readModuleData } = useModule()
+    const { getRegisteredPaths, readModuleData, removeModule } = useModule()
     const [modules, setModules] = useState<Mod[]>([])
+    const [isLoading, setIsLoading] = useState(false)
 
-    useEffect(() => {
-        async function fetchModules() {
+    const fetchModules = async () => {
+        setIsLoading(true)
+        try {
             const paths = await getRegisteredPaths()
             const mods = await Promise.all(paths.map(readModuleData))
             setModules(mods)
+        } catch (error) {
+            notifications.show({
+                title: 'Error',
+                message: 'Failed to load modules',
+                color: 'red',
+            })
+        } finally {
+            setIsLoading(false)
         }
+    }
+
+    useEffect(() => {
         fetchModules()
-    }, [getRegisteredPaths, readModuleData])
+    }, [])
+
+    const handleDeleteMod = async (modId?: string) => {
+        if (!modId) return
+        const mod = modules.find((m) => m.id === modId)
+        if (!mod) return
+
+        try {
+            await removeModule(mod.path)
+            await fetchModules()
+            notifications.show({
+                title: 'Success',
+                message: 'Module deleted successfully',
+                color: 'green',
+            })
+        } catch (error) {
+            notifications.show({
+                title: 'Error',
+                message: 'Failed to delete module',
+                color: 'red',
+            })
+        }
+    }
 
     return (
-        <div className="practice-feed">
-            <h2>Practice Feed</h2>
-            <button onClick={createModule}>+</button>
-            <div className="module-list">
-                {modules.map((mod) => (
-                    <ModuleCard key={mod.id} mod={mod} />
-                ))}
-            </div>
-        </div>
-    )
-}
+        <SimpleGrid
+            cols={{ base: 1, sm: 2, lg: 3, xl: 4 }}
+            p="md"
+            style={{ flex: 1, overflow: 'auto' }}
+        >
+            {modules?.map((mod: Mod) => (
+                <Card key={mod.id} shadow="sm" padding="md" radius="md" withBorder>
+                    <Group justify="space-between" mb="xs">
+                        <Text fw={500} size="sm" truncate>
+                            {mod.name}
+                        </Text>
+                        <Menu shadow="md" width={200} position="bottom-end">
+                            <Menu.Target>
+                                <ActionIcon variant="subtle" size="sm">
+                                    <IconDotsVertical size={16} />
+                                </ActionIcon>
+                            </Menu.Target>
+                            <Menu.Dropdown>
+                                <Menu.Item
+                                    leftSection={<IconTrash size={14} />}
+                                    color="red"
+                                    onClick={() => {
+                                        const confirmed = window.confirm(
+                                            'Are you sure you want to delete this module?'
+                                        )
+                                        if (confirmed) handleDeleteMod(mod.id)
+                                    }}
+                                >
+                                    Delete
+                                </Menu.Item>
+                            </Menu.Dropdown>
+                        </Menu>
+                    </Group>
 
-// Function to create a new module
-function createModule() {
-    console.log('Creating a new module')
-    // Implement module creation logic
+                    <Text size="xs" c="dimmed" mb="md">
+                        Created {new Date(mod.createdAt).toLocaleDateString()}
+                    </Text>
+
+                    <Group gap="xs">
+                        <Button
+                            variant="light"
+                            size="xs"
+                            leftSection={<IconPlayerPlay size={14} />}
+                            fullWidth
+                        >
+                            Start Quiz
+                        </Button>
+                    </Group>
+                </Card>
+            ))}
+        </SimpleGrid>
+    )
 }

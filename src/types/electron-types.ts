@@ -36,9 +36,19 @@ interface DialogAPI {
     handleFolderDrop: (paths: string[]) => Promise<string[]>
 }
 
+export type GenerateContentOptions<T> = {
+    prompt: string
+    schema: z.ZodType<T>
+}
+
+interface GeminiAPI {
+    generateContent: <T>(options: GenerateContentOptions<T>) => Promise<T>
+}
+
 export interface NogginElectronAPI {
     store: StoreAPI
     modules: ModuleAPI
     openai: OpenAIAPI
     dialog: DialogAPI
+    gemini: GeminiAPI
 }

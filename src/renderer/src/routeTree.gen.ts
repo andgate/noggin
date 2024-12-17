@@ -11,23 +11,9 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as SettingsImport } from './routes/settings'
-import { Route as ModkitLoaderImport } from './routes/modkit-loader'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
-
-const SettingsRoute = SettingsImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const ModkitLoaderRoute = ModkitLoaderImport.update({
-  id: '/modkit-loader',
-  path: '/modkit-loader',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -46,20 +32,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/modkit-loader': {
-      id: '/modkit-loader'
-      path: '/modkit-loader'
-      fullPath: '/modkit-loader'
-      preLoaderRoute: typeof ModkitLoaderImport
-      parentRoute: typeof rootRoute
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsImport
-      parentRoute: typeof rootRoute
-    }
   }
 }
 
@@ -67,42 +39,32 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/modkit-loader': typeof ModkitLoaderRoute
-  '/settings': typeof SettingsRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/modkit-loader': typeof ModkitLoaderRoute
-  '/settings': typeof SettingsRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/modkit-loader': typeof ModkitLoaderRoute
-  '/settings': typeof SettingsRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/modkit-loader' | '/settings'
+  fullPaths: '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/modkit-loader' | '/settings'
-  id: '__root__' | '/' | '/modkit-loader' | '/settings'
+  to: '/'
+  id: '__root__' | '/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ModkitLoaderRoute: typeof ModkitLoaderRoute
-  SettingsRoute: typeof SettingsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ModkitLoaderRoute: ModkitLoaderRoute,
-  SettingsRoute: SettingsRoute,
 }
 
 export const routeTree = rootRoute
@@ -115,19 +77,11 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
-        "/modkit-loader",
-        "/settings"
+        "/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
-    },
-    "/modkit-loader": {
-      "filePath": "modkit-loader.tsx"
-    },
-    "/settings": {
-      "filePath": "settings.tsx"
     }
   }
 }

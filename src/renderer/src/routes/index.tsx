@@ -1,6 +1,6 @@
 import { NotFound } from '@renderer/components/NotFound'
 import { createFileRoute, ErrorComponent, ErrorComponentProps } from '@tanstack/react-router'
-import DashboardPage from '../pages/Dashboard.page'
+import DashboardPage from '../pages/DashboardPage'
 
 export const Route = createFileRoute('/')({
     errorComponent: DashboardErrorComponent,

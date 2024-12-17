@@ -14,24 +14,28 @@ const userSettingsSchema = z.object({
         .string()
         .min(1, 'API key is required')
         .startsWith('sk-', 'Invalid OpenAI API key format'),
+    geminiApiKey: z.string().optional(),
 })
 
 type UserSettingsForm = z.infer<typeof userSettingsSchema>
 
-export function UserSettingsPage() {
+export function UserSettingsPanel() {
     const { settings, setUserSettings } = useUserSettings()
 
-    // Note, we use a memoized form to avoid recreating the form on every render
     const form = useForm<UserSettingsForm>({
         initialValues: {
             openaiApiKey: settings.openaiApiKey || '',
+            geminiApiKey: settings.geminiApiKey || '',
         },
         validate: zodResolver(userSettingsSchema),
     })
 
     const handleSubmit = useCallback(
         (values: UserSettingsForm) => {
-            setUserSettings({ openaiApiKey: values.openaiApiKey })
+            setUserSettings({
+                openaiApiKey: values.openaiApiKey,
+                geminiApiKey: values.geminiApiKey,
+            })
         },
         [setUserSettings]
     )
@@ -42,8 +46,13 @@ export function UserSettingsPage() {
                 <Stack>
                     <TextInput
                         label="OpenAI API Key"
-                        placeholder="sk-1234567890abcdefghijklmnopqrstuvwxyz"
+                        placeholder="Enter your OpenAI API key"
                         {...form.getInputProps('openaiApiKey')}
+                    />
+                    <TextInput
+                        label="Gemini API Key"
+                        placeholder="Enter your Gemini API key"
+                        {...form.getInputProps('geminiApiKey')}
                     />
                     <Button type="submit" w="fit-content">
                         Save Settings

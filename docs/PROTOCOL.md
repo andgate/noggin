@@ -91,6 +91,28 @@ This flexible approach empowers users to manage their learning without imposing 
 
 Users can freely update the contents of a module by modifying its source files. The system is designed to adapt seamlessly to these changes, reflecting updated content in newly created quizzes. There is no need for complex versioning or tracking—modules evolve naturally as users refine their learning materials.
 
+### Module Creation Workflow
+
+The module creation process follows these specific steps:
+
+1. **Source Selection**
+
+    - User selects one or more input files (PDFs, text files, etc.)
+
+2. **Module Generation**
+
+    - File contents are extracted and provided to the AI model
+    - AI generates a descriptive module title based on content analysis
+    - AI writes a brief overview summarizing the module contents
+    - A URL-friendly slug is created from the module title
+
+3. **Module Storage**
+    - User confirms the generated title and overview
+    - User selects destination directory for the module
+    - System creates a new directory named with the slug in the chosen destination
+    - Source files are copied into the new module directory
+    - Module metadata (title, overview) is saved
+
 ---
 
 ### Conclusion

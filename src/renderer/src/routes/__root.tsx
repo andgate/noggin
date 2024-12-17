@@ -1,23 +1,16 @@
 // TODO: Add theme switching capability
 // TODO: Add loading states for route transitions via suspense
-import {
-    AppShell,
-    Burger,
-    ColorSchemeScript,
-    Group,
-    MantineProvider,
-    NavLink,
-    Text,
-} from '@mantine/core'
+import { AppShell, ColorSchemeScript, Divider, MantineProvider } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
 import { UserSettingsProvider } from '@renderer/hooks/use-user-settings'
-import { IconHome, IconSettings } from '@tabler/icons-react'
+import { useUiStore } from '@renderer/stores/ui-store'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createRootRoute, Link, Outlet, ScrollRestoration } from '@tanstack/react-router'
+import { createRootRoute, Outlet, ScrollRestoration } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import * as React from 'react'
 import { type ReactNode } from 'react'
 import { DefaultCatchBoundary } from '../components/DefaultCatchBoundary'
+import { ModuleExplorer } from '../components/ModuleExplorer'
 import { NotFound } from '../components/NotFound'
 import { theme } from '../theme'
 
@@ -90,52 +83,28 @@ const RootProvider = ({ children }: Readonly<{ children: ReactNode }>) => {
 }
 
 function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
-    const [opened, setOpened] = React.useState(false)
+    const collapsed = useUiStore((s) => s.explorerCollapsed)
 
     return (
         <AppShell
-            header={{ height: 60 }}
+            header={{ height: 0 }}
             navbar={{
-                width: 300,
+                width: { base: 280 },
                 breakpoint: 'sm',
-                collapsed: { mobile: !opened },
+                collapsed: { desktop: collapsed, mobile: true },
             }}
-            padding="md"
+            padding={0}
         >
-            <AppShell.Header>
-                <Group h="100%" px="md" justify="space-between">
-                    <Group>
-                        <Burger
-                            opened={opened}
-                            onClick={() => setOpened(!opened)}
-                            hiddenFrom="sm"
-                            size="sm"
-                        />
-                        <Text size="lg" fw={700}>
-                            Noggin
-                        </Text>
-                    </Group>
-                    {/* <QuizStatusHeader /> */}
-                </Group>
-            </AppShell.Header>
-
-            <AppShell.Navbar p="md">
-                <NavLink
-                    component={Link}
-                    to="/"
-                    label="Home"
-                    leftSection={<IconHome size={16} />}
-                />
-                <NavLink
-                    component={Link}
-                    to="/settings"
-                    label="Settings"
-                    leftSection={<IconSettings size={16} />}
-                />
-                {/* Add more NavLinks here as needed */}
+            <AppShell.Navbar p={0}>
+                <ModuleExplorer />
             </AppShell.Navbar>
 
-            <AppShell.Main>{children}</AppShell.Main>
+            <AppShell.Main>
+                <Divider orientation="vertical" />
+                {React.cloneElement(children as React.ReactElement, {
+                    collapsed,
+                })}
+            </AppShell.Main>
         </AppShell>
     )
 }

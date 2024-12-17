@@ -33,6 +33,16 @@ const api: NogginElectronAPI = {
         showDirectoryPicker: () => ipcRenderer.invoke('dialog:showDirectoryPicker'),
         handleFolderDrop: (paths: string[]) => ipcRenderer.invoke('dialog:handleFolderDrop', paths),
     },
+    gemini: {
+        generateContent: (options: { apiKey?: string; prompt: string }) =>
+            ipcRenderer.invoke('gemini:generate-content', options),
+        generateWithImage: (options: {
+            apiKey?: string
+            prompt: string
+            imageData: string
+            mimeType: string
+        }) => ipcRenderer.invoke('gemini:generate-with-image', options),
+    },
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
