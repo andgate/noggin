@@ -6,7 +6,6 @@
         "types": ["electron-vite/node"],
         "baseUrl": ".",
         "paths": {
-            "@noggin/drizzle/*": ["src/drizzle/*"],
             "@noggin/types/*": ["src/types/*"]
         },
 

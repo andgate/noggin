@@ -15,11 +15,10 @@ export default defineConfig({
         },
         resolve: {
             alias: {
-                '@noggin/drizzle': resolve('src/drizzle'),
                 '@noggin/types': resolve('src/types'),
             },
         },
-        plugins: [externalizeDepsPlugin()],
+        plugins: [externalizeDepsPlugin({ exclude: ['lodash'] })],
     },
     preload: {
         build: {
@@ -31,7 +30,6 @@ export default defineConfig({
         },
         resolve: {
             alias: {
-                '@noggin/drizzle': resolve('src/drizzle'),
                 '@noggin/types': resolve('src/types'),
             },
         },
@@ -49,7 +47,6 @@ export default defineConfig({
         resolve: {
             alias: {
                 '@renderer': resolve('src/renderer/src'),
-                '@noggin/drizzle': resolve('src/drizzle'),
                 '@noggin/types': resolve('src/types'),
             },
         },

@@ -12,12 +12,19 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
+import { Route as ModuleCreateImport } from './routes/module/create'
 
 // Create/Update Routes
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ModuleCreateRoute = ModuleCreateImport.update({
+  id: '/module/create',
+  path: '/module/create',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -32,6 +39,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/module/create': {
+      id: '/module/create'
+      path: '/module/create'
+      fullPath: '/module/create'
+      preLoaderRoute: typeof ModuleCreateImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -39,32 +53,37 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/module/create': typeof ModuleCreateRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/module/create': typeof ModuleCreateRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/module/create': typeof ModuleCreateRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/module/create'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/module/create'
+  id: '__root__' | '/' | '/module/create'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ModuleCreateRoute: typeof ModuleCreateRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ModuleCreateRoute: ModuleCreateRoute,
 }
 
 export const routeTree = rootRoute
@@ -77,11 +96,15 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/"
+        "/",
+        "/module/create"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/module/create": {
+      "filePath": "module/create.tsx"
     }
   }
 }

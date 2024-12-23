@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 export function PracticeFeed() {
     const { getRegisteredPaths, readModuleData, removeModule } = useModule()
     const [modules, setModules] = useState<Mod[]>([])
-    const [isLoading, setIsLoading] = useState(false)
+    const [_isLoading, setIsLoading] = useState(false)
 
     const fetchModules = async () => {
         setIsLoading(true)

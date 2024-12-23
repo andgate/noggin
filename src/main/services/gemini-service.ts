@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleAIFileManager } from '@google/generative-ai/server'
 import { GenerateContentOptions } from '@noggin/types/electron-types'
 import { toGeminiSchema } from 'gemini-zod'
 import { store } from './store-service'
@@ -14,8 +15,28 @@ function getApiKey(): string {
     return apiKey
 }
 
+async function uploadFiles(files: { path: string; mimeType: string }[]) {
+    const fileManager = new GoogleAIFileManager(getApiKey())
+
+    console.log('Uploading files:', files)
+
+    const uploadedFiles = await Promise.all(
+        files.map(async (file) => {
+            const response = await fileManager.uploadFile(file.path, {
+                mimeType: file.mimeType,
+            })
+            return {
+                uri: response.file.uri,
+                mimeType: response.file.mimeType,
+            }
+        })
+    )
+
+    return uploadedFiles
+}
+
 export async function generateGeminiContent<T>({
-    prompt,
+    parts,
     schema,
 }: GenerateContentOptions<T>): Promise<T> {
     const genAI = new GoogleGenerativeAI(getApiKey())
@@ -28,11 +49,16 @@ export async function generateGeminiContent<T>({
     })
 
     try {
-        const result = await model.generateContent(prompt)
+        const result = await model.generateContent(parts)
         const parsed = schema.parse(JSON.parse(result.response.text()))
         return parsed
     } catch (error) {
         console.error('Error generating structured content:', error)
         throw error
     }
+}
+
+export const geminiService = {
+    generateContent: generateGeminiContent,
+    uploadFiles,
 }

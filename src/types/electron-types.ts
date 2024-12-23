@@ -1,3 +1,4 @@
+import { Part } from '@google/generative-ai'
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
 import { z } from 'zod'
 import { Mod } from './module-types'
@@ -31,24 +32,49 @@ interface OpenAIAPI {
     chat: <T>(options: OpenAIChatOptions<T>) => Promise<T>
 }
 
-interface DialogAPI {
-    showDirectoryPicker: () => Promise<string | undefined>
-    handleFolderDrop: (paths: string[]) => Promise<string[]>
+export interface SimpleFile {
+    path: string
+    name: string
+    size: number
+    modifiedAt: number
+    isDirectory: boolean
+    data?: string
+}
+
+interface FilesystemAPI {
+    showDirectoryPicker: () => Promise<SimpleFile[]>
+    showFilePicker: (fileTypes?: { name: string; extensions: string[] }[]) => Promise<SimpleFile[]>
+    getFileInfo: (filepath: string, loadData?: boolean) => Promise<SimpleFile>
 }
 
 export type GenerateContentOptions<T> = {
-    prompt: string
+    parts: Part[]
     schema: z.ZodType<T>
 }
 
 interface GeminiAPI {
     generateContent: <T>(options: GenerateContentOptions<T>) => Promise<T>
+    uploadFiles: (files: { path: string; mimeType: string }[]) => Promise<
+        Array<{
+            uri: string
+            mimeType: string
+        }>
+    >
+}
+
+interface GenerateAPI {
+    analyzeContent: (files: SimpleFile[]) => Promise<{
+        title: string
+        overview: string
+        slug: string
+    }>
 }
 
 export interface NogginElectronAPI {
     store: StoreAPI
     modules: ModuleAPI
     openai: OpenAIAPI
-    dialog: DialogAPI
+    filesystem: FilesystemAPI
     gemini: GeminiAPI
+    generate: GenerateAPI
 }

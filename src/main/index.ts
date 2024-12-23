@@ -1,8 +1,9 @@
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, Menu, MenuItem, shell } from 'electron'
 import { join } from 'path'
-import { registerDialogIPC } from './ipc/dialog-ipc'
+import { registerFilesystemIPC } from './ipc/filesystem-ipc'
 import { registerGeminiIPC } from './ipc/gemini-ipc'
+import { registerGenerateIPC } from './ipc/generate-ipc'
 import { registerModuleIPC } from './ipc/mod-ipc'
 import { registerOpenAIIPC } from './ipc/openai-ipc'
 import { registerStoreIPC } from './ipc/store-ipc'
@@ -88,8 +89,9 @@ app.whenReady().then(async () => {
     registerStoreIPC()
     registerModuleIPC()
     registerOpenAIIPC()
-    registerDialogIPC()
+    registerFilesystemIPC()
     registerGeminiIPC()
+    registerGenerateIPC()
 
     createWindow()
 

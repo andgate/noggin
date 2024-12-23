@@ -29,19 +29,18 @@ const api: NogginElectronAPI = {
     openai: {
         chat: (options) => ipcRenderer.invoke('openai:chat', options),
     },
-    dialog: {
-        showDirectoryPicker: () => ipcRenderer.invoke('dialog:showDirectoryPicker'),
-        handleFolderDrop: (paths: string[]) => ipcRenderer.invoke('dialog:handleFolderDrop', paths),
+    filesystem: {
+        showDirectoryPicker: () => ipcRenderer.invoke('filesystem:showDirectoryPicker'),
+        showFilePicker: () => ipcRenderer.invoke('filesystem:showFilePicker'),
+        getFileInfo: (filepath: string, loadData?: boolean) =>
+            ipcRenderer.invoke('filesystem:getFileInfo', filepath, loadData),
     },
     gemini: {
-        generateContent: (options: { apiKey?: string; prompt: string }) =>
-            ipcRenderer.invoke('gemini:generate-content', options),
-        generateWithImage: (options: {
-            apiKey?: string
-            prompt: string
-            imageData: string
-            mimeType: string
-        }) => ipcRenderer.invoke('gemini:generate-with-image', options),
+        generateContent: (options) => ipcRenderer.invoke('gemini:generate-content', options),
+        uploadFiles: (files) => ipcRenderer.invoke('gemini:upload-files', files),
+    },
+    generate: {
+        analyzeContent: (files) => ipcRenderer.invoke('generate:analyzeContent', files),
     },
 }
 

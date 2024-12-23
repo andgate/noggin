@@ -3,8 +3,8 @@ import { ActionIcon, Group, Stack, Text, Tooltip, UnstyledButton } from '@mantin
 import { useUiStore } from '@renderer/stores/ui-store'
 import { IconClipboard, IconFolder, IconPlus, IconQuestionMark } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { NewModuleWizard } from './NewModuleWizard'
 
 // Module item component
 function ModuleItem({
@@ -72,9 +72,9 @@ function ModuleItem({
 }
 
 export function ModuleExplorer() {
+    const navigate = useNavigate()
     const collapsed = useUiStore((s) => s.explorerCollapsed)
     const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null)
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
     // Fetch module paths
     const { data: modulePaths = [] } = useQuery({
@@ -99,7 +99,7 @@ export function ModuleExplorer() {
                         <ActionIcon
                             variant="subtle"
                             size="sm"
-                            onClick={() => setIsCreateModalOpen(true)}
+                            onClick={() => navigate({ to: '/module/create' })}
                         >
                             <IconPlus size={16} />
                         </ActionIcon>
@@ -121,11 +121,6 @@ export function ModuleExplorer() {
                     />
                 ))}
             </Stack>
-
-            <NewModuleWizard
-                opened={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
-            />
         </Stack>
     )
 }

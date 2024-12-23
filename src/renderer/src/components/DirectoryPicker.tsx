@@ -44,10 +44,9 @@ export function DirectoryPicker({ onSelect }: DirectoryPickerProps) {
     }
 
     const handleClick = async () => {
-        const path = await window.api.dialog.showDirectoryPicker()
-        console.log('Dialog selected path:', path)
-        if (path) {
-            onSelect(path)
+        const paths = await window.api.filesystem.showDirectoryPicker()
+        if (paths && paths.length > 0 && paths[0]) {
+            onSelect(paths[0].path)
         }
     }
 
