@@ -15,6 +15,7 @@ import { Mod } from '@noggin/types/module-types'
 import { SourceSelectionView } from '@renderer/components/create-module/SourceSelectionView'
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useState } from 'react'
+import { DirectoryPicker } from '../components/DirectoryPicker'
 import { useModule } from '../hooks/use-module'
 import { useModuleGenerator } from '../hooks/use-module-generator'
 
@@ -36,6 +37,8 @@ export function ProcessingView() {
 }
 
 export function ReviewView({ data, onDataChange, onBack, onSave }) {
+    const [selectedPath, setSelectedPath] = useState('')
+
     return (
         <Stack gap="md" style={{ maxWidth: rem(600), margin: '0 auto' }}>
             <TextInput
@@ -55,11 +58,20 @@ export function ReviewView({ data, onDataChange, onBack, onSave }) {
                 Module will be saved as: {data.slug}
             </Text>
 
+            <DirectoryPicker onSelect={setSelectedPath} />
+            {selectedPath && (
+                <Text size="sm" c="dimmed">
+                    Selected directory: {selectedPath}
+                </Text>
+            )}
+
             <Group justify="flex-end" mt="xl">
                 <Button variant="subtle" onClick={onBack}>
                     Back
                 </Button>
-                <Button onClick={onSave}>Save Module</Button>
+                <Button onClick={() => onSave(selectedPath)} disabled={!selectedPath}>
+                    Save Module
+                </Button>
             </Group>
         </Stack>
     )
@@ -76,11 +88,14 @@ export function CreateModulePage() {
 
     const saveModule = useCallback(
         async (modulePath: string, moduleData: GeneratedModule) => {
+            const fullModPath = `${modulePath}/${moduleData.slug}`
+
+            // First create the module structure and metadata
             const metadata: Mod = {
                 id: crypto.randomUUID(),
                 name: moduleData.title,
-                path: `${modulePath}/${moduleData.slug}`,
-                sources: moduleData.sources.map((file) => file.path),
+                path: fullModPath,
+                sources: [], // Start with empty sources
                 quizzes: [],
                 submissions: [],
                 createdAt: new Date().toISOString(),
@@ -88,6 +103,15 @@ export function CreateModulePage() {
             }
 
             await moduleService.registerModulePath(metadata.path)
+            await moduleService.writeModuleData(metadata.path, metadata)
+
+            // Then copy each source file and update the metadata with new paths
+            const sourcePaths = await Promise.all(
+                moduleData.sources.map((file) => moduleService.writeModuleSource(fullModPath, file))
+            )
+
+            // Update metadata with new source paths
+            metadata.sources = sourcePaths
             await moduleService.writeModuleData(metadata.path, metadata)
         },
         [moduleService]
@@ -118,14 +142,11 @@ export function CreateModulePage() {
         }
     }
 
-    const handleSave = async () => {
+    const handleSave = async (selectedPath: string) => {
         if (!generatedData) return
 
         try {
-            const modulePath = await window.api.filesystem.showDirectoryPicker()
-            if (!modulePath) return
-
-            await saveModule(modulePath[0].path, generatedData)
+            await saveModule(selectedPath, generatedData)
             notifications.show({
                 title: 'Module Created',
                 message: `Module "${generatedData.title}" has been created successfully`,

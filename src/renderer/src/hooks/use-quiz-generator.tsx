@@ -1,37 +1,15 @@
-import { PartialGeneratedQuiz } from '../../../types/quiz-generation-types'
-import { generateQuiz, GenerateQuizOptions } from '../services/quiz-generation-service'
-import { GenerativeProvider, useGenerative } from './use-generative'
+import { GenerateQuizOptions } from '@noggin/types/electron-types'
+import { useCallback } from 'react'
 
-export interface QuizGenerator {
-    generateQuiz: (options: GenerateQuizOptions) => void
-    quiz: PartialGeneratedQuiz
-    isQuizGeneratorRunning: boolean
-    isQuizGeneratorDone: boolean
-    quizGenerationError?: Error
-    abort: () => void
-}
+export function useQuizGenerator() {
+    const generateQuizContent = useCallback(async (options: GenerateQuizOptions) => {
+        try {
+            return await window.api.generate.generateQuiz(options)
+        } catch (error) {
+            console.error('Error generating quiz:', error)
+            throw error
+        }
+    }, [])
 
-/**
- * Hook that provides quiz generation functionality using the generative context
- */
-export function useQuizGenerator(): QuizGenerator {
-    const { invoke, state, isRunning, isDone, error, abort } = useGenerative<
-        GenerateQuizOptions,
-        PartialGeneratedQuiz
-    >()
-    return {
-        generateQuiz: invoke,
-        quiz: state,
-        isQuizGeneratorRunning: isRunning,
-        isQuizGeneratorDone: isDone,
-        quizGenerationError: error,
-        abort,
-    }
-}
-
-/**
- * Provider component for quiz generation
- */
-export function QuizGeneratorProvider({ children }: { children: React.ReactNode }) {
-    return <GenerativeProvider generativeFunction={generateQuiz}>{children}</GenerativeProvider>
+    return { generateQuiz: generateQuizContent }
 }

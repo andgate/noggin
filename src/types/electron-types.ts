@@ -2,6 +2,7 @@ import { Part } from '@google/generative-ai'
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
 import { z } from 'zod'
 import { Mod } from './module-types'
+import { PartialGeneratedQuiz } from './quiz-generation-types'
 import { NogginStoreSchema } from './store-types'
 
 interface StoreAPI {
@@ -18,6 +19,8 @@ interface ModuleAPI {
     readModuleData: (modulePath: string) => Promise<Mod>
     writeModuleData: (modulePath: string, mod: Mod) => Promise<void>
     removeModule: (modulePath: string) => Promise<void>
+    writeModuleSource: (modPath: string, sourceFile: SimpleFile) => Promise<string>
+    deleteModuleSource: (sourcePath: string) => Promise<void>
 }
 
 interface OpenAIChatOptions<T> {
@@ -62,12 +65,20 @@ interface GeminiAPI {
     >
 }
 
+export interface GenerateQuizOptions {
+    sources: string[]
+    numQuestions: number
+    includeMultipleChoice: boolean
+    includeWritten: boolean
+}
+
 interface GenerateAPI {
     analyzeContent: (files: SimpleFile[]) => Promise<{
         title: string
         overview: string
         slug: string
     }>
+    generateQuiz: (options: GenerateQuizOptions) => Promise<PartialGeneratedQuiz>
 }
 
 export interface NogginElectronAPI {

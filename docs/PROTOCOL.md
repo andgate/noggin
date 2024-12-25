@@ -26,9 +26,9 @@ By integrating with external AI providers for generating outlines, extracting co
 
 A **module** is the fundamental unit of learning in Noggin, encapsulating source materials, quizzes, and tracking data. The following structure defines a module:
 
--   **Source Materials**: User-provided materials, such as PDFs or text files, stored in the module root.
--   **Quizzes**: A set of structured, static quizzes based on the content of the module. Quizzes are stored in the `.mod/quizzes/` folder for easy access and review.
--   **Quiz Submissions**: Individual quiz attempt records are stored as files in `.mod/submissions/`.
+- **Source Materials**: User-provided materials, such as PDFs or text files, stored in the module root.
+- **Quizzes**: A set of structured, static quizzes based on the content of the module. Quizzes are stored in the `.mod/quizzes/` folder for easy access and review.
+- **Quiz Submissions**: Individual quiz attempt records are stored as files in `.mod/submissions/`.
 
 #### Directory Structure Example:
 
@@ -55,8 +55,8 @@ This structure ensures that all module-related data is centralized, accessible, 
 
 #### Question Types
 
--   **Multiple Choice**: Questions with four answer options (A-D) and exactly one correct answer.
--   **Written Response**: Open-ended questions requiring users to type their answer.
+- **Multiple Choice**: Questions with four answer options (A-D) and exactly one correct answer.
+- **Written Response**: Open-ended questions requiring users to type their answer.
 
 #### Storage
 
@@ -80,8 +80,8 @@ This approach maintains simplicity while enabling users to observe trends in the
 
 Noggin supports long-term retention through periodic review recommendations. Users are encouraged to revisit modules based on their own priorities and practice schedules.
 
--   **Practice Feed**: Modules are surfaced in the feed based on their relevance or time since last review.
--   **User Autonomy**: Recommendations serve as guidance, but users retain full control over what and when to study.
+- **Practice Feed**: Modules are surfaced in the feed based on their relevance or time since last review.
+- **User Autonomy**: Recommendations serve as guidance, but users retain full control over what and when to study.
 
 This flexible approach empowers users to manage their learning without imposing strict deadlines or notifications.
 
@@ -110,7 +110,7 @@ The module creation process follows these specific steps:
     - User confirms the generated title and overview
     - User selects destination directory for the module
     - System creates a new directory named with the slug in the chosen destination
-    - Source files are copied into the new module directory
+    - Source files are copied into the new module directory, preserving their original filenames
     - Module metadata (title, overview) is saved
 
 ---
@@ -121,8 +121,8 @@ Noggin provides a streamlined, transparent, and modular framework for self-direc
 
 Key principles of the protocol include:
 
--   **Flat, Modular Design**: Each module is independent and self-contained.
--   **Simple, Clear Structure**: Organized data storage ensures observability and ease of use.
--   **Practical Learning Tools**: Static quizzes and tracked submissions support effective learning without unnecessary complexity.
+- **Flat, Modular Design**: Each module is independent and self-contained.
+- **Simple, Clear Structure**: Organized data storage ensures observability and ease of use.
+- **Practical Learning Tools**: Static quizzes and tracked submissions support effective learning without unnecessary complexity.
 
 The result is a system that adapts to the learner’s needs while maintaining clarity and focus.

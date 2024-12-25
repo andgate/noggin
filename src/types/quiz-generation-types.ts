@@ -23,14 +23,15 @@ export const generatedQuestionSchema = z.discriminatedUnion('questionType', [
 
 export const generatedQuizSchema = z.object({
     title: z.string(),
-    questions: z.array(generatedQuestionSchema),
+    multipleChoiceQuestions: z.array(generatedMultipleChoiceQuestionSchema),
+    writtenQuestions: z.array(generatedWrittenQuestionSchema),
 })
 
 export const gradedResponseSchema = z.object({
     question: z.string(),
     studentAnswer: z.string(),
     correctAnswer: z.string(),
-    verdict: z.union([z.literal('pass'), z.literal('fail')]),
+    isCorrect: z.boolean(),
     feedback: z.string(),
 })
 
@@ -49,7 +50,8 @@ export type GradedSubmission = z.infer<typeof gradedSubmissionSchema>
 
 export type PartialGeneratedQuiz = {
     title: string | undefined
-    questions: (GeneratedQuestion | undefined)[]
+    multipleChoiceQuestions: (GeneratedMultipleChoiceQuestion | undefined)[]
+    writtenQuestions: (GeneratedWrittenQuestion | undefined)[]
 }
 
 export type PartialGradedSubmission = {

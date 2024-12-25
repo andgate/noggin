@@ -12,6 +12,7 @@
  * - Save mod data to a directory (save)
  * - Delete a mod and its contents (delete_)
  */
+import { SimpleFile } from '@noggin/types/electron-types'
 import { Mod } from '@noggin/types/module-types'
 import { quizSchema, submissionSchema } from '@noggin/types/quiz-types'
 import fs from 'fs/promises'
@@ -75,6 +76,7 @@ export async function readModuleData(modPath: string): Promise<Mod> {
 export async function writeModuleData(modPath: string, mod: Mod): Promise<void> {
     await ensureModuleDirectories(modPath)
     await writeSubmissions(modPath, mod.submissions)
+    // Only write metadata, don't touch sources
 }
 
 // File system operations
@@ -85,13 +87,13 @@ export async function removeModule(modPath: string): Promise<void> {
 
 // New helper functions for better separation
 async function readQuizzes(modPath: string) {
-    return glob('quizzes/*.json', { cwd: modPath, absolute: true }).then((files) =>
+    return glob('.mod/quizzes/*.json', { cwd: modPath, absolute: true }).then((files) =>
         Promise.all(files.map((f) => readJsonFile(f, quizSchema)))
     )
 }
 
 async function readSubmissions(modPath: string) {
-    return glob('submissions/*.json', { cwd: modPath, absolute: true }).then((files) =>
+    return glob('.mod/submissions/*.json', { cwd: modPath, absolute: true }).then((files) =>
         Promise.all(files.map((f) => readJsonFile(f, submissionSchema)))
     )
 }
@@ -102,16 +104,28 @@ async function readSources(modPath: string) {
 
 async function ensureModuleDirectories(modPath: string) {
     await Promise.all([
-        ensureDir(path.join(modPath, 'quizzes')),
-        ensureDir(path.join(modPath, 'submissions')),
+        ensureDir(path.join(modPath, '.mod/quizzes')),
+        ensureDir(path.join(modPath, '.mod/submissions')),
     ])
 }
 
 async function writeSubmissions(modPath: string, submissions: Mod['submissions']) {
     await Promise.all(
         submissions.map(async (sub) => {
-            const subPath = path.join(modPath, 'submissions', `${sub.id}.json`)
+            const subPath = path.join(modPath, '.mod/submissions', `${sub.id}.json`)
             await fs.writeFile(subPath, JSON.stringify(sub, null, 2))
         })
     )
+}
+
+// Source management functions
+export async function writeModuleSource(modPath: string, sourceFile: SimpleFile): Promise<string> {
+    const fileName = path.basename(sourceFile.path)
+    const targetPath = path.join(modPath, fileName)
+    await fs.copyFile(sourceFile.path, targetPath)
+    return targetPath
+}
+
+export async function deleteModuleSource(sourcePath: string): Promise<void> {
+    await fs.unlink(sourcePath)
 }

@@ -10,3 +10,11 @@ export function formatFileSize(bytes: number): string {
 
     return `${size.toFixed(1)} ${units[unitIndex]}`
 }
+
+export function formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    })
+}

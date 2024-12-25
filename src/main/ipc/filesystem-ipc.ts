@@ -19,7 +19,6 @@ async function getFileInfo(filepath: string, loadData = false): Promise<SimpleFi
         try {
             const buffer = await fs.readFile(filepath)
             const base64Data = buffer.toString('base64')
-            console.log('base64Data', base64Data)
             baseInfo.data = base64Data
         } catch (error) {
             console.error(`Failed to read file data for ${filepath}:`, error)

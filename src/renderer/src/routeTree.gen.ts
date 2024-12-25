@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as ModuleCreateImport } from './routes/module/create'
+import { Route as ModuleViewModuleIdImport } from './routes/module/view.$moduleId'
 
 // Create/Update Routes
 
@@ -25,6 +26,12 @@ const IndexRoute = IndexImport.update({
 const ModuleCreateRoute = ModuleCreateImport.update({
   id: '/module/create',
   path: '/module/create',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ModuleViewModuleIdRoute = ModuleViewModuleIdImport.update({
+  id: '/module/view/$moduleId',
+  path: '/module/view/$moduleId',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -46,6 +53,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ModuleCreateImport
       parentRoute: typeof rootRoute
     }
+    '/module/view/$moduleId': {
+      id: '/module/view/$moduleId'
+      path: '/module/view/$moduleId'
+      fullPath: '/module/view/$moduleId'
+      preLoaderRoute: typeof ModuleViewModuleIdImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -54,36 +68,41 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/module/create': typeof ModuleCreateRoute
+  '/module/view/$moduleId': typeof ModuleViewModuleIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/module/create': typeof ModuleCreateRoute
+  '/module/view/$moduleId': typeof ModuleViewModuleIdRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/module/create': typeof ModuleCreateRoute
+  '/module/view/$moduleId': typeof ModuleViewModuleIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/module/create'
+  fullPaths: '/' | '/module/create' | '/module/view/$moduleId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/module/create'
-  id: '__root__' | '/' | '/module/create'
+  to: '/' | '/module/create' | '/module/view/$moduleId'
+  id: '__root__' | '/' | '/module/create' | '/module/view/$moduleId'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ModuleCreateRoute: typeof ModuleCreateRoute
+  ModuleViewModuleIdRoute: typeof ModuleViewModuleIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ModuleCreateRoute: ModuleCreateRoute,
+  ModuleViewModuleIdRoute: ModuleViewModuleIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,7 +116,8 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/module/create"
+        "/module/create",
+        "/module/view/$moduleId"
       ]
     },
     "/": {
@@ -105,6 +125,9 @@ export const routeTree = rootRoute
     },
     "/module/create": {
       "filePath": "module/create.tsx"
+    },
+    "/module/view/$moduleId": {
+      "filePath": "module/view.$moduleId.tsx"
     }
   }
 }

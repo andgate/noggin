@@ -17,13 +17,13 @@ Noggin is a modular, self-directed learning desktop app built with Electron, Rea
 
 ### Practice Feed
 
-The Practice Feed is the heart of the Noggin interface, guiding users through their study sessions.
+The Practice Feed guides users through their study sessions by surfacing modules ready for review.
 
-- **Module Cards**:
-  Each loaded module appears as a card in the feed, showing its name and overall status.
+- **Module Overview**:
+  Displays each loaded module with its name and overall status.
 
-- **Simple Prioritization**:
-  Modules are highlighted based on factors like time since last review, encouraging natural spaced repetition. There are no forced schedules—users remain in control.
+- **Prioritization Logic**:
+  Highlights modules based on review timing to encourage spaced repetition, allowing users to manage their own schedules.
 
 - **Focus and Flexibility**:
   With a single click, users can open a quiz from a chosen module or review their past submissions.
@@ -46,11 +46,17 @@ Modules represent individual subjects or topics. Each module’s data is stored 
       Note: Some websites may block content extraction.
       All sources are stored locally within the module directory for consistent access.
 
+- **Token Usage Visualization**:
+  Users can see a visual representation of token usage for each source, helping manage content size effectively.
+
 - **Quizzes**:
   Quizzes derived from these sources reside in `.mod/quizzes/`. They serve as stable assessments for the module’s content. Questions are multiple-choice or written response, ensuring clarity and consistency.
 
 - **Submissions**:
   Each quiz attempt is recorded as a submission in `.mod/submissions/`. This allows users to track their progress over time.
+
+- **Viewing Capabilities**:
+  Users can view modules and see the list of quizzes and submissions for all quizzes.
 
 ---
 
@@ -107,18 +113,33 @@ File size limits and processing guidelines:
 
 ---
 
-### Quiz Mode
+### Quiz Management
 
-Quiz Mode provides a focused environment for practicing and testing knowledge:
+Noggin provides two distinct interfaces for quiz interaction:
 
-- **Full-Screen View**:
-  The quiz interface is minimal and distraction-free, helping users concentrate on the questions.
+- **Quiz View**:
 
-- **Question Types**:
-  Supports multiple-choice (A-D) and open-ended written responses.
+    - Display all submissions for a specific quiz
+    - Provide access to quiz questions
+    - Enable detailed review of submissions
+    - Allow users to start a quiz
 
-- **Progress Tracking Through Submissions**:
-  Each completed quiz attempt is saved, giving learners a clear record of their performance and areas that may need further study.
+- **Quiz Mode**:
+
+    - Provides an environment dedicated to quiz-taking
+    - Minimizes distractions to enhance focus
+    - Supports both multiple-choice and written response formats
+    - Allows users to submit answers directly
+
+- **Viewing Capabilities**:
+  Users can view a quiz and see the questions and list of submissions for that specific quiz.
+
+---
+
+### Submission Review
+
+- **Detailed Feedback**:
+  Users can view a quiz submission and see the questions, their answers, correct or expected responses, and instructor feedback. This allows users to review their quiz submission graded by the AI.
 
 ---
 
@@ -126,11 +147,11 @@ Quiz Mode provides a focused environment for practicing and testing knowledge:
 
 The Module Explorer is accessible from a collapsible side panel, helping users organize and navigate their modules:
 
-- **Clear Module List**:
-  All modules are displayed as an easy-to-scan list. Users can open a module’s folder, inspect sources, and view quizzes and submissions.
+- **Module Management**:
+  Provides a list of all modules, enabling users to access modules, sources, quizzes, and submissions.
 
-- **Quick Access**:
-  Jump directly into a quiz or review past submissions without leaving the main application interface.
+- **Direct Navigation**:
+  Facilitates access to quizzes and past submissions from the main interface.
 
 ---
 
@@ -138,13 +159,10 @@ The Module Explorer is accessible from a collapsible side panel, helping users o
 
 The Settings Panel offers straightforward customization options:
 
-- **Appearance & Preferences**:
-  Users can adjust the app’s theme, interface layout, and other basic preferences.
+- **Customization Options**:
+  Allows users to configure application settings, including theme and layout preferences.
 - **AI Providers**:
   Manage API keys and integrations with external AI services for content extraction and quiz generation.
-
-- **Backup & Import**:
-  Export and import modules and their data, ensuring that users can maintain their learning records over time.
 
 ---
 
@@ -206,7 +224,6 @@ Automated assessment of quiz submissions using AI:
 5. **System Configuration**:
     - Configure AI provider settings and API keys
     - Customize interface preferences and theme
-    - Import/export modules as needed
 
 ---
 

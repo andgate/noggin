@@ -10,4 +10,13 @@ export function registerGenerateIPC(): void {
             throw error
         }
     })
+
+    ipcMain.handle('generate:generateQuiz', async (_event, options) => {
+        try {
+            return await generateService.generateQuiz(options)
+        } catch (error) {
+            console.error('Quiz generation error:', error)
+            throw error
+        }
+    })
 }

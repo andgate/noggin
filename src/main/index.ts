@@ -9,7 +9,6 @@ import { registerOpenAIIPC } from './ipc/openai-ipc'
 import { registerStoreIPC } from './ipc/store-ipc'
 
 function createWindow(): void {
-    console.log('createWindow')
     // Create the browser window.
     const mainWindow = new BrowserWindow({
         width: 1280,

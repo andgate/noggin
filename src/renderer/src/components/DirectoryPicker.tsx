@@ -25,19 +25,13 @@ export function DirectoryPicker({ onSelect }: DirectoryPickerProps) {
         setIsDragging(false)
 
         const files = e.dataTransfer.files
-        console.log(
-            'Dropped files:',
-            Array.from(files).map((f) => f.path)
-        )
 
         if (files.length > 0) {
             const paths = await window.electron.ipcRenderer.invoke('handle-folder-drop', {
                 filePaths: Array.from(files).map((f) => f.path),
             })
-            console.log('Received paths from electron:', paths)
 
             if (paths && paths.length > 0 && paths[0]) {
-                console.log('Selected path:', paths[0])
                 onSelect(paths[0])
             }
         }

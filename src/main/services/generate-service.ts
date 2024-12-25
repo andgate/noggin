@@ -1,4 +1,7 @@
-import { SimpleFile } from '@noggin/types/electron-types'
+import { Part } from '@google/generative-ai'
+import { GenerateQuizOptions, SimpleFile } from '@noggin/types/electron-types'
+import { generatedQuizSchema } from '@noggin/types/quiz-generation-types'
+import fs from 'fs'
 import { compact } from 'lodash'
 import mime from 'mime'
 import { z } from 'zod'
@@ -37,6 +40,66 @@ export const generateService = {
         return await geminiService.generateContent({
             parts,
             schema: analysisResultSchema,
+        })
+    },
+
+    async generateQuiz({
+        sources,
+        numQuestions,
+        includeMultipleChoice,
+        includeWritten,
+    }: GenerateQuizOptions) {
+        const loadedFiles = await Promise.all(
+            sources.map(async (filepath) => ({
+                path: filepath,
+                data: await fs.promises.readFile(filepath, 'base64'),
+            }))
+        )
+
+        const fileDataParts: Part[] = compact(
+            loadedFiles.map((file) => ({
+                inlineData: {
+                    data: file.data,
+                    mimeType: mime.getType(file.path) || 'application/octet-stream',
+                },
+            }))
+        )
+
+        const parts: Part[] = [
+            {
+                text: `Generate a quiz with ${numQuestions} questions based on these learning materials.
+                    Include ${includeMultipleChoice ? 'multiple choice' : ''}
+                    ${includeMultipleChoice && includeWritten ? 'and' : ''}
+                    ${includeWritten ? 'written response' : ''} questions.
+
+                    The response should be valid JSON matching this structure:
+                    {
+                        "title": "string",
+                        "questions": [
+                            {
+                                "questionType": "multiple_choice",
+                                "question": "string",
+                                "choices": [
+                                    {
+                                        "text": "string",
+                                        "isCorrect": boolean
+                                    }
+                                ]
+                            }
+                            // or
+                            {
+                                "questionType": "written",
+                                "question": "string"
+                            }
+                        ]
+                    }`,
+            },
+            ...fileDataParts,
+        ]
+
+        return await geminiService.generateContent({
+            parts,
+            schema: generatedQuizSchema,
         })
     },
 }

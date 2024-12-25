@@ -1,14 +1,16 @@
-import { ActionIcon, Button, Card, Group, Menu, SimpleGrid, Text } from '@mantine/core'
+import { ActionIcon, Button, Card, Group, SimpleGrid, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { Mod } from '@noggin/types/module-types'
 import { useModule } from '@renderer/hooks/use-module'
-import { IconDotsVertical, IconPlayerPlay, IconTrash } from '@tabler/icons-react'
+import { IconHistory, IconPlayerPlay, IconPlus, IconTrash } from '@tabler/icons-react'
+import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 export function PracticeFeed() {
     const { getRegisteredPaths, readModuleData, removeModule } = useModule()
     const [modules, setModules] = useState<Mod[]>([])
     const [_isLoading, setIsLoading] = useState(false)
+    const navigate = useNavigate()
 
     const fetchModules = async () => {
         setIsLoading(true)
@@ -53,6 +55,10 @@ export function PracticeFeed() {
         }
     }
 
+    const handleModuleClick = (moduleId: string) => {
+        navigate({ to: '/module/view/$moduleId', params: { moduleId } })
+    }
+
     return (
         <SimpleGrid
             cols={{ base: 1, sm: 2, lg: 3, xl: 4 }}
@@ -60,47 +66,61 @@ export function PracticeFeed() {
             style={{ flex: 1, overflow: 'auto' }}
         >
             {modules?.map((mod: Mod) => (
-                <Card key={mod.id} shadow="sm" padding="md" radius="md" withBorder>
+                <Card
+                    key={mod.id}
+                    shadow="sm"
+                    padding="md"
+                    radius="md"
+                    withBorder
+                    style={{
+                        width: '280px',
+                        height: '180px',
+                        cursor: 'pointer',
+                    }}
+                    onClick={() => handleModuleClick(mod.id)}
+                >
                     <Group justify="space-between" mb="xs">
                         <Text fw={500} size="sm" truncate>
                             {mod.name}
                         </Text>
-                        <Menu shadow="md" width={200} position="bottom-end">
-                            <Menu.Target>
-                                <ActionIcon variant="subtle" size="sm">
-                                    <IconDotsVertical size={16} />
-                                </ActionIcon>
-                            </Menu.Target>
-                            <Menu.Dropdown>
-                                <Menu.Item
-                                    leftSection={<IconTrash size={14} />}
-                                    color="red"
-                                    onClick={() => {
-                                        const confirmed = window.confirm(
-                                            'Are you sure you want to delete this module?'
-                                        )
-                                        if (confirmed) handleDeleteMod(mod.id)
-                                    }}
-                                >
-                                    Delete
-                                </Menu.Item>
-                            </Menu.Dropdown>
-                        </Menu>
                     </Group>
 
-                    <Text size="xs" c="dimmed" mb="md">
-                        Created {new Date(mod.createdAt).toLocaleDateString()}
-                    </Text>
+                    <Group gap={8} mb="md">
+                        <Text size="xs" c="dimmed">
+                            Created {new Date(mod.createdAt).toLocaleDateString()}
+                        </Text>
+                    </Group>
 
-                    <Group gap="xs">
+                    <Group justify="space-between" mt="auto">
                         <Button
                             variant="light"
                             size="xs"
                             leftSection={<IconPlayerPlay size={14} />}
-                            fullWidth
                         >
                             Start Quiz
                         </Button>
+                        <Group gap={8}>
+                            <ActionIcon variant="subtle" size="md" title="Generate New Quiz">
+                                <IconPlus size={18} />
+                            </ActionIcon>
+                            <ActionIcon variant="subtle" size="md" title="Review Submissions">
+                                <IconHistory size={18} />
+                            </ActionIcon>
+                            <ActionIcon
+                                variant="subtle"
+                                color="red"
+                                size="md"
+                                title="Delete Module"
+                                onClick={() => {
+                                    const confirmed = window.confirm(
+                                        'Are you sure you want to delete this module?'
+                                    )
+                                    if (confirmed) handleDeleteMod(mod.id)
+                                }}
+                            >
+                                <IconTrash size={18} />
+                            </ActionIcon>
+                        </Group>
                     </Group>
                 </Card>
             ))}

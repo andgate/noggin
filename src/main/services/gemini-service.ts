@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { GoogleAIFileManager } from '@google/generative-ai/server'
 import { GenerateContentOptions } from '@noggin/types/electron-types'
-import { toGeminiSchema } from 'gemini-zod'
+import { toGeminiSchema } from '../common/gemini-zod'
 import { store } from './store-service'
 
 function getApiKey(): string {
@@ -17,8 +17,6 @@ function getApiKey(): string {
 
 async function uploadFiles(files: { path: string; mimeType: string }[]) {
     const fileManager = new GoogleAIFileManager(getApiKey())
-
-    console.log('Uploading files:', files)
 
     const uploadedFiles = await Promise.all(
         files.map(async (file) => {

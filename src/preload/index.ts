@@ -1,5 +1,5 @@
 import { electronAPI } from '@electron-toolkit/preload'
-import type { NogginElectronAPI } from '@noggin/types/electron-types'
+import type { NogginElectronAPI, SimpleFile } from '@noggin/types/electron-types'
 import { Mod } from '@noggin/types/module-types'
 import { NogginStoreSchema } from '@noggin/types/store-types'
 import { contextBridge, ipcRenderer } from 'electron'
@@ -25,6 +25,10 @@ const api: NogginElectronAPI = {
             ipcRenderer.invoke('modules:writeModuleData', modulePath, mod),
         removeModule: (modulePath: string) =>
             ipcRenderer.invoke('modules:removeModule', modulePath),
+        writeModuleSource: (modulePath: string, sourceFile: SimpleFile) =>
+            ipcRenderer.invoke('modules:writeModuleSource', modulePath, sourceFile),
+        deleteModuleSource: (sourcePath: string) =>
+            ipcRenderer.invoke('modules:deleteModuleSource', sourcePath),
     },
     openai: {
         chat: (options) => ipcRenderer.invoke('openai:chat', options),
@@ -41,6 +45,7 @@ const api: NogginElectronAPI = {
     },
     generate: {
         analyzeContent: (files) => ipcRenderer.invoke('generate:analyzeContent', files),
+        generateQuiz: (options) => ipcRenderer.invoke('generate:generateQuiz', options),
     },
 }
 
