@@ -2,24 +2,16 @@ import { Button, Grid, Group, Paper, Stack, Text, Title } from '@mantine/core'
 import { Quiz, Submission } from '@noggin/types/quiz-types'
 import { IconArrowLeft } from '@tabler/icons-react'
 import { useNavigate } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
 import { QuestionList } from '../components/QuestionList'
-import { useModule } from '../hooks/use-module'
 
 type QuizPageProps = {
     moduleId: string
     quiz: Quiz
+    submissions: Submission[]
 }
 
-export function QuizPage({ moduleId, quiz }: QuizPageProps) {
+export function QuizPage({ moduleId, quiz, submissions }: QuizPageProps) {
     const navigate = useNavigate()
-    const { getQuizSubmissions } = useModule()
-    const [submissions, setSubmissions] = useState<Submission[]>([])
-
-    useEffect(() => {
-        // Load submissions when component mounts
-        getQuizSubmissions(moduleId, quiz.id).then(setSubmissions)
-    }, [moduleId, quiz.id, getQuizSubmissions])
 
     return (
         <Stack h="100vh">

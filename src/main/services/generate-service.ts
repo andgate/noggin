@@ -1,13 +1,19 @@
 import { Part } from '@google/generative-ai'
 import { convertGeneratedQuiz } from '@noggin/common/quiz-utils'
 import { GenerateQuizOptions, SimpleFile } from '@noggin/types/electron-types'
-import { GeneratedQuiz, generatedQuizSchema } from '@noggin/types/quiz-generation-types'
-import { Quiz } from '@noggin/types/quiz-types'
+import {
+    GeneratedQuiz,
+    generatedQuizSchema,
+    GradedSubmission,
+    gradedSubmissionSchema,
+} from '@noggin/types/quiz-generation-types'
+import { Quiz, Submission } from '@noggin/types/quiz-types'
 import fs from 'fs'
 import { compact } from 'lodash'
 import mime from 'mime'
 import { z } from 'zod'
 import { geminiService } from './gemini-service'
+import { readModuleQuiz } from './mod-service'
 
 const analysisResultSchema = z.object({
     title: z.string(),
@@ -101,5 +107,45 @@ export const generateService = {
         console.log('Raw generated quiz:', generatedQuiz)
 
         return convertGeneratedQuiz(generatedQuiz, sources)
+    },
+
+    async gradeSubmission(submission: Submission): Promise<GradedSubmission> {
+        // Get the quiz to access its sources
+        const quiz = await readModuleQuiz(submission.quizId, submission.quizId)
+
+        const fileDataParts = await Promise.all(
+            quiz.sources.map(async (filepath) => ({
+                inlineData: {
+                    data: await fs.promises.readFile(filepath, 'base64'),
+                    mimeType: mime.getType(filepath) || 'application/octet-stream',
+                },
+            }))
+        )
+
+        const parts: Part[] = [
+            // Add introductory context
+            {
+                text: 'Please review these learning materials that were used to create the quiz:',
+            },
+            // Source materials
+            ...fileDataParts,
+            // Then provide the submission to grade
+            {
+                text: `Here is the quiz submission to grade:\n${JSON.stringify(submission, null, 2)}`,
+            },
+            // Finally provide grading instructions
+            {
+                text: `Please grade the above submission using the provided source materials. For each response:
+                - Evaluate if the answer is correct
+                - Provide specific, constructive feedback
+                - For multiple choice, compare against the correct answer
+                - For written responses, assess understanding and completeness based on the source material`,
+            },
+        ]
+
+        return await geminiService.generateContent({
+            parts,
+            schema: gradedSubmissionSchema,
+        })
     },
 }

@@ -2,6 +2,7 @@ import { Part } from '@google/generative-ai'
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
 import { z } from 'zod'
 import { Mod } from './module-types'
+import { GradedSubmission } from './quiz-generation-types'
 import { Quiz, Submission } from './quiz-types'
 import { NogginStoreSchema } from './store-types'
 
@@ -93,6 +94,7 @@ interface GenerateAPI {
         slug: string
     }>
     generateQuiz: (options: GenerateQuizOptions) => Promise<Quiz>
+    gradeSubmission: (submission: Submission) => Promise<GradedSubmission>
 }
 
 export interface NogginElectronAPI {

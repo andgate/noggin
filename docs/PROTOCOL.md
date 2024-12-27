@@ -75,7 +75,32 @@ Users can attempt quizzes multiple times, with each attempt stored as a submissi
 
 ### Quiz Submissions and Grading
 
-Quiz submissions are processed by the AI system, which evaluates the answers and provides feedback. The grades serve only as informal feedback to help guide the learner's self-assessment.
+Quiz submissions undergo a structured evaluation process that maintains the protocol's commitment to clear feedback and self-directed learning:
+
+1. **Submission Processing**
+
+    - Each submission is evaluated independently
+    - Submissions remain in an ungraded state until fully processed
+    - All responses receive individualized feedback
+
+2. **Evaluation Criteria**
+
+    - Each question response receives a binary assessment (pass/fail)
+    - Assessment includes detailed, constructive feedback
+    - Overall quiz performance is calculated as a percentage of passed responses
+
+3. **Feedback Mechanism**
+
+    - Learners receive specific feedback for each response
+    - Feedback aims to be instructive rather than merely evaluative
+    - Comments highlight areas for improvement and reinforce correct understanding
+
+4. **Grade Representation**
+    - Numerical grades reflect the percentage of successfully answered questions
+    - Letter grades may be provided as an additional reference point
+    - Grades serve primarily as progress indicators rather than formal assessments
+
+This grading framework supports the protocol's core objective of facilitating self-directed learning while providing structured feedback for improvement.
 
 #### Submission Storage Format
 

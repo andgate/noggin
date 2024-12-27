@@ -1,7 +1,11 @@
-import { Button, Container, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { Button, Container, Group, Stack, Title } from '@mantine/core'
 import { Submission } from '@noggin/types/quiz-types'
 import { IconArrowLeft } from '@tabler/icons-react'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useRouter } from '@tanstack/react-router'
+import { useState } from 'react'
+import { SubmissionGradeInfo } from '../components/submission/SubmissionGradeInfo'
+import { SubmissionResponseCard } from '../components/submission/SubmissionResponseCard'
+import { useGradesGenerator } from '../hooks/use-grades-generator'
 
 interface SubmissionPageProps {
     moduleId: string
@@ -9,7 +13,22 @@ interface SubmissionPageProps {
 }
 
 export function SubmissionPage({ moduleId, submission }: SubmissionPageProps) {
+    const { gradeSubmission } = useGradesGenerator(moduleId)
+    const router = useRouter()
     const navigate = useNavigate()
+    const [isGrading, setIsGrading] = useState(false)
+
+    const handleGradeSubmission = async () => {
+        setIsGrading(true)
+        try {
+            await gradeSubmission(submission)
+            await router.invalidate()
+        } catch (error) {
+            console.error('Failed to grade submission:', error)
+        } finally {
+            setIsGrading(false)
+        }
+    }
 
     return (
         <Container size="md">
@@ -25,46 +44,18 @@ export function SubmissionPage({ moduleId, submission }: SubmissionPageProps) {
                         Back to Module
                     </Button>
 
-                    {submission.status === 'pending' && (
-                        <Button color="blue">Grade Submission</Button>
-                    )}
+                    <Button color="blue" onClick={handleGradeSubmission} loading={isGrading}>
+                        Grade Submission
+                    </Button>
                 </Group>
 
                 <Title order={2}>{submission.quizTitle}</Title>
 
-                <Paper p="md" withBorder>
-                    <Stack gap="xs">
-                        <Text>Completed: {new Date(submission.completedAt).toLocaleString()}</Text>
-                        <Text>Time Taken: {Math.round(submission.timeElapsed / 60)} minutes</Text>
-                        {submission.grade && (
-                            <Text>
-                                Grade: {submission.grade}% ({submission.letterGrade})
-                            </Text>
-                        )}
-                    </Stack>
-                </Paper>
+                <SubmissionGradeInfo submission={submission} />
 
                 <Stack gap="md">
                     {submission.responses.map((response, index) => (
-                        <Paper key={index} p="md" withBorder>
-                            <Stack gap="xs">
-                                <Text fw={500}>Question {index + 1}</Text>
-                                <Text>{response.question.question}</Text>
-                                <Text c="dimmed">Your Answer:</Text>
-                                <Text>{response.studentAnswer}</Text>
-
-                                {response.status === 'graded' && (
-                                    <>
-                                        <Text c="dimmed">Correct Answer:</Text>
-                                        <Text>{response.correctAnswer}</Text>
-                                        <Text c={response.verdict === 'pass' ? 'green' : 'red'}>
-                                            {response.verdict === 'pass' ? 'Correct' : 'Incorrect'}
-                                        </Text>
-                                        <Text size="sm">{response.feedback}</Text>
-                                    </>
-                                )}
-                            </Stack>
-                        </Paper>
+                        <SubmissionResponseCard key={index} response={response} index={index} />
                     ))}
                 </Stack>
             </Stack>

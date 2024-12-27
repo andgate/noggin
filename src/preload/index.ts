@@ -68,6 +68,7 @@ const api: NogginElectronAPI = {
         analyzeContent: (files) => ipcRenderer.invoke('generate:analyzeContent', files),
         generateQuiz: (options): Promise<Quiz> =>
             ipcRenderer.invoke('generate:generateQuiz', options),
+        gradeSubmission: (submission) => ipcRenderer.invoke('generate:gradeSubmission', submission),
     },
 }
 

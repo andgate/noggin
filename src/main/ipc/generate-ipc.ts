@@ -19,4 +19,13 @@ export function registerGenerateIPC(): void {
             throw error
         }
     })
+
+    ipcMain.handle('generate:gradeSubmission', async (_event, submission) => {
+        try {
+            return await generateService.gradeSubmission(submission)
+        } catch (error) {
+            console.error('Submission grading error:', error)
+            throw error
+        }
+    })
 }

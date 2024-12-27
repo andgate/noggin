@@ -46,13 +46,3 @@ export type GeneratedQuiz = z.infer<typeof generatedQuizSchema>
 
 export type GradedResponse = z.infer<typeof gradedResponseSchema>
 export type GradedSubmission = z.infer<typeof gradedSubmissionSchema>
-
-export type PartialGeneratedQuiz = {
-    title: string | undefined
-    multipleChoiceQuestions: (GeneratedMultipleChoiceQuestion | undefined)[]
-    writtenQuestions: (GeneratedWrittenQuestion | undefined)[]
-}
-
-export type PartialGradedSubmission = {
-    responses: (GradedResponse | undefined)[]
-}

@@ -3,7 +3,7 @@
 **Author**: Gabriel Anderson
 **Date**: December 12, 2024
 
-Noggin is a modular, self-directed learning desktop app built with Electron, React, and Mantine. It is designed to provide a streamlined and intuitive experience for learners, encouraging them to study topics through locally stored modules and quizzes.
+Noggin is a modular, self-directed learning desktop app built with Electron, React, and Mantine. It is designed to provide a streamlined and intuitive experience for learners, encouraging them to study topics through locally stored modules and quizzes. This document outlines the functional requirements and capabilities of the application.
 
 ## Core Principles
 
@@ -152,7 +152,10 @@ Noggin provides two distinct interfaces for quiz interaction:
 ### Submission Review
 
 - **Detailed Feedback**:
-  Users can view a quiz submission and see the questions, their answers, correct or expected responses, and instructor feedback. This allows users to review their quiz submission graded by the AI.
+  Users can view a quiz submission and see the questions, their answers, correct or expected responses, and instructor feedback.
+
+- **Re-evaluation**:
+  Users can request new AI-powered evaluations of their submissions at any time, receiving updated feedback and grades.
 
 ---
 

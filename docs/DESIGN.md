@@ -7,7 +7,7 @@
 
 ## Introduction
 
-This document outlines the User Interface (UI) and User Experience (UX) design for the Noggin desktop application. Noggin is a modular, self-directed learning platform that empowers users to manage their learning journey through locally stored modules and quizzes. The design prioritizes simplicity, transparency, and user control, adhering to a local-first and modular approach.
+This document outlines the User Interface (UI) and User Experience (UX) design specifications for the Noggin desktop application. It details the visual and interactive elements that implement the functional requirements defined in FEATURES.md. Noggin is a modular, self-directed learning platform that empowers users to manage their learning journey through locally stored modules and quizzes. The design prioritizes simplicity, transparency, and user control, adhering to a local-first and modular approach.
 
 ---
 
@@ -319,6 +319,7 @@ The Submission View Page provides a dedicated interface for reviewing individual
     - Submission date/time
     - "Back to Module" button
     - "Export Results" button
+    - "Grade Submission" button (with loading state)
 - **Content:**
     - **Question Review List:**
         - Each question card shows:
@@ -331,6 +332,8 @@ The Submission View Page provides a dedicated interface for reviewing individual
             - Correct answer (for multiple choice)
             - Any AI-generated feedback
         - Clear visual indicators for correct/incorrect answers
+        - Visual feedback during grading
+            - Loading indicator on grade button
 
 ### Settings Panel
 

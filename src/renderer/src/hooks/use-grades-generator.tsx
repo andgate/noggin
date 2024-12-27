@@ -1,44 +1,17 @@
-// import { GradedSubmission } from '../../../types/quiz-generation-types'
-// import { generateGradedSubmission, GenerateGradesOptions } from '../services/grading-service'
-// import { GenerativeProvider, useGenerative } from './use-generative'
+import { updateSubmissionWithGrades } from '@noggin/common/submission-utils'
+import { Submission } from '@noggin/types/quiz-types'
+import { useCallback } from 'react'
 
-// /**
-//  * Interface for grades generation
-//  */
-// export interface GradesGenerator {
-//     generateGrades: (options: GenerateGradesOptions) => void
-//     gradedSubmission: GradedSubmission
-//     isGradeGeneratorRunning: boolean
-//     isDoneGrading: boolean
-//     gradingError?: Error
-//     abort: () => void
-// }
+export function useGradesGenerator(moduleSlug: string) {
+    const gradeSubmission = useCallback(
+        async (submission: Submission) => {
+            const gradedSubmission = await window.api.generate.gradeSubmission(submission)
+            const updatedSubmission = updateSubmissionWithGrades(submission, gradedSubmission)
+            await window.api.modules.saveModuleSubmission(moduleSlug, updatedSubmission)
+            return updatedSubmission
+        },
+        [moduleSlug]
+    )
 
-// /**
-//  * Hook that provides quiz grading functionality using the generative context
-//  */
-// export function useGradesGenerator(): GradesGenerator {
-//     const { invoke, state, isDone, isRunning, error, abort } = useGenerative<
-//         GenerateGradesOptions,
-//         GradedSubmission
-//     >()
-//     return {
-//         generateGrades: invoke,
-//         gradedSubmission: state,
-//         isGradeGeneratorRunning: isRunning,
-//         isDoneGrading: isDone,
-//         gradingError: error,
-//         abort,
-//     }
-// }
-
-// /**
-//  * Provider component for grades generation
-//  */
-// export function GradesGeneratorProvider({ children }: { children: React.ReactNode }) {
-//     return (
-//         <GenerativeProvider generativeFunction={generateGradedSubmission}>
-//             {children}
-//         </GenerativeProvider>
-//     )
-// }
+    return { gradeSubmission }
+}
