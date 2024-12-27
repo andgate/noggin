@@ -16,6 +16,7 @@ export default defineConfig({
         resolve: {
             alias: {
                 '@noggin/types': resolve('src/types'),
+                '@noggin/common': resolve('src/common'),
             },
         },
         plugins: [externalizeDepsPlugin({ exclude: ['lodash'] })],
@@ -48,6 +49,7 @@ export default defineConfig({
             alias: {
                 '@renderer': resolve('src/renderer/src'),
                 '@noggin/types': resolve('src/types'),
+                '@noggin/common': resolve('src/common'),
             },
         },
         plugins: [TanStackRouterVite(), viteReact()],

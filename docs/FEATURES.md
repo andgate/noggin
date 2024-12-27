@@ -124,12 +124,25 @@ Noggin provides two distinct interfaces for quiz interaction:
     - Enable detailed review of submissions
     - Allow users to start a quiz
 
-- **Quiz Mode**:
+- **Quiz Session**:
 
-    - Provides an environment dedicated to quiz-taking
-    - Minimizes distractions to enhance focus
-    - Supports both multiple-choice and written response formats
-    - Allows users to submit answers directly
+    - Provides a focused environment for quiz completion:
+        - Uninterrupted quiz-taking experience
+        - Progress saving and recovery
+        - Option to exit and resume later
+    - Question Management:
+        - Supports both multiple-choice and written responses
+        - Allows review and modification of previous answers
+        - Tracks completion progress
+        - Randomizes question order for each attempt
+    - Navigation and Control:
+        - Move freely between questions
+        - Review all answers before final submission
+        - Clear indication of answered/unanswered questions
+    - Submission Handling:
+        - Confirms submission intent
+        - Processes all answers for grading
+        - Transitions to grading interface upon completion
 
 - **Viewing Capabilities**:
   Users can view a quiz and see the questions and list of submissions for that specific quiz.

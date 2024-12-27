@@ -41,7 +41,7 @@ export function ModuleInfoPanel({ module }: ModuleInfoPanelProps) {
                     </Text>
                 ) : (
                     module.submissions.map((submission) => (
-                        <Group key={submission.id}>
+                        <Group key={submission.attemptNumber}>
                             <Text size="sm">{submission.quizTitle}</Text>
                             <Text size="sm" c="dimmed">
                                 {formatDate(submission.completedAt)}

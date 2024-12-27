@@ -200,9 +200,9 @@ This view is the final step in the module creation process, allowing users to re
     - "Back" button
     - "Cancel" button
 
-### Quiz View Page
+### Quiz Page
 
-The Quiz View page provides an overview of a specific quiz and its submissions.
+The Quiz Page provides an overview of a specific quiz and its submissions.
 
 **Wireframe Description:**
 
@@ -315,27 +315,22 @@ The Submission View Page provides a dedicated interface for reviewing individual
 - **Layout:** Full-page view that replaces the Dashboard
 - **Header:**
     - Module name and quiz identifier
+    - Attempt number
     - Submission date/time
-    - Score summary
     - "Back to Module" button
     - "Export Results" button
 - **Content:**
-    - **Overview Panel:**
-        - Performance statistics
-        - Time taken
-        - Question type breakdown
     - **Question Review List:**
         - Each question card shows:
-            - Question number and type
+            - Question type
             - Original question text
+            - Question options (for multiple choice)
             - User's answer
+                - Text for written response
+                - Green/red highlight on choice to indicate user's response.
             - Correct answer (for multiple choice)
-            - AI-generated feedback
-            - Points awarded
+            - Any AI-generated feedback
         - Clear visual indicators for correct/incorrect answers
-    - **Navigation:**
-        - Quick-jump to specific questions
-        - Previous/Next submission buttons (if available)
 
 ### Settings Panel
 

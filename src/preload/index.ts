@@ -1,6 +1,7 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import type { NogginElectronAPI, SimpleFile } from '@noggin/types/electron-types'
 import { Mod } from '@noggin/types/module-types'
+import { Quiz, Submission } from '@noggin/types/quiz-types'
 import { NogginStoreSchema } from '@noggin/types/store-types'
 import { contextBridge, ipcRenderer } from 'electron'
 
@@ -29,6 +30,26 @@ const api: NogginElectronAPI = {
             ipcRenderer.invoke('modules:writeModuleSource', modulePath, sourceFile),
         deleteModuleSource: (sourcePath: string) =>
             ipcRenderer.invoke('modules:deleteModuleSource', sourcePath),
+        readModuleBySlug: (moduleSlug: string) =>
+            ipcRenderer.invoke('modules:readModuleBySlug', moduleSlug),
+        saveModuleQuiz: (moduleSlug: string, quiz: Quiz) =>
+            ipcRenderer.invoke('modules:saveModuleQuiz', moduleSlug, quiz),
+        deleteModuleQuiz: (moduleSlug: string, quizId: string) =>
+            ipcRenderer.invoke('modules:deleteModuleQuiz', moduleSlug, quizId),
+        readModuleQuiz: (moduleSlug: string, quizId: string) =>
+            ipcRenderer.invoke('modules:readModuleQuiz', moduleSlug, quizId),
+        readModuleSubmission: (moduleSlug: string, quizId: string, attempt: number) =>
+            ipcRenderer.invoke('modules:readModuleSubmission', moduleSlug, quizId, attempt),
+        saveModuleSubmission: (moduleSlug: string, submission: Submission) =>
+            ipcRenderer.invoke('modules:saveModuleSubmission', moduleSlug, submission),
+        getQuizAttemptCount: (moduleSlug: string, quizId: string) =>
+            ipcRenderer.invoke('modules:getQuizAttemptCount', moduleSlug, quizId),
+        getLatestModuleQuiz: (moduleSlug: string) =>
+            ipcRenderer.invoke('modules:getLatestModuleQuiz', moduleSlug),
+        getModuleSubmissions: (moduleSlug: string) =>
+            ipcRenderer.invoke('modules:getModuleSubmissions', moduleSlug),
+        getQuizSubmissions: (moduleSlug: string, quizId: string) =>
+            ipcRenderer.invoke('modules:getQuizSubmissions', moduleSlug, quizId),
     },
     openai: {
         chat: (options) => ipcRenderer.invoke('openai:chat', options),
@@ -45,7 +66,8 @@ const api: NogginElectronAPI = {
     },
     generate: {
         analyzeContent: (files) => ipcRenderer.invoke('generate:analyzeContent', files),
-        generateQuiz: (options) => ipcRenderer.invoke('generate:generateQuiz', options),
+        generateQuiz: (options): Promise<Quiz> =>
+            ipcRenderer.invoke('generate:generateQuiz', options),
     },
 }
 

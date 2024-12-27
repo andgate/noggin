@@ -2,7 +2,7 @@ import { Part } from '@google/generative-ai'
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
 import { z } from 'zod'
 import { Mod } from './module-types'
-import { PartialGeneratedQuiz } from './quiz-generation-types'
+import { Quiz, Submission } from './quiz-types'
 import { NogginStoreSchema } from './store-types'
 
 interface StoreAPI {
@@ -21,6 +21,20 @@ interface ModuleAPI {
     removeModule: (modulePath: string) => Promise<void>
     writeModuleSource: (modPath: string, sourceFile: SimpleFile) => Promise<string>
     deleteModuleSource: (sourcePath: string) => Promise<void>
+    readModuleBySlug: (moduleSlug: string) => Promise<Mod>
+    saveModuleQuiz: (moduleSlug: string, quiz: Quiz) => Promise<void>
+    deleteModuleQuiz: (moduleSlug: string, quizId: string) => Promise<void>
+    readModuleQuiz: (moduleSlug: string, quizId: string) => Promise<Quiz>
+    readModuleSubmission: (
+        moduleSlug: string,
+        quizId: string,
+        attempt: number
+    ) => Promise<Submission>
+    saveModuleSubmission: (moduleSlug: string, submission: Submission) => Promise<void>
+    getQuizAttemptCount: (moduleSlug: string, quizId: string) => Promise<number>
+    getLatestModuleQuiz: (moduleSlug: string) => Promise<Quiz>
+    getModuleSubmissions: (moduleSlug: string) => Promise<Submission[]>
+    getQuizSubmissions: (moduleSlug: string, quizId: string) => Promise<Submission[]>
 }
 
 interface OpenAIChatOptions<T> {
@@ -78,7 +92,7 @@ interface GenerateAPI {
         overview: string
         slug: string
     }>
-    generateQuiz: (options: GenerateQuizOptions) => Promise<PartialGeneratedQuiz>
+    generateQuiz: (options: GenerateQuizOptions) => Promise<Quiz>
 }
 
 export interface NogginElectronAPI {

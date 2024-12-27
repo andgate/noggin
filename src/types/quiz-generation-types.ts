@@ -2,7 +2,6 @@ import { z } from 'zod'
 
 export const choiceSchema = z.object({
     text: z.string(),
-    isCorrect: z.boolean(),
 })
 
 export const generatedMultipleChoiceQuestionSchema = z.object({

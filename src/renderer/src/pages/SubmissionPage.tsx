@@ -1,50 +1,73 @@
-// import { Card, Container, Stack, Text, Title } from '@mantine/core'
-// import { Submission } from '@noggin/types/quiz-types'
+import { Button, Container, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { Submission } from '@noggin/types/quiz-types'
+import { IconArrowLeft } from '@tabler/icons-react'
+import { useNavigate } from '@tanstack/react-router'
 
-// // TODO: Add detailed analytics for quiz performance
-// // TODO: Implement answer comparison visualization
-// // TODO: Add export functionality for results
-// // TODO: Consider adding share capabilities
-// // TODO: Implement SSR for submission data
-// // TODO: Add loading states for score calculations
-// // TODO: Add error boundaries for failed submission loads
-// // TODO: Implement retry mechanism for failed data fetches
-// export const SubmissionPage: React.FC<{
-//     submission: Submission
-// }> = ({ submission }) => {
-//     // TODO: Add fallback UI for partial submission data
-//     // TODO: Implement progressive enhancement for analytics
-//     // TODO: Add error recovery for failed score displays
-//     console.log('submission', submission)
-//     return (
-//         <Container size="md" py="xl">
-//             <Stack gap="lg">
-//                 <Title order={1}>{submission.quizTitle}</Title>
-//                 <Text size="lg" fw={700}>
-//                     Final Grade: {submission.grade}%
-//                 </Text>
+interface SubmissionPageProps {
+    moduleId: string
+    submission: Submission
+}
 
-//                 {submission.responses.map((response) => (
-//                     <Card key={response.id} withBorder>
-//                         <Stack gap="md">
-//                             <Text fw={600}>{response.question.question}</Text>
+export function SubmissionPage({ moduleId, submission }: SubmissionPageProps) {
+    const navigate = useNavigate()
 
-//                             <Text>Your Answer: {response.studentAnswer}</Text>
+    return (
+        <Container size="md">
+            <Stack gap="md">
+                <Group justify="space-between">
+                    <Button
+                        onClick={() =>
+                            navigate({ to: '/module/view/$moduleId', params: { moduleId } })
+                        }
+                        leftSection={<IconArrowLeft />}
+                        variant="subtle"
+                    >
+                        Back to Module
+                    </Button>
 
-//                             <Text c="dimmed">Correct Answer: {response.correctAnswer}</Text>
+                    {submission.status === 'pending' && (
+                        <Button color="blue">Grade Submission</Button>
+                    )}
+                </Group>
 
-//                             <Stack gap="xs">
-//                                 <Text fw={500}>
-//                                     Result: {response.verdict === 'pass' ? 'Correct' : 'Incorrect'}
-//                                 </Text>
-//                                 {response.feedback && (
-//                                     <Text c="dimmed">Feedback: {response.feedback}</Text>
-//                                 )}
-//                             </Stack>
-//                         </Stack>
-//                     </Card>
-//                 ))}
-//             </Stack>
-//         </Container>
-//     )
-// }
+                <Title order={2}>{submission.quizTitle}</Title>
+
+                <Paper p="md" withBorder>
+                    <Stack gap="xs">
+                        <Text>Completed: {new Date(submission.completedAt).toLocaleString()}</Text>
+                        <Text>Time Taken: {Math.round(submission.timeElapsed / 60)} minutes</Text>
+                        {submission.grade && (
+                            <Text>
+                                Grade: {submission.grade}% ({submission.letterGrade})
+                            </Text>
+                        )}
+                    </Stack>
+                </Paper>
+
+                <Stack gap="md">
+                    {submission.responses.map((response, index) => (
+                        <Paper key={index} p="md" withBorder>
+                            <Stack gap="xs">
+                                <Text fw={500}>Question {index + 1}</Text>
+                                <Text>{response.question.question}</Text>
+                                <Text c="dimmed">Your Answer:</Text>
+                                <Text>{response.studentAnswer}</Text>
+
+                                {response.status === 'graded' && (
+                                    <>
+                                        <Text c="dimmed">Correct Answer:</Text>
+                                        <Text>{response.correctAnswer}</Text>
+                                        <Text c={response.verdict === 'pass' ? 'green' : 'red'}>
+                                            {response.verdict === 'pass' ? 'Correct' : 'Incorrect'}
+                                        </Text>
+                                        <Text size="sm">{response.feedback}</Text>
+                                    </>
+                                )}
+                            </Stack>
+                        </Paper>
+                    ))}
+                </Stack>
+            </Stack>
+        </Container>
+    )
+}

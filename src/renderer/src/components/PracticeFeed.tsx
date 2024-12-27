@@ -59,6 +59,22 @@ export function PracticeFeed() {
         navigate({ to: '/module/view/$moduleId', params: { moduleId } })
     }
 
+    const handleStartQuiz = async (moduleId: string) => {
+        try {
+            const quiz = await window.api.modules.getLatestModuleQuiz(moduleId)
+            navigate({
+                to: '/quiz/session/$moduleId/$quizId',
+                params: { moduleId, quizId: quiz.id },
+            })
+        } catch (error) {
+            notifications.show({
+                title: 'Error',
+                message: 'No quizzes available for this module',
+                color: 'red',
+            })
+        }
+    }
+
     return (
         <SimpleGrid
             cols={{ base: 1, sm: 2, lg: 3, xl: 4 }}
@@ -96,6 +112,11 @@ export function PracticeFeed() {
                             variant="light"
                             size="xs"
                             leftSection={<IconPlayerPlay size={14} />}
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                handleStartQuiz(mod.id)
+                            }}
+                            title="Start the most recent quiz for this module"
                         >
                             Start Quiz
                         </Button>
@@ -111,7 +132,8 @@ export function PracticeFeed() {
                                 color="red"
                                 size="md"
                                 title="Delete Module"
-                                onClick={() => {
+                                onClick={(e) => {
+                                    e.stopPropagation()
                                     const confirmed = window.confirm(
                                         'Are you sure you want to delete this module?'
                                     )

@@ -90,7 +90,7 @@ export function CreateModulePage() {
         async (modulePath: string, moduleData: GeneratedModule) => {
             const fullModPath = `${modulePath}/${moduleData.slug}`
 
-            // First create the module structure and metadata
+            // Create and write the module metadata with empty sources
             const metadata: Mod = {
                 id: crypto.randomUUID(),
                 name: moduleData.title,
@@ -102,6 +102,7 @@ export function CreateModulePage() {
                 updatedAt: new Date().toISOString(),
             }
 
+            // Register the module path first
             await moduleService.registerModulePath(metadata.path)
             await moduleService.writeModuleData(metadata.path, metadata)
 

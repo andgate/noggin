@@ -1,16 +1,18 @@
 import { Button, Card, Group, List, NumberInput, Stack, Switch, Text } from '@mantine/core'
-import { GeneratedQuestion, PartialGeneratedQuiz } from '@noggin/types/quiz-generation-types'
-import { useState } from 'react'
+import { Question, Quiz } from '@noggin/types/quiz-types'
+import { useEffect, useState } from 'react'
+import { useModule } from '../hooks/use-module'
 import { useQuizGenerator } from '../hooks/use-quiz-generator'
 import { RainbowWrapper } from './RainbowWrapper'
 
 interface QuizGenerationWizardProps {
     sources: string[]
-    onComplete: (quiz: PartialGeneratedQuiz) => void
+    moduleSlug: string
+    onComplete: (quiz: Quiz) => void
     onCancel: () => void
 }
 
-function QuestionPreview({ question }: { question: GeneratedQuestion }) {
+function QuestionPreview({ question }: { question: Question }) {
     return (
         <Card withBorder shadow="sm" radius="md" mb="xs">
             <Text size="sm" c="dimmed">
@@ -22,7 +24,7 @@ function QuestionPreview({ question }: { question: GeneratedQuestion }) {
             {question.questionType === 'multiple_choice' && (
                 <List size="sm" mt="xs">
                     {question.choices.map((choice, index) => (
-                        <List.Item key={index}>{choice.text}</List.Item>
+                        <List.Item key={index}>{choice.optionText}</List.Item>
                     ))}
                 </List>
             )}
@@ -103,15 +105,16 @@ function PreviewView({
     onRegenerate,
     onSave,
 }: {
-    quiz: PartialGeneratedQuiz
+    quiz: Quiz
     onBack: () => void
     onRegenerate: () => void
     onSave: () => void
 }) {
-    const allQuestions = [
-        ...(quiz.multipleChoiceQuestions || []),
-        ...(quiz.writtenQuestions || []),
-    ].filter((q): q is GeneratedQuestion => q !== undefined)
+    const allQuestions = quiz.questions
+
+    useEffect(() => {
+        console.log('Quiz preview:', quiz)
+    }, [quiz])
 
     return (
         <Stack gap="md">
@@ -120,20 +123,15 @@ function PreviewView({
             </Text>
 
             <Text size="sm" c="dimmed">
-                Generated {allQuestions.length} questions
-                {quiz.multipleChoiceQuestions?.length ? ' (including multiple choice)' : ''}
-                {quiz.writtenQuestions?.length ? ' (including written response)' : ''}
+                Generated {quiz.questions.length} questions
+                {` (${quiz.questions.filter((q) => q.questionType === 'multiple_choice').length} multiple choice, `}
+                {`${quiz.questions.filter((q) => q.questionType === 'written').length} written response)`}
             </Text>
 
             <Stack gap="xs">
-                {allQuestions.slice(0, 3).map((question, index) => (
+                {allQuestions.map((question, index) => (
                     <QuestionPreview key={index} question={question} />
                 ))}
-                {allQuestions.length > 3 && (
-                    <Text c="dimmed" size="sm" ta="center">
-                        ... and {allQuestions.length - 3} more questions
-                    </Text>
-                )}
             </Stack>
 
             <Group justify="flex-end" mt="md">
@@ -151,15 +149,21 @@ function PreviewView({
     )
 }
 
-export function QuizGenerationWizard({ sources, onComplete, onCancel }: QuizGenerationWizardProps) {
+export function QuizGenerationWizard({
+    sources,
+    moduleSlug,
+    onComplete,
+    onCancel,
+}: QuizGenerationWizardProps) {
     const [stage, setStage] = useState<'config' | 'preview'>('config')
     const [numQuestions, setNumQuestions] = useState(10)
     const [includeMultipleChoice, setIncludeMultipleChoice] = useState(true)
     const [includeWritten, setIncludeWritten] = useState(true)
-    const [generatedQuiz, setGeneratedQuiz] = useState<PartialGeneratedQuiz | null>(null)
+    const [generatedQuiz, setGeneratedQuiz] = useState<Quiz | null>(null)
     const [isGenerating, setIsGenerating] = useState(false)
 
     const { generateQuiz } = useQuizGenerator()
+    const { saveModuleQuiz } = useModule()
 
     const handleGenerate = async () => {
         if (!includeMultipleChoice && !includeWritten) return
@@ -182,13 +186,22 @@ export function QuizGenerationWizard({ sources, onComplete, onCancel }: QuizGene
         }
     }
 
+    const handleSaveQuiz = async (quiz: Quiz) => {
+        if (!quiz.title || !quiz.questions) {
+            throw new Error('Invalid quiz data')
+        }
+
+        await saveModuleQuiz(moduleSlug, quiz)
+        onComplete(quiz)
+    }
+
     if (stage === 'preview' && generatedQuiz) {
         return (
             <PreviewView
                 quiz={generatedQuiz}
                 onBack={() => setStage('config')}
                 onRegenerate={handleGenerate}
-                onSave={() => onComplete(generatedQuiz)}
+                onSave={() => handleSaveQuiz(generatedQuiz)}
             />
         )
     }

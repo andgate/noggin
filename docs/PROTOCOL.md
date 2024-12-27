@@ -60,11 +60,46 @@ This structure ensures that all module-related data is centralized, accessible, 
 
 #### Storage
 
-Quizzes are stored in the `.mod/quizzes/` folder, with each quiz represented as a standalone file containing the questions and metadata (e.g., topics covered, difficulty). Users can attempt quizzes multiple times, with each attempt stored as a submission in `.mod/submissions/`.
+Quizzes are stored in the `.mod/quizzes/` folder, with each quiz saved as a JSON file. The filename follows the pattern:
+`<quiz-slug>-<timestamp>.json`
+
+Where:
+
+- `quiz-slug` is a URL-friendly version of the quiz title
+- `timestamp` is the Unix timestamp when the quiz was created
+- Example: `region-based-memory-management-quiz-1703567451722.json`
+
+This naming scheme ensures unique filenames even when multiple quizzes have similar titles.
+
+Users can attempt quizzes multiple times, with each attempt stored as a submission in `.mod/submissions/`.
 
 ### Quiz Submissions and Grading
 
 Quiz submissions are processed by the AI system, which evaluates the answers and provides feedback. The grades serve only as informal feedback to help guide the learner's self-assessment.
+
+#### Submission Storage Format
+
+Submissions are stored as JSON files in `.mod/submissions/` using the following pattern:
+`<quiz-slug>-<quiz-timestamp>-<attempt>.json`
+
+Where:
+
+- `quiz-slug` and `quiz-timestamp` match the parent quiz's identifier
+- `attempt` is the attempt number (1, 2, 3, etc.)
+- Example: `region-based-memory-management-quiz-1703567451722-1.json`
+
+Each submission file contains:
+
+```json
+{
+    "quiz_id": "region-based-memory-management-quiz-1703567451722",
+    "submission_timestamp": 1703567489123,
+    "attempt": 1,
+    "answers": [
+        // ... rest of the structure remains the same ...
+    ]
+}
+```
 
 ---
 

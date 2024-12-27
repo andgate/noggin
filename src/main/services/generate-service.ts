@@ -1,6 +1,8 @@
 import { Part } from '@google/generative-ai'
+import { convertGeneratedQuiz } from '@noggin/common/quiz-utils'
 import { GenerateQuizOptions, SimpleFile } from '@noggin/types/electron-types'
-import { generatedQuizSchema } from '@noggin/types/quiz-generation-types'
+import { GeneratedQuiz, generatedQuizSchema } from '@noggin/types/quiz-generation-types'
+import { Quiz } from '@noggin/types/quiz-types'
 import fs from 'fs'
 import { compact } from 'lodash'
 import mime from 'mime'
@@ -48,7 +50,13 @@ export const generateService = {
         numQuestions,
         includeMultipleChoice,
         includeWritten,
-    }: GenerateQuizOptions) {
+    }: GenerateQuizOptions): Promise<Quiz> {
+        console.log('Generating quiz with options:', {
+            sources,
+            numQuestions,
+            includeMultipleChoice,
+            includeWritten,
+        })
         const loadedFiles = await Promise.all(
             sources.map(async (filepath) => ({
                 path: filepath,
@@ -67,39 +75,31 @@ export const generateService = {
 
         const parts: Part[] = [
             {
-                text: `Generate a quiz with ${numQuestions} questions based on these learning materials.
-                    Include ${includeMultipleChoice ? 'multiple choice' : ''}
-                    ${includeMultipleChoice && includeWritten ? 'and' : ''}
-                    ${includeWritten ? 'written response' : ''} questions.
-
-                    The response should be valid JSON matching this structure:
-                    {
-                        "title": "string",
-                        "questions": [
-                            {
-                                "questionType": "multiple_choice",
-                                "question": "string",
-                                "choices": [
-                                    {
-                                        "text": "string",
-                                        "isCorrect": boolean
-                                    }
-                                ]
-                            }
-                            // or
-                            {
-                                "questionType": "written",
-                                "question": "string"
-                            }
-                        ]
-                    }`,
+                text: `Please focus on analyzing these learning materials to create an educational quiz.`,
             },
             ...fileDataParts,
+            {
+                text: `Based on the provided materials, generate a quiz with ${numQuestions} questions.
+                The quiz should include ${[
+                    includeMultipleChoice && 'multiple choice',
+                    includeWritten && 'written response',
+                ]
+                    .filter(Boolean)
+                    .join(' and ')} questions.
+
+                Focus on testing key concepts and understanding from the materials. Each question should be clear,
+                specific, and directly related to the content. For multiple choice questions, ensure one correct
+                answer and plausible but incorrect alternatives.`,
+            },
         ]
 
-        return await geminiService.generateContent({
+        const generatedQuiz: GeneratedQuiz = await geminiService.generateContent({
             parts,
             schema: generatedQuizSchema,
         })
+
+        console.log('Raw generated quiz:', generatedQuiz)
+
+        return convertGeneratedQuiz(generatedQuiz, sources)
     },
 }

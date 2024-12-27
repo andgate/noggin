@@ -8,14 +8,17 @@
         "src/drizzle/**/*",
         "src/drizzle/**/*.tsx",
         "src/types/**/*",
-        "src/types/**/*.tsx"
+        "src/types/**/*.tsx",
+        "src/common/**/*",
+        "src/common/**/*.tsx"
     ],
     "compilerOptions": {
         "composite": true,
         "baseUrl": ".",
         "paths": {
             "@renderer/*": ["src/renderer/src/*"],
-            "@noggin/types/*": ["src/types/*"]
+            "@noggin/types/*": ["src/types/*"],
+            "@noggin/common/*": ["src/common/*"]
         },
 
         /* Base Options */
