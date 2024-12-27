@@ -1,7 +1,7 @@
 # Noggin Desktop Application
 
 **Author**: Gabriel Anderson
-**Date**: December 12, 2024
+**Date**: December 27, 2024
 
 Noggin is a modular, self-directed learning desktop app built with Electron, React, and Mantine. It is designed to provide a streamlined and intuitive experience for learners, encouraging them to study topics through locally stored modules and quizzes. This document outlines the functional requirements and capabilities of the application.
 
@@ -22,8 +22,43 @@ The Practice Feed guides users through their study sessions by surfacing modules
 - **Module Overview**:
   Displays each loaded module with its name and overall status.
 
+- **Spaced Repetition with Leitner System**:
+  Noggin implements the Leitner system as its spaced repetition algorithm, chosen for its simplicity and proven effectiveness in memory retention:
+
+    - Modules are organized into 5 review boxes (1-5)
+    - Box 1 modules reviewed daily
+    - Box 2 modules reviewed every 2 days
+    - Box 3 modules reviewed weekly
+    - Box 4 modules reviewed bi-weekly
+    - Box 5 modules reviewed monthly
+    - Successful reviews move module up one box
+    - Failed reviews return module to Box 1
+    - New modules start in Box 1
+
+    This systematic approach ensures regular review intervals that expand as users demonstrate mastery, while quickly identifying and reinforcing challenging content.
+
+    Each module maintains its review state in a stats object:
+
+    ```json
+    {
+        "moduleId": "example-module-20241212103000",
+        "currentBox": 2,
+        "lastReviewDate": "2024-03-15T10:30:00Z",
+        "nextDueDate": "2024-03-17T10:30:00Z"
+    }
+    ```
+
+    The algorithm processes these stats to:
+
+    - Calculate review schedules based on the current box
+    - Determine module priority in the practice feed based on nextDueDate
+    - Move modules between boxes based on quiz performance
+
 - **Prioritization Logic**:
-  Highlights modules based on review timing to encourage spaced repetition, allowing users to manage their own schedules.
+
+    - Modules are surfaced based on their current Leitner box and review schedule
+    - Overdue modules are highlighted for immediate review
+    - Review dates are calculated from last successful completion
 
 - **Focus and Flexibility**:
   With a single click, users can open a quiz from a chosen module or review their past submissions.

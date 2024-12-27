@@ -1,7 +1,7 @@
 import { Part } from '@google/generative-ai'
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
 import { z } from 'zod'
-import { Mod } from './module-types'
+import { Mod, ModuleStats } from './module-types'
 import { GradedSubmission } from './quiz-generation-types'
 import { Quiz, Submission } from './quiz-types'
 import { NogginStoreSchema } from './store-types'
@@ -36,6 +36,10 @@ interface ModuleAPI {
     getLatestModuleQuiz: (moduleSlug: string) => Promise<Quiz>
     getModuleSubmissions: (moduleSlug: string) => Promise<Submission[]>
     getQuizSubmissions: (moduleSlug: string, quizId: string) => Promise<Submission[]>
+    getModuleStats: (moduleSlug: string) => Promise<ModuleStats>
+    saveModuleStats: (moduleSlug: string, stats: ModuleStats) => Promise<void>
+    getAllModuleStats: () => Promise<ModuleStats[]>
+    getDueModules: () => Promise<Mod[]>
 }
 
 interface OpenAIChatOptions<T> {

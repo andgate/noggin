@@ -1,6 +1,6 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import type { NogginElectronAPI, SimpleFile } from '@noggin/types/electron-types'
-import { Mod } from '@noggin/types/module-types'
+import { Mod, ModuleStats } from '@noggin/types/module-types'
 import { Quiz, Submission } from '@noggin/types/quiz-types'
 import { NogginStoreSchema } from '@noggin/types/store-types'
 import { contextBridge, ipcRenderer } from 'electron'
@@ -50,6 +50,12 @@ const api: NogginElectronAPI = {
             ipcRenderer.invoke('modules:getModuleSubmissions', moduleSlug),
         getQuizSubmissions: (moduleSlug: string, quizId: string) =>
             ipcRenderer.invoke('modules:getQuizSubmissions', moduleSlug, quizId),
+        getModuleStats: (moduleSlug: string) =>
+            ipcRenderer.invoke('modules:getModuleStats', moduleSlug),
+        saveModuleStats: (moduleSlug: string, stats: ModuleStats) =>
+            ipcRenderer.invoke('modules:saveModuleStats', moduleSlug, stats),
+        getAllModuleStats: () => ipcRenderer.invoke('modules:getAllModuleStats'),
+        getDueModules: () => ipcRenderer.invoke('modules:getDueModules'),
     },
     openai: {
         chat: (options) => ipcRenderer.invoke('openai:chat', options),

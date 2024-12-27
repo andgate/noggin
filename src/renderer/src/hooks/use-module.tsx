@@ -1,5 +1,5 @@
 import { SimpleFile } from '@noggin/types/electron-types'
-import { Mod } from '@noggin/types/module-types'
+import { Mod, ModuleStats } from '@noggin/types/module-types'
 import { Quiz, Submission } from '@noggin/types/quiz-types'
 import { createContext, useContext } from 'react'
 
@@ -26,6 +26,10 @@ export type ModuleContextType = {
     getLatestModuleQuiz: (moduleId: string) => Promise<Quiz>
     getModuleSubmissions: (moduleSlug: string) => Promise<Submission[]>
     getQuizSubmissions: (moduleSlug: string, quizId: string) => Promise<Submission[]>
+    getModuleStats: (moduleSlug: string) => Promise<ModuleStats>
+    saveModuleStats: (moduleSlug: string, stats: ModuleStats) => Promise<void>
+    getAllModuleStats: () => Promise<ModuleStats[]>
+    getDueModules: () => Promise<Mod[]>
 }
 
 export const ModuleContext = createContext<ModuleContextType>({
@@ -40,6 +44,10 @@ export const ModuleContext = createContext<ModuleContextType>({
     getLatestModuleQuiz: window.api.modules.getLatestModuleQuiz,
     getModuleSubmissions: window.api.modules.getModuleSubmissions,
     getQuizSubmissions: window.api.modules.getQuizSubmissions,
+    getModuleStats: window.api.modules.getModuleStats,
+    saveModuleStats: window.api.modules.saveModuleStats,
+    getAllModuleStats: window.api.modules.getAllModuleStats,
+    getDueModules: window.api.modules.getDueModules,
 })
 
 export function ModuleProvider({ children }: { children: React.ReactNode }) {

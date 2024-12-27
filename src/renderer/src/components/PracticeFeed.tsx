@@ -7,7 +7,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 export function PracticeFeed() {
-    const { getRegisteredPaths, readModuleData, removeModule } = useModule()
+    const { getDueModules, removeModule } = useModule()
     const [modules, setModules] = useState<Mod[]>([])
     const [_isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()
@@ -15,8 +15,7 @@ export function PracticeFeed() {
     const fetchModules = async () => {
         setIsLoading(true)
         try {
-            const paths = await getRegisteredPaths()
-            const mods = await Promise.all(paths.map(readModuleData))
+            const mods = await getDueModules()
             setModules(mods)
         } catch (error) {
             notifications.show({

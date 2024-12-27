@@ -1,7 +1,7 @@
 # Noggin Desktop Application: UI/UX Design Document
 
 **Author**: Gabriel Anderson
-**Date**: December 12, 2024
+**Date**: December 27, 2024
 
 ---
 
@@ -46,11 +46,17 @@ The Practice Feed displays Module Cards that represent available learning module
     - `+` Button on the right side of the header to open the Create Module Page
 - **Module Cards:** Each card displays:
     - Module Name (prominently at the top of the card)
-    - Status Indicators (e.g., last reviewed date, number of quizzes available). Each status is rendered as a chip.
+    - Status Indicators:
+        - Last reviewed date
+        - Next review date
+        - Each status is rendered as a chip
     - "Start Quiz" button to launch the Quiz Session for the most recently generated quiz
     - "Generate Quiz" button to open the Quiz Generation Modal
     - "Review Submissions" button to review previous quiz submissions
-- **Visual Hierarchy:** Module Cards are visually distinct and easily scannable. Prioritized modules (e.g., due for review) are subtly highlighted using color or slight elevation.
+- **Visual Hierarchy:**
+    - Module Cards are visually distinct and easily scannable
+    - Modules due for review are subtly highlighted using color or slight elevation
+    - Past-due modules receive additional visual emphasis
 
 #### 1.2 Module Explorer (Sidebar)
 

@@ -13,12 +13,13 @@
  * - Delete a mod and its contents
  */
 import { SimpleFile } from '@noggin/types/electron-types'
-import { Mod } from '@noggin/types/module-types'
+import { Mod, ModuleStats, moduleStatsSchema } from '@noggin/types/module-types'
 import { Quiz, quizSchema, Submission, submissionSchema } from '@noggin/types/quiz-types'
 import fs from 'fs/promises'
 import { glob } from 'glob'
 import path from 'path'
 import { z } from 'zod'
+import { calculatePriority } from '../common/spaced-repetition'
 import { store } from './store-service'
 
 // Helper to read and parse JSON files
@@ -322,4 +323,80 @@ export async function getModuleSubmissions(moduleSlug: string): Promise<Submissi
     return submissions.sort(
         (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
     )
+}
+
+export async function getModuleStats(moduleSlug: string): Promise<ModuleStats> {
+    const modulePath = await resolveModulePath(moduleSlug)
+    if (!modulePath) {
+        throw new Error(`Module not found: ${moduleSlug}`)
+    }
+
+    const statsPath = path.join(modulePath, '.mod', 'stats.json')
+    try {
+        return await readJsonFile(statsPath, moduleStatsSchema)
+    } catch (error) {
+        // Return default stats if none exist
+        return {
+            moduleId: moduleSlug,
+            currentBox: 1,
+            lastReviewDate: new Date().toISOString(),
+            nextDueDate: new Date().toISOString(),
+        }
+    }
+}
+
+export async function saveModuleStats(moduleSlug: string, stats: ModuleStats): Promise<void> {
+    const modulePath = await resolveModulePath(moduleSlug)
+    if (!modulePath) {
+        throw new Error(`Module not found: ${moduleSlug}`)
+    }
+
+    const statsPath = path.join(modulePath, '.mod', 'stats.json')
+    await ensureDir(path.dirname(statsPath))
+    await fs.writeFile(statsPath, JSON.stringify(stats, null, 2))
+}
+
+export async function getAllModuleStats(): Promise<ModuleStats[]> {
+    const paths = await getRegisteredPaths()
+    const statsPromises = paths.map(async (modPath) => {
+        const moduleSlug = path.basename(modPath)
+        try {
+            return await getModuleStats(moduleSlug)
+        } catch (error) {
+            console.error(`Failed to get stats for module ${moduleSlug}:`, error)
+            return null
+        }
+    })
+
+    const stats = await Promise.all(statsPromises)
+    return stats.filter((stat): stat is ModuleStats => stat !== null)
+}
+
+export async function getDueModules(): Promise<Mod[]> {
+    const allStats = await getAllModuleStats()
+    const now = new Date()
+    const dueStats = allStats.filter((stats) => {
+        const nextDue = new Date(stats.nextDueDate)
+        return nextDue <= now
+    })
+
+    // Sort by priority (overdue modules and lower boxes first)
+    dueStats.sort((a, b) => calculatePriority(b) - calculatePriority(a))
+
+    // Fetch full module data for due modules
+    const modulePromises = dueStats.map(async (stats) => {
+        try {
+            const mod = await readModuleBySlug(stats.moduleId)
+            return {
+                ...mod,
+                stats,
+            }
+        } catch (error) {
+            console.error(`Failed to read module ${stats.moduleId}:`, error)
+            return null
+        }
+    })
+
+    const modules = await Promise.all(modulePromises)
+    return modules.filter((mod): mod is Mod & { stats: ModuleStats } => mod !== null)
 }

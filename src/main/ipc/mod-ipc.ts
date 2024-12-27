@@ -1,11 +1,14 @@
 import { SimpleFile } from '@noggin/types/electron-types'
-import { Mod } from '@noggin/types/module-types'
+import { Mod, ModuleStats } from '@noggin/types/module-types'
 import { Quiz, Submission } from '@noggin/types/quiz-types'
 import { ipcMain } from 'electron'
 import {
     deleteModuleQuiz,
     deleteModuleSource,
+    getAllModuleStats,
+    getDueModules,
     getLatestModuleQuiz,
+    getModuleStats,
     getModuleSubmissions,
     getQuizAttemptCount,
     getQuizSubmissions,
@@ -17,6 +20,7 @@ import {
     registerModulePath,
     removeModule,
     saveModuleQuiz,
+    saveModuleStats,
     saveModuleSubmission,
     unregisterModulePath,
     writeModuleData,
@@ -103,5 +107,21 @@ export function registerModuleIPC(): void {
 
     ipcMain.handle('modules:getQuizSubmissions', async (_, moduleSlug: string, quizId: string) => {
         return getQuizSubmissions(moduleSlug, quizId)
+    })
+
+    ipcMain.handle('modules:getModuleStats', async (_, moduleSlug: string) => {
+        return getModuleStats(moduleSlug)
+    })
+
+    ipcMain.handle('modules:saveModuleStats', async (_, moduleSlug: string, stats: ModuleStats) => {
+        await saveModuleStats(moduleSlug, stats)
+    })
+
+    ipcMain.handle('modules:getAllModuleStats', async () => {
+        return getAllModuleStats()
+    })
+
+    ipcMain.handle('modules:getDueModules', async () => {
+        return getDueModules()
     })
 }

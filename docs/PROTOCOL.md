@@ -1,7 +1,7 @@
 # Noggin Protocol for Modular, Self-Directed Learning
 
 **Author**: Gabriel Anderson
-**Date**: December 12, 2024
+**Date**: December 27, 2024
 
 ---
 
@@ -143,7 +143,18 @@ Noggin supports long-term retention through periodic review recommendations. Use
 - **Practice Feed**: Modules are surfaced in the feed based on their relevance or time since last review.
 - **User Autonomy**: Recommendations serve as guidance, but users retain full control over what and when to study.
 
-This flexible approach empowers users to manage their learning without imposing strict deadlines or notifications.
+#### Algorithm Support
+
+The protocol provides flexible support for spaced repetition algorithms through a standardized stats tracking mechanism:
+
+- **Module Stats**: Each module can maintain its own statistics in `.mod/stats.json`
+- **Algorithm Flexibility**: The protocol is algorithm-agnostic, allowing implementations to use Leitner, SM-2, or custom approaches
+- **Local Scope**: Statistics are maintained at the module level, as the protocol doesn't specify global storage locations
+- **Implementation Freedom**: While the protocol focuses on module-level tracking, specific implementations may implement their own system-wide storage solutions as needed
+
+The practice feed leverages these statistics to generate intelligent review recommendations while maintaining the user's autonomy in directing their learning journey.
+
+This flexible approach empowers users to manage their learning without imposing strict deadlines or notifications, while still benefiting from proven spaced repetition techniques.
 
 ---
 
