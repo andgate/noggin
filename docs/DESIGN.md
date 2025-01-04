@@ -71,11 +71,13 @@ The Module Explorer is a collapsible sidebar that provides quick access to all m
     - `+` Button on the right side of the header to create new modules
 - **Module List:** A vertically scrolling list of all modules.
     - Each module is represented by its name.
-    - Clicking a module name expands it to show:
-        - "Open Folder" button (opens the module's directory in the file explorer).
-        - "View Quizzes" button (lists available quizzes for the module, allowing direct launch).
-        - "View Submissions" button (lists past submissions for the module, allowing review).
-- **Settings:** A "Settings" button at the bottom of the sidebar opens the Settings Panel.
+    - Clicking a module name opens the module's page.
+    - When right-clicking a module name, a context menu appears with the following options:
+        - "View Module" (navigate to the module's page).
+        - "Copy Module Id" (copy the module's ID to the clipboard).
+        - "Copy Module Path" (copy the module's path to the clipboard).
+        - "Open Folder" (opens the module's directory in the file explorer).
+        - "Delete Module" (prompts user to delete the module).
 
 ### Module Page
 

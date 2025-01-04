@@ -1,5 +1,5 @@
 import { SimpleFile } from '@noggin/types/electron-types'
-import { Mod, ModuleStats } from '@noggin/types/module-types'
+import { Mod, ModuleMetadata, ModuleStats } from '@noggin/types/module-types'
 import { Quiz, Submission } from '@noggin/types/quiz-types'
 import { ipcMain } from 'electron'
 import {
@@ -8,6 +8,7 @@ import {
     getAllModuleStats,
     getDueModules,
     getLatestModuleQuiz,
+    getModuleOverviews,
     getModuleStats,
     getModuleSubmissions,
     getQuizAttemptCount,
@@ -15,6 +16,7 @@ import {
     getRegisteredPaths,
     readModuleBySlug,
     readModuleData,
+    readModuleMetadata,
     readModuleQuiz,
     readModuleSubmission,
     registerModulePath,
@@ -24,6 +26,7 @@ import {
     saveModuleSubmission,
     unregisterModulePath,
     writeModuleData,
+    writeModuleMetadata,
     writeModuleSource,
 } from '../services/mod-service'
 
@@ -124,4 +127,17 @@ export function registerModuleIPC(): void {
     ipcMain.handle('modules:getDueModules', async () => {
         return getDueModules()
     })
+
+    ipcMain.handle('modules:getModuleOverviews', () => getModuleOverviews())
+
+    ipcMain.handle('modules:readModuleMetadata', async (_, modPath: string) => {
+        return readModuleMetadata(modPath)
+    })
+
+    ipcMain.handle(
+        'modules:writeModuleMetadata',
+        async (_, modPath: string, metadata: ModuleMetadata) => {
+            await writeModuleMetadata(modPath, metadata)
+        }
+    )
 }

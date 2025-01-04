@@ -1,6 +1,6 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import type { NogginElectronAPI, SimpleFile } from '@noggin/types/electron-types'
-import { Mod, ModuleStats } from '@noggin/types/module-types'
+import { Mod, ModuleMetadata, ModuleStats } from '@noggin/types/module-types'
 import { Quiz, Submission } from '@noggin/types/quiz-types'
 import { NogginStoreSchema } from '@noggin/types/store-types'
 import { contextBridge, ipcRenderer } from 'electron'
@@ -56,6 +56,11 @@ const api: NogginElectronAPI = {
             ipcRenderer.invoke('modules:saveModuleStats', moduleSlug, stats),
         getAllModuleStats: () => ipcRenderer.invoke('modules:getAllModuleStats'),
         getDueModules: () => ipcRenderer.invoke('modules:getDueModules'),
+        getModuleOverviews: () => ipcRenderer.invoke('modules:getModuleOverviews'),
+        readModuleMetadata: (modPath: string) =>
+            ipcRenderer.invoke('modules:readModuleMetadata', modPath),
+        writeModuleMetadata: (modPath: string, metadata: ModuleMetadata) =>
+            ipcRenderer.invoke('modules:writeModuleMetadata', modPath, metadata),
     },
     openai: {
         chat: (options) => ipcRenderer.invoke('openai:chat', options),
@@ -75,6 +80,10 @@ const api: NogginElectronAPI = {
         generateQuiz: (options): Promise<Quiz> =>
             ipcRenderer.invoke('generate:generateQuiz', options),
         gradeSubmission: (submission) => ipcRenderer.invoke('generate:gradeSubmission', submission),
+    },
+    moduleExplorer: {
+        showContextMenu: (moduleId: string) =>
+            ipcRenderer.invoke('moduleExplorer:showContextMenu', moduleId),
     },
 }
 

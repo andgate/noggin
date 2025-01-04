@@ -96,13 +96,13 @@ export function PracticeFeed() {
                 >
                     <Group justify="space-between" mb="xs">
                         <Text fw={500} size="sm" truncate>
-                            {mod.name}
+                            {mod.metadata.title}
                         </Text>
                     </Group>
 
                     <Group gap={8} mb="md">
                         <Text size="xs" c="dimmed">
-                            Created {new Date(mod.createdAt).toLocaleDateString()}
+                            Created {new Date(mod.metadata.createdAt).toLocaleDateString()}
                         </Text>
                     </Group>
 

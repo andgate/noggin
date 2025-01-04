@@ -13,7 +13,14 @@
  * - Delete a mod and its contents
  */
 import { SimpleFile } from '@noggin/types/electron-types'
-import { Mod, ModuleStats, moduleStatsSchema } from '@noggin/types/module-types'
+import {
+    Mod,
+    ModuleMetadata,
+    moduleMetadataSchema,
+    ModuleOverview,
+    ModuleStats,
+    moduleStatsSchema,
+} from '@noggin/types/module-types'
 import { Quiz, quizSchema, Submission, submissionSchema } from '@noggin/types/quiz-types'
 import fs from 'fs/promises'
 import { glob } from 'glob'
@@ -57,29 +64,31 @@ export async function unregisterModulePath(modPath: string): Promise<void> {
 // Module data reading functions
 export async function readModuleData(modPath: string): Promise<Mod> {
     console.log('Reading module data from', modPath)
-    const [quizzes, submissions, sources] = await Promise.all([
+    const [metadata, quizzes, submissions, sources, stats] = await Promise.all([
+        readModuleMetadata(modPath),
         readQuizzes(modPath),
         readSubmissions(modPath),
         readSources(modPath),
+        getModuleStats(path.basename(modPath)),
     ])
 
     return {
         id: path.basename(modPath, '.mod'),
-        name: path.basename(modPath, '.mod'),
         path: modPath,
+        metadata,
+        stats,
         sources,
         quizzes,
         submissions,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
     }
 }
 
 // Module data writing functions
 export async function writeModuleData(modPath: string, mod: Mod): Promise<void> {
     await ensureModuleDirectories(modPath)
+    await writeModuleMetadata(modPath, mod.metadata)
     await writeSubmissions(modPath, mod.submissions)
-    // Only write metadata, don't touch sources
+    await saveModuleStats(mod.metadata.slug, mod.stats)
 }
 
 // File system operations
@@ -159,7 +168,7 @@ export async function deleteModuleSource(sourcePath: string): Promise<void> {
     await fs.unlink(sourcePath)
 }
 
-async function resolveModulePath(moduleSlug: string): Promise<string | null> {
+export async function resolveModulePath(moduleSlug: string): Promise<string | null> {
     const paths = await getRegisteredPaths()
     return paths.find((p) => path.basename(p) === moduleSlug) || null
 }
@@ -345,10 +354,14 @@ export async function getModuleStats(moduleSlug: string): Promise<ModuleStats> {
     }
 }
 
-export async function saveModuleStats(moduleSlug: string, stats: ModuleStats): Promise<void> {
+export async function saveModuleStats(moduleSlug: string, stats?: ModuleStats): Promise<void> {
     const modulePath = await resolveModulePath(moduleSlug)
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
+    }
+
+    if (!stats) {
+        return // No stats to save
     }
 
     const statsPath = path.join(modulePath, '.mod', 'stats.json')
@@ -399,4 +412,46 @@ export async function getDueModules(): Promise<Mod[]> {
 
     const modules = await Promise.all(modulePromises)
     return modules.filter((mod): mod is Mod & { stats: ModuleStats } => mod !== null)
+}
+
+export async function getModuleOverviews(): Promise<ModuleOverview[]> {
+    const paths = await getRegisteredPaths()
+    const overviews = await Promise.all(
+        paths.map(async (modPath) => {
+            try {
+                const metadata = await readModuleMetadata(modPath)
+                return {
+                    slug: metadata.slug,
+                    displayName: metadata.title,
+                }
+            } catch (error) {
+                console.error(`Failed to read metadata for module at ${modPath}:`, error)
+                // Fallback to using path-based naming if metadata read fails
+                const slug = path.basename(modPath, '.mod')
+                return {
+                    slug,
+                    displayName: slug,
+                }
+            }
+        })
+    )
+    return overviews
+}
+
+export async function readModuleMetadata(modPath: string): Promise<ModuleMetadata> {
+    const metadataPath = path.join(modPath, '.mod', 'metadata.json')
+    try {
+        return await readJsonFile(metadataPath, moduleMetadataSchema)
+    } catch (error) {
+        throw new Error(`Failed to read metadata for module at ${modPath}: ${error}`)
+    }
+}
+
+export async function writeModuleMetadata(
+    modPath: string,
+    metadata: ModuleMetadata
+): Promise<void> {
+    const metadataPath = path.join(modPath, '.mod', 'metadata.json')
+    await ensureDir(path.dirname(metadataPath))
+    await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2))
 }

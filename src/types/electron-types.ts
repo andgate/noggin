@@ -1,7 +1,7 @@
 import { Part } from '@google/generative-ai'
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
 import { z } from 'zod'
-import { Mod, ModuleStats } from './module-types'
+import { Mod, ModuleMetadata, ModuleOverview, ModuleStats } from './module-types'
 import { GradedSubmission } from './quiz-generation-types'
 import { Quiz, Submission } from './quiz-types'
 import { NogginStoreSchema } from './store-types'
@@ -40,6 +40,9 @@ interface ModuleAPI {
     saveModuleStats: (moduleSlug: string, stats: ModuleStats) => Promise<void>
     getAllModuleStats: () => Promise<ModuleStats[]>
     getDueModules: () => Promise<Mod[]>
+    getModuleOverviews: () => Promise<ModuleOverview[]>
+    readModuleMetadata: (modPath: string) => Promise<ModuleMetadata>
+    writeModuleMetadata: (modPath: string, metadata: ModuleMetadata) => Promise<void>
 }
 
 interface OpenAIChatOptions<T> {
@@ -101,6 +104,10 @@ interface GenerateAPI {
     gradeSubmission: (submission: Submission) => Promise<GradedSubmission>
 }
 
+interface ModuleExplorerAPI {
+    showContextMenu: (moduleId: string) => Promise<void>
+}
+
 export interface NogginElectronAPI {
     store: StoreAPI
     modules: ModuleAPI
@@ -108,4 +115,5 @@ export interface NogginElectronAPI {
     filesystem: FilesystemAPI
     gemini: GeminiAPI
     generate: GenerateAPI
+    moduleExplorer: ModuleExplorerAPI
 }

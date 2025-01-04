@@ -90,30 +90,36 @@ export function CreateModulePage() {
         async (modulePath: string, moduleData: GeneratedModule) => {
             const fullModPath = `${modulePath}/${moduleData.slug}`
 
-            // Create and write the module metadata with empty sources
-            const metadata: Mod = {
-                id: crypto.randomUUID(),
-                name: moduleData.title,
+            // Create module metadata
+            const metadata = {
+                title: moduleData.title,
+                slug: moduleData.slug,
+                overview: moduleData.overview,
+                createdAt: Date.now(),
+            }
+
+            // Create the initial module structure
+            const mod: Mod = {
+                id: moduleData.slug,
                 path: fullModPath,
+                metadata,
                 sources: [], // Start with empty sources
                 quizzes: [],
                 submissions: [],
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
             }
 
             // Register the module path first
-            await moduleService.registerModulePath(metadata.path)
-            await moduleService.writeModuleData(metadata.path, metadata)
+            await moduleService.registerModulePath(fullModPath)
+            await moduleService.writeModuleData(fullModPath, mod)
 
             // Then copy each source file and update the metadata with new paths
             const sourcePaths = await Promise.all(
                 moduleData.sources.map((file) => moduleService.writeModuleSource(fullModPath, file))
             )
 
-            // Update metadata with new source paths
-            metadata.sources = sourcePaths
-            await moduleService.writeModuleData(metadata.path, metadata)
+            // Update module with new source paths
+            mod.sources = sourcePaths
+            await moduleService.writeModuleData(fullModPath, mod)
         },
         [moduleService]
     )

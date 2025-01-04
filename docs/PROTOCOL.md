@@ -27,14 +27,18 @@ By integrating with external AI providers for generating outlines, extracting co
 A **module** is the fundamental unit of learning in Noggin, encapsulating source materials, quizzes, and tracking data. The following structure defines a module:
 
 - **Source Materials**: User-provided materials, such as PDFs or text files, stored in the module root.
-- **Quizzes**: A set of structured, static quizzes based on the content of the module. Quizzes are stored in the `.mod/quizzes/` folder for easy access and review.
-- **Quiz Submissions**: Individual quiz attempt records are stored as files in `.mod/submissions/`.
+- **Module Metadata**: Essential static module information stored in `.mod/metadata.json`.
+- **Module Statistics**: Dynamic usage data stored in `.mod/stats.json`.
+- **Quizzes**: A set of structured, static quizzes stored in `.mod/quizzes/`.
+- **Quiz Submissions**: Individual quiz attempt records stored in `.mod/submissions/`.
 
 #### Directory Structure Example:
 
 ```
 <module_slug>/
 ├── .mod/
+│   ├── metadata.json  # Static module information
+│   ├── stats.json     # Dynamic usage statistics
 │   ├── quizzes/
 │   │   ├── quiz1.json
 │   │   ├── quiz2.json
@@ -45,7 +49,38 @@ A **module** is the fundamental unit of learning in Noggin, encapsulating source
 ├── source_notes.txt
 ```
 
-This structure ensures that all module-related data is centralized, accessible, and easy to manage.
+#### Module Metadata Format (metadata.json)
+
+Module metadata stores essential static information about each learning module. This immutable data defines the module's identity and core characteristics, serving as a reference point for the learning system:
+
+```json
+{
+    "title": "Region-Based Memory Management",
+    "slug": "region-based-memory-management",
+    "overview": "An exploration of region-based memory management techniques...",
+    "created_at": 1703567451722
+}
+```
+
+#### Module Statistics Format (stats.json)
+
+Module statistics provide real-time insights into learning progress and engagement patterns. These dynamic metrics are stored in `stats.json` and automatically update as users interact with the module:
+
+```json
+{
+    "last_accessed": 1703567489123,
+    "review_count": 5,
+    "quiz_attempts": 12,
+    "average_score": 85.5
+    ...
+}
+```
+
+The statistics format is implementation-specific, allowing systems to track learning progress according to their chosen methodologies. While basic usage statistics like access times and quiz performance are commonly tracked, the exact structure can be extended to support various spaced repetition algorithms and learning approaches.
+
+Different learning systems may extend this format according to their needs. For instance, systems might add fields to support specific spaced repetition algorithms like SM-2 (tracking intervals and ease factors) or Leitner (tracking box numbers and review dates).
+
+This separation ensures clear distinction between immutable module properties and dynamic usage data that changes as users interact with the module.
 
 ---
 
