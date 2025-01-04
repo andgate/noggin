@@ -1,0 +1,3 @@
+- Deleting modules doesn't work properly
+- Module objects contain an id (which is the slug) and a metadata object (which also has the slug). We should only have one slug. Maybe should just remove the id from the module object?
+    - Actually the id should be `${slug}-${createAt}`. We actually need to be consistent about this.
