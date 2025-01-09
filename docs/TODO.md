@@ -8,3 +8,4 @@
 - Quizzes are currently timed
 - Does the practice feed actually work? Needs more testing and probably more control over suggestions (like delay, ignore, etc.)
 - Ensure modules detect changes to their source files and update accordingly (e.g the ui should notify the user and the module should be marked for review and show up in the practice feed)
+- Update the README

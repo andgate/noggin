@@ -11,26 +11,153 @@ Noggin is a modular, self-directed learning system designed to empower learners 
 
 By integrating with external AI providers for generating outlines, extracting content, and forming quiz questions, Noggin remains lightweight and focused. All metadata—such as quizzes, source materials, and quiz submissions—is stored locally in accessible formats to ensure full user control and observability.
 
----
+### Purpose and Style of the Protocol Document
+
+This protocol document serves as a comprehensive specification for implementing the Noggin learning system. It outlines the functional and implementation requirements necessary for any application to adhere to the Noggin framework. The document maintains a formal tone, suitable for specification, and provides a clear, structured approach to content organization, user interaction, and data management.
 
 ### Core Objectives
 
 1. **Modular Design**: Organize learning into self-contained modules, each focused on a specific topic, with clear, accessible metadata.
-2. **Transparent Storage**: Store all module data—including quizzes, sources, and submissions—in accessible local folders for easy review and full user autonomy.
-3. **User-Driven Learning**: Provide tools to help users track their learning progress through quiz submissions while keeping control over what and when to study.
+2. **Transparent Storage**: Store all module data—including quizzes, lessons, and submissions—in accessible local folders for easy review and full user autonomy.
+3. **User-Driven Learning**: Provide tools to help users track their learning progress while keeping control over what and when to study.
 4. **Simplicity in Implementation**: Focus on straightforward workflows that reduce complexity and empower users to manage their own learning processes effectively.
+
+---
+
+### Organizational Model
+
+The Noggin system introduces a hierarchical structure for organizing learning content, consisting of Libraries, Learning Paths, and Modules.
+
+#### Libraries
+
+Libraries serve as the top-level container for all user learning content. Each library is a directory containing learning paths, standalone modules, and associated metadata.
+
+#### Library Structure
+
+```
+<library path>/
+├── .lib/
+│   └── meta.json     # Library metadata and configuration
+├── Learning Path A/  # Organized learning path
+├── Learning Path B/  # Another learning path
+├── Module X/        # Standalone module
+└── Module Y/        # Another standalone module
+```
+
+#### Library Metadata
+
+The `.lib/meta.json` file contains essential library information:
+
+```json
+{
+    "name": "Computer Science Fundamentals",
+    "description": "Core CS concepts and programming fundamentals",
+    "createdAt": 1703567451722,
+    "settings": {
+        "practiceFeedEnabled": true,
+        "defaultPath": "learning_paths/fundamentals"
+    }
+}
+```
+
+#### Library Management
+
+- Libraries maintain a flat structure, with learning paths and standalone modules as direct children
+- Multiple libraries can exist simultaneously, allowing logical separation of different subject areas
+- Libraries are portable and can be backed up, transferred, or synced between devices
+- The practice feed aggregates content from all active libraries while respecting learning path progression
+
+#### Content Organization
+
+Libraries support two types of content organization:
+
+1. **Standalone Modules**: Independent learning units directly under the library root
+2. **Learning Paths**: Structured sequences of modules with defined progression
+
+This dual approach allows flexibility in content organization while maintaining clear structure when needed.
+
+#### Learning Paths
+
+Learning paths provide structured progression through multiple modules. Each learning path maintains its own metadata and progress tracking while preserving the autonomy of individual modules.
+
+#### Learning Path Structure
+
+```
+<library path>/Learning Path/
+├── .path/
+│   ├── meta.json        # Learning path configuration
+│   └── progress.json    # User progression data
+├── Module 1/           # First module in sequence
+│   ├── .mod/
+│   │   └── ...         # Standard module structure
+│   └── source_files
+└── Module 2/           # Second module in sequence
+    ├── .mod/
+    │   └── ...         # Standard module structure
+    └── source_files
+```
+
+#### Learning Path Metadata
+
+The `.path/meta.json` file defines the learning path configuration:
+
+```json
+{
+    "title": "Python for Beginners",
+    "description": "A structured introduction to Python programming",
+    "createdAt": 1703567451722,
+    "modules": [
+        {
+            "slug": "module-1",
+            "title": "Python Basics",
+            "unlockRequirements": []
+        },
+        {
+            "slug": "module-2",
+            "title": "Control Flow",
+            "unlockRequirements": ["module-1"]
+        }
+    ]
+}
+```
+
+#### Progress Tracking
+
+The `.path/progress.json` file maintains user progression data:
+
+```json
+{
+    "completedModules": ["module-1"],
+    "unlockedModules": ["module-1", "module-2"],
+    "currentModule": "module-2",
+    "lastAccessed": 1703567489123
+}
+```
+
+#### Module Unlocking
+
+- Modules within a learning path may have unlock requirements
+- Requirements typically include completion of prerequisite modules
+- Unlocked modules appear in the practice feed when due for review
+- Module completion is determined by quiz performance thresholds
+
+#### Modules
+
+- **Definition**: The fundamental unit of learning, encapsulating source materials, quizzes, and tracking data.
+- **Functionality**: Can exist independently or within learning paths, with standalone modules being immediately accessible.
 
 ---
 
 ### Module Structure
 
-A **module** is the fundamental unit of learning in Noggin, encapsulating source materials, quizzes, and tracking data. The following structure defines a module:
+A **module** encapsulates source materials, quizzes, lessons, and tracking data. The following structure defines a module:
 
 - **Source Materials**: User-provided materials, such as PDFs or text files, stored in the module root.
 - **Module Metadata**: Essential static module information stored in `.mod/metadata.json`.
 - **Module Statistics**: Dynamic usage data stored in `.mod/stats.json`.
 - **Quizzes**: A set of structured, static quizzes stored in `.mod/quizzes/`.
 - **Quiz Submissions**: Individual quiz attempt records stored in `.mod/submissions/`.
+- **Active Lesson**: Current interactive lesson data stored in `.mod/lesson.json`.
 
 #### Directory Structure Example:
 
@@ -39,6 +166,7 @@ A **module** is the fundamental unit of learning in Noggin, encapsulating source
 ├── .mod/
 │   ├── metadata.json  # Static module information
 │   ├── stats.json     # Dynamic usage statistics
+│   ├── lesson.json    # Current active lesson
 │   ├── quizzes/
 │   │   ├── quiz1.json
 │   │   ├── quiz2.json
@@ -58,7 +186,7 @@ Module metadata stores essential static information about each learning module. 
     "title": "Region-Based Memory Management",
     "slug": "region-based-memory-management",
     "overview": "An exploration of region-based memory management techniques...",
-    "created_at": 1703567451722
+    "createdAt": 1703567451722
 }
 ```
 
@@ -68,11 +196,10 @@ Module statistics provide real-time insights into learning progress and engageme
 
 ```json
 {
-    "last_accessed": 1703567489123,
-    "review_count": 5,
-    "quiz_attempts": 12,
-    "average_score": 85.5
-    ...
+    "lastAccessed": 1703567489123,
+    "reviewCount": 5,
+    "quizAttempts": 12,
+    "averageScore": 85.5
 }
 ```
 
@@ -84,7 +211,79 @@ This separation ensures clear distinction between immutable module properties an
 
 ---
 
-### Quizzes
+### Interactive Learning Components
+
+The protocol supports two primary forms of interactive learning: Lessons and Quizzes.
+
+#### Lessons
+
+Lessons provide structured, interactive guidance through module content. Each module maintains a single active lesson, stored in `.mod/lesson.json`. Lessons consist of Learning Units—sequential combinations of content and comprehension questions.
+
+##### Lesson Structure
+
+```json
+{
+    "title": "Introduction to Module Content",
+    "units": [
+        {
+            "text": "Content explanation...",
+            "questions": [
+                {
+                    "type": "multipleChoice",
+                    "question": "Understanding check...",
+                    "options": ["A", "B", "C", "D"],
+                    "correctAnswer": "A"
+                }
+            ],
+            "progress": {
+                "completed": false,
+                "userAnswers": []
+            }
+        }
+    ],
+    "progress": {
+        "currentUnit": 0,
+        "completedUnits": []
+    }
+}
+```
+
+##### Lesson Generation
+
+- Lessons are AI-generated based on module source content
+- Users may provide focus instructions to tailor lesson content
+- Generating a new lesson replaces any existing lesson
+- Users receive a warning before lesson replacement
+
+##### Learning Units
+
+Each Learning Unit contains:
+
+- Text-based explanation or content excerpt
+- One or more comprehension questions
+- Progress tracking for the unit
+- User response storage
+
+##### Question Types
+
+- **Multiple Choice**: Questions with predefined options and a single correct answer
+- **Written Response**: Open-ended questions requiring text input
+
+##### Progress Tracking
+
+- Progress is maintained within the lesson.json file
+- Tracks completion status of individual units
+- Stores user responses for immediate feedback
+- Does not contribute to long-term module statistics
+
+##### Lesson Persistence
+
+- Lessons are transient and focus on immediate comprehension
+- Only one lesson exists per module at any time
+- All state is maintained in the single `lesson.json` file
+- Lessons persist until explicitly replaced or deleted
+
+#### Quizzes
 
 **Quizzes** are the primary mechanism for assessing and tracking learning progress. Each quiz is tied to the content of its module and is static to maintain consistency in evaluation.
 
@@ -152,8 +351,8 @@ Each submission file contains:
 
 ```json
 {
-    "quiz_id": "region-based-memory-management-quiz-1703567451722",
-    "submission_timestamp": 1703567489123,
+    "quizId": "region-based-memory-management-quiz-1703567451722",
+    "submissionTimestamp": 1703567489123,
     "attempt": 1,
     "answers": [
         // ... rest of the structure remains the same ...
@@ -163,15 +362,11 @@ Each submission file contains:
 
 ---
 
-### Tracking Progress
+### Progress Tracking and Scheduling
 
 Learning progress is tracked through quiz submissions. Each submission represents a record of a user's attempt at a quiz, including answers, scores, and timestamps. Submissions are stored as files in `.mod/submissions/`, ensuring users can review their learning journey at any time.
 
 This approach maintains simplicity while enabling users to observe trends in their performance and mastery over time.
-
----
-
-### Spaced Repetition and Scheduling
 
 Noggin supports long-term retention through periodic review recommendations. Users are encouraged to revisit modules based on their own priorities and practice schedules.
 
@@ -190,8 +385,6 @@ The protocol provides flexible support for spaced repetition algorithms through 
 The practice feed leverages these statistics to generate intelligent review recommendations while maintaining the user's autonomy in directing their learning journey.
 
 This flexible approach empowers users to manage their learning without imposing strict deadlines or notifications, while still benefiting from proven spaced repetition techniques.
-
----
 
 ### Simplified Module Updates
 
@@ -231,4 +424,4 @@ Key principles of the protocol include:
 - **Simple, Clear Structure**: Organized data storage ensures observability and ease of use.
 - **Practical Learning Tools**: Static quizzes and tracked submissions support effective learning without unnecessary complexity.
 
-The result is a system that adapts to the learner’s needs while maintaining clarity and focus.
+The result is a system that adapts to the learner's needs while maintaining clarity and focus.
