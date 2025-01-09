@@ -1,7 +1,7 @@
 # Noggin Protocol for Modular, Self-Directed Learning
 
 **Author**: Gabriel Anderson
-**Date**: December 27, 2024
+**Date**: January 9, 2025
 
 ---
 
@@ -18,7 +18,7 @@ This protocol document serves as a comprehensive specification for implementing 
 ### Core Objectives
 
 1. **Modular Design**: Organize learning into self-contained modules, each focused on a specific topic, with clear, accessible metadata.
-2. **Transparent Storage**: Store all module data—including quizzes, lessons, and submissions—in accessible local folders for easy review and full user autonomy.
+2. **Transparent Storage**: Store all data—including library metadata, quizzes, lessons, and submissions—in accessible local folders for easy review and full user autonomy.
 3. **User-Driven Learning**: Provide tools to help users track their learning progress while keeping control over what and when to study.
 4. **Simplicity in Implementation**: Focus on straightforward workflows that reduce complexity and empower users to manage their own learning processes effectively.
 
@@ -26,7 +26,19 @@ This protocol document serves as a comprehensive specification for implementing 
 
 ### Organizational Model
 
-The Noggin system introduces a hierarchical structure for organizing learning content, consisting of Libraries, Learning Paths, and Modules.
+The Noggin system uses a hierarchical structure to organize learning content:
+
+- **Libraries** are top-level containers that house all learning materials
+    - Each library can contain multiple learning paths and standalone modules
+    - Libraries help separate different subject areas or learning goals
+- **Learning Paths** are structured sequences within libraries
+    - Each path contains multiple modules in a defined progression
+    - Paths help guide learners through related topics systematically
+- **Modules** are the fundamental learning units
+    - Can exist either within learning paths or as standalone units in a library
+    - Each module contains source materials, quizzes, and progress tracking
+
+This three-tier structure provides flexibility while maintaining clear organization: Libraries group related content, Learning Paths create structured progressions, and Modules deliver the actual learning material.
 
 #### Libraries
 
