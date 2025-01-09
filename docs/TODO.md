@@ -1,3 +1,10 @@
 - Deleting modules doesn't work properly
 - Module objects contain an id (which is the slug) and a metadata object (which also has the slug). We should only have one slug. Maybe should just remove the id from the module object?
     - Actually the id should be `${slug}-${createAt}`. We actually need to be consistent about this.
+- App Main Header should be shared and consistent across all pages
+    - Hidden for certain pages, such as quiz session pages
+- Ensure all pages have a consistent layout and styling
+- Refine the style, add a theme picker in settings
+- Quizzes are currently timed
+- Does the practice feed actually work? Needs more testing and probably more control over suggestions (like delay, ignore, etc.)
+- Ensure modules detect changes to their source files and update accordingly (e.g the ui should notify the user and the module should be marked for review and show up in the practice feed)
