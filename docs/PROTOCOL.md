@@ -28,9 +28,9 @@ This protocol document serves as a comprehensive specification for implementing 
 
 The Noggin system uses a hierarchical structure to organize learning content:
 
-- **Libraries** are top-level containers that house all learning materials
+- **Libraries** are flexible, top-level containers for organizing learning content
     - Each library can contain multiple learning paths and standalone modules
-    - Libraries help separate different subject areas or learning goals
+    - Users can maintain one or multiple libraries based on their organizational preferences
 - **Learning Paths** are structured sequences within libraries
     - Each path contains multiple modules in a defined progression
     - Paths help guide learners through related topics systematically
@@ -38,11 +38,11 @@ The Noggin system uses a hierarchical structure to organize learning content:
     - Can exist either within learning paths or as standalone units in a library
     - Each module contains source materials, quizzes, and progress tracking
 
-This three-tier structure provides flexibility while maintaining clear organization: Libraries group related content, Learning Paths create structured progressions, and Modules deliver the actual learning material.
+This three-tier structure provides flexibility while maintaining clear organization: Libraries provide a customizable way to organize content, Learning Paths create structured progressions, and Modules deliver the actual learning material.
 
 #### Libraries
 
-Libraries serve as the top-level container for all user learning content. Each library is a directory containing learning paths, standalone modules, and associated metadata.
+Libraries serve as general-purpose containers for organizing learning content. Each library is a directory containing learning paths, standalone modules, and associated metadata. Users can choose to use a single library for all their content or create multiple libraries to suit their organizational preferences.
 
 #### Library Structure
 
@@ -50,10 +50,10 @@ Libraries serve as the top-level container for all user learning content. Each l
 <library path>/
 ├── .lib/
 │   └── meta.json     # Library metadata and configuration
-├── Learning Path A/  # Organized learning path
-├── Learning Path B/  # Another learning path
-├── Module X/        # Standalone module
-└── Module Y/        # Another standalone module
+├── introduction-to-python-1703567451722/  # Learning path using slug with timestamp
+├── web-development-basics-1703567489123/  # Another learning path
+├── binary-search-trees-1703567512456/    # Standalone module
+└── sorting-algorithms-1703567534789/     # Another standalone module
 ```
 
 #### Library Metadata
@@ -62,22 +62,18 @@ The `.lib/meta.json` file contains essential library information:
 
 ```json
 {
-    "name": "Computer Science Fundamentals",
-    "description": "Core CS concepts and programming fundamentals",
-    "createdAt": 1703567451722,
-    "settings": {
-        "practiceFeedEnabled": true,
-        "defaultPath": "learning_paths/fundamentals"
-    }
+    "name": "My Learning Library",
+    "description": "Personal collection of learning materials",
+    "createdAt": 1703567451722
 }
 ```
 
 #### Library Management
 
 - Libraries maintain a flat structure, with learning paths and standalone modules as direct children
-- Multiple libraries can exist simultaneously, allowing logical separation of different subject areas
+- Multiple libraries can exist simultaneously, allowing flexible organization of content
 - Libraries are portable and can be backed up, transferred, or synced between devices
-- The practice feed aggregates content from all active libraries while respecting learning path progression
+- The practice feed aggregates content from all available libraries
 
 #### Content Organization
 
@@ -88,88 +84,23 @@ Libraries support two types of content organization:
 
 This dual approach allows flexibility in content organization while maintaining clear structure when needed.
 
-#### Learning Paths
+#### Standalone Modules
 
-Learning paths provide structured progression through multiple modules. Each learning path maintains its own metadata and progress tracking while preserving the autonomy of individual modules.
-
-#### Learning Path Structure
-
-```
-<library path>/Learning Path/
-├── .path/
-│   ├── meta.json        # Learning path configuration
-│   └── progress.json    # User progression data
-├── Module 1/           # First module in sequence
-│   ├── .mod/
-│   │   └── ...         # Standard module structure
-│   └── source_files
-└── Module 2/           # Second module in sequence
-    ├── .mod/
-    │   └── ...         # Standard module structure
-    └── source_files
-```
-
-#### Learning Path Metadata
-
-The `.path/meta.json` file defines the learning path configuration:
-
-```json
-{
-    "title": "Python for Beginners",
-    "description": "A structured introduction to Python programming",
-    "createdAt": 1703567451722,
-    "modules": [
-        {
-            "slug": "module-1",
-            "title": "Python Basics",
-            "unlockRequirements": []
-        },
-        {
-            "slug": "module-2",
-            "title": "Control Flow",
-            "unlockRequirements": ["module-1"]
-        }
-    ]
-}
-```
-
-#### Progress Tracking
-
-The `.path/progress.json` file maintains user progression data:
-
-```json
-{
-    "completedModules": ["module-1"],
-    "unlockedModules": ["module-1", "module-2"],
-    "currentModule": "module-2",
-    "lastAccessed": 1703567489123
-}
-```
-
-#### Module Unlocking
-
-- Modules within a learning path may have unlock requirements
-- Requirements typically include completion of prerequisite modules
-- Unlocked modules appear in the practice feed when due for review
-- Module completion is determined by quiz performance thresholds
-
-#### Modules
-
-- **Definition**: The fundamental unit of learning, encapsulating source materials, quizzes, and tracking data.
+- **Definition**: The fundamental unit of learning, encapsulating source materials, quizzes, training material, and tracking data.
 - **Functionality**: Can exist independently or within learning paths, with standalone modules being immediately accessible.
 
 ---
 
 ### Module Structure
 
-A **module** encapsulates source materials, quizzes, lessons, and tracking data. The following structure defines a module:
+A **module** encapsulates source materials, quizzes, training material, and tracking data. The following structure defines a module:
 
 - **Source Materials**: User-provided materials, such as PDFs or text files, stored in the module root.
 - **Module Metadata**: Essential static module information stored in `.mod/metadata.json`.
 - **Module Statistics**: Dynamic usage data stored in `.mod/stats.json`.
 - **Quizzes**: A set of structured, static quizzes stored in `.mod/quizzes/`.
 - **Quiz Submissions**: Individual quiz attempt records stored in `.mod/submissions/`.
-- **Active Lesson**: Current interactive lesson data stored in `.mod/lesson.json`.
+- **Generated Lesson**: Optional AI-generated training material stored in `.mod/lesson.json`.
 
 #### Directory Structure Example:
 
@@ -196,7 +127,7 @@ Module metadata stores essential static information about each learning module. 
 ```json
 {
     "title": "Region-Based Memory Management",
-    "slug": "region-based-memory-management",
+    "slug": "region-based-memory-management-1703567451722",
     "overview": "An exploration of region-based memory management techniques...",
     "createdAt": 1703567451722
 }
@@ -220,6 +151,73 @@ The statistics format is implementation-specific, allowing systems to track lear
 Different learning systems may extend this format according to their needs. For instance, systems might add fields to support specific spaced repetition algorithms like SM-2 (tracking intervals and ease factors) or Leitner (tracking box numbers and review dates).
 
 This separation ensures clear distinction between immutable module properties and dynamic usage data that changes as users interact with the module.
+
+#### Learning Paths
+
+Learning paths provide structured progression through multiple modules. Each learning path has its own unique path slug (e.g., `introduction-to-python-1703567451722`) that follows the same naming convention as modules: a URL-friendly name followed by a creation timestamp. This path slug serves as both the directory name and unique identifier for the learning path.
+
+Each learning path maintains its own metadata and progress tracking while preserving the autonomy of individual modules.
+
+#### Learning Path Structure
+
+```
+<library path>/introduction-to-python-1703567451722/
+├── .path/
+│   ├── meta.json        # Learning path configuration
+│   └── progress.json    # User progression data
+├── python-basics-1703567489123/           # First module in sequence
+│   ├── .mod/
+│   │   └── ...         # Standard module structure
+│   └── source_files
+└── control-flow-1703567512456/           # Second module in sequence
+    ├── .mod/
+    │   └── ...         # Standard module structure
+    └── source_files
+```
+
+#### Learning Path Metadata
+
+The `.path/meta.json` file defines the learning path configuration:
+
+```json
+{
+    "title": "Python for Beginners",
+    "description": "A structured introduction to Python programming",
+    "createdAt": 1703567451722,
+    "modules": [
+        {
+            "slug": "python-basics-1703567489123",
+            "title": "Python Basics",
+            "unlockRequirements": []
+        },
+        {
+            "slug": "control-flow-1703567512456",
+            "title": "Control Flow",
+            "unlockRequirements": ["python-basics-1703567489123"]
+        }
+    ]
+}
+```
+
+#### Progress Tracking
+
+The `.path/progress.json` file maintains user progression data:
+
+```json
+{
+    "completedModules": ["module-1"],
+    "unlockedModules": ["module-1", "module-2"],
+    "currentModule": "module-2",
+    "lastAccessed": 1703567489123
+}
+```
+
+#### Module Unlocking
+
+- Modules within a learning path may have unlock requirements
+- Requirements typically include completion of prerequisite modules
+- Unlocked modules appear in the practice feed when due for review
+- Module completion is determined by quiz performance thresholds
 
 ---
 
@@ -423,6 +421,42 @@ The module creation process follows these specific steps:
     - System creates a new directory named with the slug in the chosen destination
     - Source files are copied into the new module directory, preserving their original filenames
     - Module metadata (title, overview) is saved
+
+---
+
+### Naming Conventions
+
+The Noggin protocol uses consistent naming conventions across all components to ensure uniqueness and clarity:
+
+#### Slug Format
+
+All slugs in the system follow this pattern:
+`<url-friendly-name>-<timestamp>`
+
+Where:
+
+- `url-friendly-name` is lowercase, uses hyphens instead of spaces, and contains only alphanumeric characters
+- `timestamp` is a Unix timestamp in milliseconds representing creation time
+- Example: `binary-search-trees-1703567451722`
+
+The timestamp is crucial because the URL-friendly names are typically AI-generated based on content analysis. Since the AI might generate the same or similar names for different content at different times, the timestamp ensures each slug remains globally unique even when the text portion is identical.
+
+#### Usage Throughout the System
+
+- **Learning Path Slugs**: Used for learning path directory names and references
+    - Example: `introduction-to-python-1703567451722`
+- **Module Slugs**: Used for module directory names and references
+    - Example: `python-basics-1703567489123`
+- **Quiz Slugs**: Used in quiz filenames, combining with attempt numbers for submissions
+    - Quiz file: `python-basics-quiz-1703567512456.json`
+    - Submission file: `python-basics-quiz-1703567512456-1.json`
+
+This consistent naming scheme ensures:
+
+- Unique identifiers across the system
+- Creation time tracking built into identifiers
+- Clear relationships between related components
+- Easy sorting and organization of content
 
 ---
 

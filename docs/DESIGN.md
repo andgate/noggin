@@ -71,6 +71,7 @@ The Module Explorer is a collapsible sidebar that provides quick access to all m
     - `+` Button on the right side of the header to create new modules
 - **Module List:** A vertically scrolling list of all modules.
     - Each module is represented by its name.
+    - Modules within learning paths are indented and grouped under their path.
     - Clicking a module name opens the module's page.
     - When right-clicking a module name, a context menu appears with the following options:
         - "View Module" (navigate to the module's page).
@@ -90,7 +91,12 @@ The Module Page provides a dedicated interface for viewing and managing a single
     - Module title
     - "Back to Dashboard" button
     - "Generate Quiz" button (opens Quiz Generation Modal)
+    - "Generate Lesson" button (opens Lesson Generation Modal)
 - **Content Sections:**
+    - **Active Lesson Card** (if exists):
+        - Lesson progress indicator
+        - "Continue Lesson" button
+        - "Delete Lesson" button
     - **Quizzes Grid:**
         - Grid layout of quiz cards showing:
             - Quiz name/number
@@ -109,9 +115,12 @@ The Module Info Panel consolidates the overview and submissions information into
     - Module title
     - "Back to Dashboard" button
     - "Generate Quiz" button (opens Quiz Generation Modal)
+    - "Generate Lesson" button (opens Lesson Generation Modal)
 - **Content Sections:**
     - **Module Overview:**
         - Module description
+        - Associated library name
+        - Learning path name (if part of a path)
         - Last reviewed date
         - Total quizzes available
         - Source files list with links to open in system
@@ -121,9 +130,95 @@ The Module Info Panel consolidates the overview and submissions information into
             - Score
             - Quiz name/number
             - "View Details" button
-    - **Visual Integration:**
-        - Clear visual separation between overview and submissions
-        - Use of tabs or collapsible sections to toggle between overview and submissions if space is limited
+- **Visual Integration:** - Clear visual separation between overview and submissions - Use of tabs or collapsible sections to toggle between overview and submissions if space is limited
+
+### Lesson Interface
+
+The Lesson Interface provides a focused environment for working through generated lessons.
+
+**Wireframe Description:**
+
+- **Layout:** Component occupies main content area
+- **Header:**
+    - Module name
+    - "Exit Lesson" button (returns to Module Page)
+    - Progress indicator showing current unit / total units
+- **Learning Unit Display:**
+    - **Content Section:**
+        - Text content with clear typography
+        - Support for code blocks and basic formatting
+    - **Questions Section:**
+        - Multiple choice or written response questions
+        - Submit button for answers
+        - Immediate feedback display
+- **Navigation:**
+    - "Previous Unit" button (disabled on first unit)
+    - "Next Unit" button (enabled after answering questions)
+    - Unit progress dots for quick navigation
+
+### Lesson Generation Modal
+
+The Lesson Generation Modal provides options for creating customized lessons.
+
+**Wireframe Description:**
+
+- **Layout:** Modal dialog overlaying current view
+- **Header:** "Generate New Lesson"
+- **Content:**
+    - Warning about replacing existing lesson (if one exists)
+    - Focus instructions text area
+    - Token usage indicator
+- **Footer:**
+    - "Generate" button (with loading state)
+    - "Cancel" button
+
+### Library View
+
+The Library View provides access to learning paths and standalone modules within a specific library.
+
+**Wireframe Description:**
+
+- **Layout:** Full-page view that replaces the Dashboard
+- **Header:**
+    - Library name
+    - "Back to Dashboard" button
+    - Search/filter input
+- **Content:**
+    - **Learning Paths Section:**
+        - Grid of learning path cards showing:
+            - Path title
+            - Progress indicator
+            - Module count
+            - "View Path" button
+    - **Standalone Modules Section:**
+        - Grid of module cards showing:
+            - Module title
+            - Last accessed date
+            - "View Module" button
+
+### Learning Path Page
+
+The Learning Path Page provides a dedicated interface for viewing and managing learning paths.
+
+**Wireframe Description:**
+
+- **Layout:** Full-page view that replaces the Dashboard
+- **Header:**
+    - Path title
+    - Associated library name
+    - "Back to Library" button
+- **Content:**
+    - **Progress Overview:**
+        - Visual progress bar
+        - Completed modules count
+        - Unlocked modules count
+    - **Module Sequence:**
+        - Ordered list of module cards showing:
+            - Module title
+            - Lock/unlock status
+            - Completion status
+            - Prerequisites
+            - "View Module" button (if unlocked)
 
 ### Create Module Page
 
@@ -364,6 +459,86 @@ The Settings Panel allows users to customize the app and manage AI provider inte
 - **Navigation:**
     - "Save" button to apply changes.
     - "Cancel" button to discard changes and close the panel.
+
+### Learning Path Creation Wizard
+
+The Learning Path Creation Wizard provides a dedicated full-screen interface for creating new learning paths.
+
+**Wireframe Description:**
+
+- **Layout:** Full-screen interface that replaces the Dashboard
+- **Header:**
+    - "Create New Learning Path" title
+    - "Back to Dashboard" button (top-left corner)
+
+#### Path Configuration View
+
+- **Header:**
+
+    - "Configure Learning Path" title
+    - Action buttons in top-right:
+        - "Save Path" button
+        - "Cancel" button
+
+- **Main Content Area:**
+
+    - **Path Details Section:**
+        - Path title input field
+        - Path description text area
+        - Library selection dropdown
+    - **Module Sequence Section:**
+        - Ordered list of module slots
+        - Each slot shows:
+            - Module selection dropdown
+            - Prerequisites configuration
+            - Remove button (×)
+        - "Add Module" button at bottom of list
+    - **Preview Panel:**
+        - Visual representation of module sequence
+        - Shows dependencies between modules
+        - Highlights any configuration issues
+
+- **Footer:**
+    - "Create Path" button (enabled when configuration is valid)
+    - "Cancel" button
+
+### Lesson Summary View
+
+The Lesson Summary View provides a completion overview when a user finishes all units in a lesson.
+
+**Wireframe Description:**
+
+- **Layout:** Full-screen interface that replaces the Lesson Interface
+- **Header:**
+
+    - "Lesson Complete!" title
+    - Module name
+    - "Exit to Module" button (top-right)
+
+- **Content Sections:**
+
+    - **Performance Overview:**
+        - Total units completed
+        - Correct answers percentage
+        - Time spent on lesson
+    - **Unit Breakdown:**
+        - Scrollable list of completed units showing:
+            - Unit number/title
+            - Questions attempted
+            - Correct/incorrect indicators
+            - Option to review specific units
+    - **Key Takeaways:**
+        - AI-generated summary of main concepts covered
+        - Areas for improvement based on question responses
+    - **Next Steps:**
+        - "Take a Quiz" button
+        - "Return to Module" button
+        - "Start New Lesson" button (generates new lesson)
+
+- **Visual Elements:**
+    - Celebratory animation on load
+    - Progress visualization (e.g., circular completion indicator)
+    - Color-coded performance indicators
 
 ## User Flows
 

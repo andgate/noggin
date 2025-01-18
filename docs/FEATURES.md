@@ -19,6 +19,9 @@ Noggin is a modular, self-directed learning desktop app built with Electron, Rea
 
 The Practice Feed guides users through their study sessions by surfacing modules ready for review.
 
+- **Content Aggregation**:
+  The feed pulls content from all available libraries, respecting learning path progression when applicable.
+
 - **Module Overview**:
   Displays each loaded module with its name and overall status.
 
@@ -67,10 +70,20 @@ The Practice Feed guides users through their study sessions by surfacing modules
 
 ### Module Management
 
-Modules represent individual subjects or topics. Each module’s data is stored locally for easy review and editing.
+Modules represent individual subjects or topics. Each module's data is stored locally for easy review and editing.
 
 - **Sources**:
   Users add source materials (e.g., PDFs or text files) directly to the module folder.
+
+- **Module Information Display**:
+  Each module shows:
+
+    - Title and overview
+    - Associated library
+    - Learning path membership (if part of a path)
+    - Creation date
+    - Current review status
+    - Last accessed date
 
 - **Module Source Inputs**:
   Noggin accepts learning content through three simple input methods:
@@ -85,13 +98,128 @@ Modules represent individual subjects or topics. Each module’s data is stored 
   Users can see a visual representation of token usage for each source, helping manage content size effectively.
 
 - **Quizzes**:
-  Quizzes derived from these sources reside in `.mod/quizzes/`. They serve as stable assessments for the module’s content. Questions are multiple-choice or written response, ensuring clarity and consistency.
+  Quizzes derived from these sources reside in `.mod/quizzes/`. They serve as stable assessments for the module's content. Questions are multiple-choice or written response, ensuring clarity and consistency.
 
 - **Submissions**:
   Each quiz attempt is recorded as a submission in `.mod/submissions/`. This allows users to track their progress over time.
 
 - **Viewing Capabilities**:
-  Users can view modules and see the list of quizzes and submissions for all quizzes.
+  Users can view modules and see:
+
+    - The current active lesson (if any)
+    - List of quizzes and submissions
+    - Source materials
+
+- **Module Context**:
+  Modules can exist either as standalone units or within learning paths, maintaining their independence while supporting structured progression.
+
+### Library Management
+
+Libraries serve as simple path-based containers for organizing learning content:
+
+- **Library Configuration**:
+  Configure library paths through the Settings Panel, allowing users to:
+
+    - Add new library paths
+    - Remove existing paths
+    - Name/rename libraries
+
+- **Library View**:
+
+    - Browse learning paths and standalone modules within each configured library
+    - Filter and search content within a library
+    - Create, access, and manage modules and learning paths directly from the library view
+
+- **Content Access**:
+    - All modules from configured libraries appear in the practice feed
+    - Module and path information displays their associated library
+    - Library view provides structured navigation of learning content
+
+### Learning Paths
+
+Learning paths create structured sequences for systematic learning:
+
+- **Path Creation**:
+  Users can create learning paths to organize related modules into a coherent progression.
+
+- **Path Viewing**:
+
+    - View complete path structure and module sequence
+    - See progress through the learning path
+    - Access unlocked modules directly
+    - View prerequisites for locked modules
+    - Track completion status for each module
+
+- **Progress Tracking**:
+
+    - Track completion status of modules within paths
+    - Manage module unlock requirements
+    - View overall path progress
+
+- **Module Sequencing**:
+    - Define prerequisites between modules
+    - Control module visibility based on progress
+    - Maintain flexible progression through content
+
+### Lessons
+
+Lessons provide structured, interactive guidance through module content:
+
+- **Lesson Structure**:
+
+    - Each module maintains a single active lesson
+    - Lessons consist of Learning Units combining content and comprehension questions
+    - Progress is tracked within the lesson until completion
+
+- **Learning Units**:
+  Each unit contains:
+
+    - Text-based explanation or content excerpt
+    - One or more comprehension questions
+    - Progress tracking for the unit
+    - User response storage
+
+- **Question Types**:
+
+    - Multiple Choice: Questions with predefined options and a single correct answer
+
+- **Lesson Generation**:
+
+    - AI-generated based on module source content
+    - Users may provide focus instructions to tailor lesson content
+    - Generating a new lesson replaces any existing lesson
+    - Users receive a warning before lesson replacement
+
+- **Progress Tracking**:
+
+    - Progress is maintained within the lesson.json file
+    - Tracks completion status of individual units
+    - Stores user responses for immediate feedback
+    - Does not contribute to long-term module statistics
+
+- **Lesson Interaction**:
+
+    - Users can navigate between units freely
+    - Each unit requires answering questions before proceeding
+    - Immediate feedback provided for answers
+    - Progress automatically saved after each unit
+
+- **Lesson Completion**:
+
+    - Summary view shows overall performance
+    - Displays breakdown of completed units
+    - Shows key takeaways from the lesson
+    - Provides options to:
+        - Take a quiz
+        - Return to module
+        - Generate new lesson
+
+- **Lesson Persistence**:
+
+    - Lessons are transient and focus on immediate comprehension
+    - Only one lesson exists per module at any time
+    - All state is maintained in the single `lesson.json` file
+    - Lessons persist until explicitly replaced or deleted
 
 ---
 
@@ -196,7 +324,7 @@ Noggin provides two distinct interfaces for quiz interaction:
 
 ### Module Explorer
 
-The Module Explorer is accessible from a collapsible side panel, helping users organize and navigate their modules:
+The Module Explorer provides a hierarchical view of all learning content:
 
 - **Module Management**:
   Provides a list of all modules, enabling users to access modules, sources, quizzes, and submissions.
@@ -236,6 +364,15 @@ Leverages AI to create comprehensive quizzes from module content:
 - **Question Creation**: Generate both multiple-choice and written response questions
 - **Local Storage**: Save generated quizzes as static files in `.mod/quizzes/`
 
+### Lesson Generation
+
+Leverages AI to create interactive, guided learning experiences:
+
+- **Content Analysis**: Process source materials to identify key concepts and create explanatory content
+- **Question Creation**: Generate comprehension questions for each Learning Unit
+- **Focus Customization**: Allow users to specify areas of emphasis for tailored lessons
+- **Local Storage**: Save generated lesson as `lesson.json` in the module directory
+
 ### Quiz Grading
 
 Automated assessment of quiz submissions using AI:
@@ -255,13 +392,15 @@ Automated assessment of quiz submissions using AI:
 
 2. **Generating Learning Content**:
 
+    - Generate an interactive lesson for guided learning
     - Generate quizzes from module content using AI
-    - Save generated quizzes to the module's quiz folder
+    - Save generated content to the module's appropriate folders
 
 3. **Daily Study Practice**:
 
     - Open the Practice Feed to see suggested modules
     - Choose a module based on review recommendations
+    - Work through the lesson if unfamiliar with content
     - Select and attempt a quiz from the module
     - Review feedback after submission
     - Track progress through submission history
