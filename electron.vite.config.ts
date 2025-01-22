@@ -20,6 +20,13 @@ export default defineConfig({
             },
         },
         plugins: [externalizeDepsPlugin({ exclude: ['lodash'] })],
+        test: {
+            exclude: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/*.e2e.*'],
+            reporters: ['default', 'html'],
+            environment: 'node',
+            globals: true,
+            setupFiles: [resolve(__dirname, './test/setup.ts')],
+        },
     },
     preload: {
         build: {

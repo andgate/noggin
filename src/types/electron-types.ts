@@ -1,6 +1,7 @@
 import { Part } from '@google/generative-ai'
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
 import { z } from 'zod'
+import { Library, LibraryMetadata } from './library-types'
 import { Mod, ModuleMetadata, ModuleOverview, ModuleStats } from './module-types'
 import { GradedSubmission } from './quiz-generation-types'
 import { Quiz, Submission } from './quiz-types'
@@ -105,7 +106,18 @@ interface GenerateAPI {
 }
 
 interface ModuleExplorerAPI {
-    showContextMenu: (moduleId: string) => Promise<void>
+    showModuleContextMenu: (moduleId: string) => Promise<void>
+    showLibraryContextMenu: (librarySlug: string) => Promise<void>
+}
+
+interface LibraryAPI {
+    getRegisteredLibraries: () => Promise<string[]>
+    registerLibrary: (libraryPath: string) => Promise<void>
+    unregisterLibrary: (libraryPath: string) => Promise<void>
+    createLibrary: (libraryPath: string, metadata: LibraryMetadata) => Promise<void>
+    readLibrary: (libraryPath: string) => Promise<Library>
+    readLibraryMetadata: (libraryPath: string) => Promise<LibraryMetadata>
+    getAllLibraries: () => Promise<Library[]>
 }
 
 export interface NogginElectronAPI {
@@ -116,4 +128,5 @@ export interface NogginElectronAPI {
     gemini: GeminiAPI
     generate: GenerateAPI
     moduleExplorer: ModuleExplorerAPI
+    library: LibraryAPI
 }

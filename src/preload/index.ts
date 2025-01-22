@@ -1,5 +1,6 @@
 import { electronAPI } from '@electron-toolkit/preload'
 import type { NogginElectronAPI, SimpleFile } from '@noggin/types/electron-types'
+import { LibraryMetadata } from '@noggin/types/library-types'
 import { Mod, ModuleMetadata, ModuleStats } from '@noggin/types/module-types'
 import { Quiz, Submission } from '@noggin/types/quiz-types'
 import { NogginStoreSchema } from '@noggin/types/store-types'
@@ -82,8 +83,24 @@ const api: NogginElectronAPI = {
         gradeSubmission: (submission) => ipcRenderer.invoke('generate:gradeSubmission', submission),
     },
     moduleExplorer: {
-        showContextMenu: (moduleId: string) =>
+        showModuleContextMenu: (moduleId: string) =>
             ipcRenderer.invoke('moduleExplorer:showContextMenu', moduleId),
+        showLibraryContextMenu: (librarySlug: string) =>
+            ipcRenderer.invoke('moduleExplorer:showLibraryContextMenu', librarySlug),
+    },
+    library: {
+        getRegisteredLibraries: () => ipcRenderer.invoke('library:getRegisteredLibraries'),
+        registerLibrary: (libraryPath: string) =>
+            ipcRenderer.invoke('library:registerLibrary', libraryPath),
+        unregisterLibrary: (libraryPath: string) =>
+            ipcRenderer.invoke('library:unregisterLibrary', libraryPath),
+        createLibrary: (libraryPath: string, metadata: LibraryMetadata) =>
+            ipcRenderer.invoke('library:createLibrary', libraryPath, metadata),
+        readLibrary: (libraryPath: string) =>
+            ipcRenderer.invoke('library:readLibrary', libraryPath),
+        readLibraryMetadata: (libraryPath: string) =>
+            ipcRenderer.invoke('library:readLibraryMetadata', libraryPath),
+        getAllLibraries: () => ipcRenderer.invoke('library:getAllLibraries'),
     },
 }
 

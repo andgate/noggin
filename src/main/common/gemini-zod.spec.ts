@@ -74,7 +74,7 @@ describe('toGeminiSchema', () => {
 
         expect(geminiSchema).toEqual({
             type: SchemaType.STRING,
-            const: 'hello',
+            enum: ['hello'],
             nullable: false,
         })
     })
@@ -85,7 +85,7 @@ describe('toGeminiSchema', () => {
 
         expect(geminiSchema).toEqual({
             type: SchemaType.NUMBER,
-            const: 42,
+            enum: [42],
             nullable: false,
         })
     })

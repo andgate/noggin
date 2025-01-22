@@ -1,6 +1,6 @@
 import { Mod } from '@noggin/types/module-types'
 import { createFileRoute } from '@tanstack/react-router'
-import { ModulePage } from '../../pages/ModulePage'
+import { ModulePage } from '../../pages/Module'
 
 export const Route = createFileRoute('/module/view/$moduleId')({
     component: ModuleViewRoot,

@@ -2,16 +2,16 @@
 // TODO: Add loading states for route transitions via suspense
 import { AppShell, ColorSchemeScript, Divider, MantineProvider } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
-import { UserSettingsProvider } from '@renderer/hooks/use-user-settings'
-import { useUiStore } from '@renderer/stores/ui-store'
+import { UserSettingsProvider } from '@renderer/app/hooks/use-user-settings'
+import { useUiStore } from '@renderer/app/stores/ui-store'
+import { ModuleExplorer } from '@renderer/components/ModuleExplorer'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRootRoute, Outlet, ScrollRestoration } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import * as React from 'react'
 import { type ReactNode } from 'react'
-import { DefaultCatchBoundary } from '../components/DefaultCatchBoundary'
-import { ModuleExplorer } from '../components/ModuleExplorer'
-import { NotFound } from '../components/NotFound'
+import { DefaultCatchBoundary } from '../components/layout/DefaultCatchBoundary'
+import { NotFound } from '../components/layout/NotFound'
 import { theme } from '../theme'
 
 // Create a client

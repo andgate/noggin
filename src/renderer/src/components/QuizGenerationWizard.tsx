@@ -1,8 +1,8 @@
 import { Button, Card, Group, List, NumberInput, Stack, Switch, Text } from '@mantine/core'
 import { Question, Quiz } from '@noggin/types/quiz-types'
+import { useModule } from '@renderer/app/hooks/use-module'
+import { useQuizGenerator } from '@renderer/app/hooks/use-quiz-generator'
 import { useEffect, useState } from 'react'
-import { useModule } from '../hooks/use-module'
-import { useQuizGenerator } from '../hooks/use-quiz-generator'
 import { RainbowWrapper } from './RainbowWrapper'
 
 interface QuizGenerationWizardProps {

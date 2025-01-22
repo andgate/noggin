@@ -69,9 +69,33 @@ The Module Explorer is a collapsible sidebar that provides quick access to all m
     - When collapsed, the sidebar is completely hidden
 - **Header:** "Module Explorer" title when expanded.
     - `+` Button on the right side of the header to create new modules
+- **Library Organization:**
+    - Libraries are listed as top-level items
+    - Each library is collapsible
+    - Library items show:
+        - Library name
+        - Expand/collapse indicator
+        - Module count badge
+    - Right-clicking a library opens a context menu with:
+        - "View Library" (navigate to library page)
+        - "Copy Library Id" (copy slug to clipboard)
+        - "Open Folder" (opens library directory)
+        - "Delete Library" (prompts user to delete)
+- **Learning Paths:**
+    - Displayed under their parent library
+    - Each path shows:
+        - Path name
+        - Progress indicator
+        - Expand/collapse indicator
+    - Right-clicking a path opens a context menu with:
+        - "View Path" (navigate to path page)
+        - "Copy Path Id" (copy slug to clipboard)
+        - "View Progress" (opens progress modal)
+        - "Delete Path" (prompts user to delete)
 - **Module List:** A vertically scrolling list of all modules.
     - Each module is represented by its name.
-    - Modules within learning paths are indented and grouped under their path.
+    - Standalone modules are directly under libraries
+    - Path modules are indented under their learning path
     - Clicking a module name opens the module's page.
     - When right-clicking a module name, a context menu appears with the following options:
         - "View Module" (navigate to the module's page).
@@ -291,17 +315,41 @@ This view is the final step in the module creation process, allowing users to re
 
     - Editable module title
     - Editable overview
-    - Directory selection:
-        - "Select Location" button (opens system file picker)
-        - Display of selected path
+    - Library selection:
+        - Dropdown of existing libraries
+        - "Create New Library" button (opens Create Library Modal)
+        - Preview of selected library path
     - List of source files:
         - Each source with size/length
         - Visualization of total token usage
 
 - **Footer:**
-    - "Create Module" button (enabled when location is selected)
+    - "Create Module" button (enabled when library is selected)
     - "Back" button
     - "Cancel" button
+
+#### Create Library Modal
+
+A simple modal dialog for creating new libraries.
+
+- **Header:** "Create New Library"
+
+- **Content:**
+
+    - Library name input field
+    - "Select Location" button (opens system file picker)
+    - Display of selected path
+
+- **Footer:**
+
+    - "Create Library" button (enabled when name and path are set)
+    - "Cancel" button
+
+- **Behavior:**
+    - Upon creation, library is automatically:
+        - Created at the specified path
+        - Added to app's internal library registry
+        - Selected in the parent Module Creation Review view
 
 ### Quiz Page
 

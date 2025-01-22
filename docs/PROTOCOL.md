@@ -24,7 +24,7 @@ This protocol document serves as a comprehensive specification for implementing 
 
 ---
 
-### Organizational Model
+### Core Specifications
 
 The Noggin system uses a hierarchical structure to organize learning content:
 
@@ -44,16 +44,35 @@ This three-tier structure provides flexibility while maintaining clear organizat
 
 Libraries serve as general-purpose containers for organizing learning content. Each library is a directory containing learning paths, standalone modules, and associated metadata. Users can choose to use a single library for all their content or create multiple libraries to suit their organizational preferences.
 
+#### Library Identification
+
+Each library has a unique slug that serves as its identifier:
+
+- Slugs are derived from the library name using these transformations:
+    - Convert all characters to lowercase
+    - Replace any non-alphanumeric characters with underscores
+    - Remove leading and trailing underscores
+    - Truncate to 255 characters for filesystem compatibility
+- Unlike modules and learning paths, library slugs do not include timestamps
+- Applications should prevent creation of libraries with duplicate slugs
+- Slugs are used for routing, file paths, and cross-referencing
+
+Examples:
+
+- "Computer Science Fundamentals" -> "computer_science_fundamentals"
+- "C++ & Systems Programming!" -> "c_systems_programming"
+- "Web Dev (2024) - Basics" -> "web_dev_2024_basics"
+
 #### Library Structure
 
 ```
 <library path>/
 ├── .lib/
 │   └── meta.json     # Library metadata and configuration
-├── introduction-to-python-1703567451722/  # Learning path using slug with timestamp
-├── web-development-basics-1703567489123/  # Another learning path
-├── binary-search-trees-1703567512456/    # Standalone module
-└── sorting-algorithms-1703567534789/     # Another standalone module
+├── introduction_to_python_1703567451722/  # Learning path using slug with timestamp
+├── web_development_basics_1703567489123/  # Another learning path
+├── binary_search_trees_1703567512456/    # Standalone module
+└── sorting_algorithms_1703567534789/     # Another standalone module
 ```
 
 #### Library Metadata
@@ -62,9 +81,10 @@ The `.lib/meta.json` file contains essential library information:
 
 ```json
 {
-    "name": "My Learning Library",
-    "description": "Personal collection of learning materials",
-    "createdAt": 1703567451722
+    "name": "Computer Science Fundamentals",
+    "description": "Core CS concepts and algorithms",
+    "createdAt": 1703567451722,
+    "slug": "computer_science_fundamentals"
 }
 ```
 
@@ -161,15 +181,15 @@ Each learning path maintains its own metadata and progress tracking while preser
 #### Learning Path Structure
 
 ```
-<library path>/introduction-to-python-1703567451722/
+<library path>/introduction_to_python_1703567451722/
 ├── .path/
 │   ├── meta.json        # Learning path configuration
 │   └── progress.json    # User progression data
-├── python-basics-1703567489123/           # First module in sequence
+├── python_basics_1703567489123/           # First module in sequence
 │   ├── .mod/
 │   │   └── ...         # Standard module structure
 │   └── source_files
-└── control-flow-1703567512456/           # Second module in sequence
+└── control_flow_1703567512456/           # Second module in sequence
     ├── .mod/
     │   └── ...         # Standard module structure
     └── source_files
@@ -186,14 +206,14 @@ The `.path/meta.json` file defines the learning path configuration:
     "createdAt": 1703567451722,
     "modules": [
         {
-            "slug": "python-basics-1703567489123",
+            "slug": "python_basics_1703567489123",
             "title": "Python Basics",
             "unlockRequirements": []
         },
         {
-            "slug": "control-flow-1703567512456",
+            "slug": "control_flow_1703567512456",
             "title": "Control Flow",
-            "unlockRequirements": ["python-basics-1703567489123"]
+            "unlockRequirements": ["python_basics_1703567489123"]
         }
     ]
 }
@@ -430,26 +450,49 @@ The Noggin protocol uses consistent naming conventions across all components to 
 
 #### Slug Format
 
-All slugs in the system follow this pattern:
-`<url-friendly-name>-<timestamp>`
+All slugs in the system follow these rules:
 
-Where:
+1. **Basic Transformation**:
 
-- `url-friendly-name` is lowercase, uses hyphens instead of spaces, and contains only alphanumeric characters
-- `timestamp` is a Unix timestamp in milliseconds representing creation time
-- Example: `binary-search-trees-1703567451722`
+    - Trim leading and trailing whitespace
+    - Split on whitespace into parts
+    - Remove any empty parts
+    - For each part:
+        - Convert to lowercase
+        - Remove all non-alphanumeric characters
+    - Join parts with underscores
+    - Truncate to 255 characters for filesystem compatibility
 
-The timestamp is crucial because the URL-friendly names are typically AI-generated based on content analysis. Since the AI might generate the same or similar names for different content at different times, the timestamp ensures each slug remains globally unique even when the text portion is identical.
+2. **Timestamp Addition**:
+
+    - Modules and learning paths append creation timestamp: `<slug>_<timestamp>`
+    - Libraries use the basic slug without timestamp
+    - Timestamp format: Unix milliseconds (e.g., 1703567451722)
+
+3. **Usage Rules**:
+    - Applications must prevent creation of duplicate slugs within their scope
+    - Slugs are used for routing (e.g., /library/view/computer_science_fundamentals)
+    - Slugs serve as stable identifiers for cross-referencing
+    - File paths and directory names use these slugs directly
+
+Examples:
+
+- "Computer Science Fundamentals" -> `computer_science_fundamentals`
+- "C++ & Systems Programming!" -> `c_systems_programming`
+- "Web Dev (2024) - Basics" -> `web_dev_2024_basics`
+- Module example: `binary_search_trees_1703567451722`
 
 #### Usage Throughout the System
 
+- **Library Slugs**: Used for library directory names and references
+    - Example: `computer_science_fundamentals`
 - **Learning Path Slugs**: Used for learning path directory names and references
-    - Example: `introduction-to-python-1703567451722`
+    - Example: `introduction_to_python_1703567451722`
 - **Module Slugs**: Used for module directory names and references
-    - Example: `python-basics-1703567489123`
+    - Example: `python_basics_1703567489123`
 - **Quiz Slugs**: Used in quiz filenames, combining with attempt numbers for submissions
-    - Quiz file: `python-basics-quiz-1703567512456.json`
-    - Submission file: `python-basics-quiz-1703567512456-1.json`
+    - Quiz file: `python_basics_quiz_1703567512456.json`
+    - Submission file: `python_basics_quiz_1703567512456_1.json`
 
 This consistent naming scheme ensures:
 

@@ -2,7 +2,7 @@ import { BrowserWindow, Menu, MenuItem, clipboard, dialog, ipcMain, shell } from
 import { removeModule, resolveModulePath } from '../services/mod-service'
 
 export function registerModuleExplorerIPC(): void {
-    ipcMain.handle('moduleExplorer:showContextMenu', async (event, moduleId: string) => {
+    ipcMain.handle('moduleExplorer:showModuleContextMenu', async (event, moduleId: string) => {
         const modulePath = await resolveModulePath(moduleId)
         if (!modulePath) {
             throw new Error(`Module not found: ${moduleId}`)
@@ -71,6 +71,35 @@ export function registerModuleExplorerIPC(): void {
                         // User clicked Delete
                         await removeModule(moduleId)
                     }
+                },
+            })
+        )
+
+        menu.popup({ window })
+    })
+
+    // Add library context menu handler
+    ipcMain.handle('moduleExplorer:showLibraryContextMenu', async (event, librarySlug: string) => {
+        const window = BrowserWindow.fromWebContents(event.sender)
+        if (!window) return
+
+        const menu = new Menu()
+        menu.append(
+            new MenuItem({
+                label: 'View Library',
+                click: () => {
+                    window.webContents.executeJavaScript(
+                        `window.history.pushState(null, '', '/library/view/${librarySlug}'); window.dispatchEvent(new PopStateEvent('popstate'))`
+                    )
+                },
+            })
+        )
+
+        menu.append(
+            new MenuItem({
+                label: 'Copy Library ID',
+                click: () => {
+                    clipboard.writeText(librarySlug)
                 },
             })
         )

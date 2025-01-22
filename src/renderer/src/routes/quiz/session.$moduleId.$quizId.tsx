@@ -1,7 +1,7 @@
 import { Quiz } from '@noggin/types/quiz-types'
 import { createFileRoute } from '@tanstack/react-router'
-import { NotFound } from '../../components/NotFound'
-import { QuizSessionPage } from '../../pages/QuizSessionPage'
+import { NotFound } from '../../components/layout/NotFound'
+import { QuizSessionPage } from '../../pages/QuizSession'
 
 export const Route = createFileRoute('/quiz/session/$moduleId/$quizId')({
     component: QuizSessionRoot,

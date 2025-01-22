@@ -6,6 +6,7 @@ export const moduleMetadataSchema = z.object({
     slug: z.string(),
     overview: z.string(),
     createdAt: z.number(),
+    updatedAt: z.number(),
 })
 
 export const moduleStatsSchema = z.object({
@@ -32,6 +33,7 @@ export type Mod = z.infer<typeof modSchema>
 export const moduleOverviewSchema = z.object({
     slug: z.string(),
     displayName: z.string(),
+    librarySlug: z.string().optional(),
 })
 
 export type ModuleOverview = z.infer<typeof moduleOverviewSchema>

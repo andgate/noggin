@@ -8,8 +8,8 @@ import {
 } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
-import { DefaultCatchBoundary } from './components/DefaultCatchBoundary'
-import { NotFound } from './components/NotFound'
+import { DefaultCatchBoundary } from './components/layout/DefaultCatchBoundary'
+import { NotFound } from './components/layout/NotFound'
 
 // TODO mantine css files
 // other css files are required only if

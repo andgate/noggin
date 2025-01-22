@@ -123,12 +123,16 @@ Libraries serve as simple path-based containers for organizing learning content:
     - Add new library paths
     - Remove existing paths
     - Name/rename libraries
+    - Each library has a unique slug derived from its name
+    - Slugs are used for routing and identification
+    - Apps should prevent duplicate library slugs
 
 - **Library View**:
 
-    - Browse learning paths and standalone modules within each configured library
+    - Browse learning paths and standalone modules within each library
     - Filter and search content within a library
     - Create, access, and manage modules and learning paths directly from the library view
+    - Libraries are identified by slugs in routes (e.g., /library/view/my-library)
 
 - **Content Access**:
     - All modules from configured libraries appear in the practice feed
@@ -347,14 +351,35 @@ The Settings Panel offers straightforward customization options:
 
 ## AI-Powered Features
 
-### Module Creation
+### Module Creation Workflow
 
-A simple workflow for creating new learning modules:
+The module creation process follows these specific steps:
 
-- **Initialize Module**: Create a new module directory with the required structure
-- **Add Sources**: Import learning materials (PDFs, text files, etc.)
-- **Analyze Content**: Analyze the content of the sources to generate a module overview
-- **Save Module**: Store the module in location given by user
+1. **Source Selection**
+
+    - User selects one or more input files (PDFs, text files, etc.)
+
+2. **Library Selection**
+
+    - User selects a destination library from configured libraries
+    - Option to create a new library if desired
+    - Libraries provide organized containers for modules
+    - New libraries require:
+        - Library name
+        - Description (optional)
+
+3. **Module Generation**
+
+    - File contents are extracted and provided to the AI model
+    - AI generates a descriptive module title based on content analysis
+    - AI writes a brief overview summarizing the module contents
+    - A URL-friendly slug is created from the module title
+    - Module is saved within the selected library directory
+
+4. **Module Storage**
+    - System creates module directory within the chosen library
+    - Source files are copied into the new module directory
+    - Module metadata (title, overview) is saved
 
 ### Quiz Generation
 

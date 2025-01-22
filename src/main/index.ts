@@ -4,6 +4,7 @@ import { join } from 'path'
 import { registerFilesystemIPC } from './ipc/filesystem-ipc'
 import { registerGeminiIPC } from './ipc/gemini-ipc'
 import { registerGenerateIPC } from './ipc/generate-ipc'
+import { registerLibraryIPC } from './ipc/library-ipc'
 import { registerModuleIPC } from './ipc/mod-ipc'
 import { registerModuleExplorerIPC } from './ipc/module-explorerer-ipc'
 import { registerOpenAIIPC } from './ipc/openai-ipc'
@@ -93,6 +94,7 @@ app.whenReady().then(async () => {
     registerGeminiIPC()
     registerGenerateIPC()
     registerModuleExplorerIPC()
+    registerLibraryIPC()
 
     createWindow()
 

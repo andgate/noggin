@@ -1,7 +1,7 @@
 import { Quiz, Submission } from '@noggin/types/quiz-types'
 import { createFileRoute } from '@tanstack/react-router'
-import { NotFound } from '../../components/NotFound'
-import { QuizPage } from '../../pages/QuizPage'
+import { NotFound } from '../../components/layout/NotFound'
+import { QuizPage } from '../../pages/Quiz'
 
 export const Route = createFileRoute('/quiz/view/$moduleId/$quizId')({
     component: QuizViewRoot,

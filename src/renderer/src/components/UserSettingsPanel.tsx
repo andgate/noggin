@@ -1,7 +1,7 @@
 import { Button, Paper, Stack, TextInput } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
 import { UserSettings } from '@noggin/types/user-settings-types'
-import { useUserSettings } from '@renderer/hooks/use-user-settings'
+import { useUserSettings } from '@renderer/app/hooks/use-user-settings'
 import { useCallback } from 'react'
 import { z } from 'zod'
 
