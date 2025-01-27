@@ -1,18 +1,24 @@
 import { UserSettings } from '@noggin/types/user-settings-types'
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { useNogginStore } from './use-noggin-store'
 
 export interface UserSettingsContext {
     settings: UserSettings
-    openaiApiKey?: string
+    geminiApiKey?: string
+    libraryPaths: string[]
     setUserSettings: (settings: UserSettings) => void
     isLoadingUserSettings: boolean
 }
 
 const UserSettingsContext = createContext<UserSettingsContext | undefined>(undefined)
 
+const defaultSettings: UserSettings = {
+    geminiApiKey: '',
+    libraryPaths: [],
+}
+
 export function UserSettingsProvider({ children }: { children: React.ReactNode }) {
-    const [userSettings, setUserSettingsState] = useState<UserSettings>({ openaiApiKey: undefined })
+    const [userSettings, setUserSettingsState] = useState<UserSettings>(defaultSettings)
     const [isLoadingUserSettings, setIsLoading] = useState(true)
     const { getStoreValue, setStoreValue } = useNogginStore()
 
@@ -20,10 +26,10 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
         async function loadSettings() {
             try {
                 const storedSettings = await getStoreValue('userSettings')
-                setUserSettingsState(storedSettings)
+                setUserSettingsState(storedSettings || defaultSettings)
             } catch (error) {
                 console.error('Failed to load user settings:', error)
-                // Do nothing, continue on with the default settings
+                setUserSettingsState(defaultSettings)
             } finally {
                 setIsLoading(false)
             }
@@ -32,24 +38,24 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
         loadSettings()
     }, [getStoreValue])
 
-    const openaiApiKey = useMemo(
-        () => userSettings.openaiApiKey || import.meta.env.VITE_OPENAI_API_KEY || undefined,
-        [userSettings]
-    )
-
     const setUserSettings = useCallback(
-        (settings: UserSettings) => {
-            setUserSettingsState(settings)
-            setStoreValue('userSettings', settings)
+        (settings: Partial<UserSettings>) => {
+            const newSettings = {
+                ...userSettings,
+                ...settings,
+            }
+            setUserSettingsState(newSettings)
+            setStoreValue('userSettings', newSettings)
         },
-        [setStoreValue]
+        [userSettings, setStoreValue]
     )
 
     return (
         <UserSettingsContext.Provider
             value={{
                 settings: userSettings,
-                openaiApiKey,
+                geminiApiKey: userSettings.geminiApiKey,
+                libraryPaths: userSettings.libraryPaths,
                 setUserSettings,
                 isLoadingUserSettings,
             }}

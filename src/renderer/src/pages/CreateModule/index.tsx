@@ -93,8 +93,8 @@ export function CreateModulePage() {
                 title: moduleData.title,
                 slug: moduleData.slug,
                 overview: moduleData.overview,
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
             }
 
             // Create the initial module structure

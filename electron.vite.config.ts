@@ -25,7 +25,7 @@ export default defineConfig({
             reporters: ['default', 'html'],
             environment: 'node',
             globals: true,
-            setupFiles: [resolve(__dirname, './test/setup.ts')],
+            setupFiles: [resolve(__dirname, './test/setup.node.ts')],
         },
     },
     preload: {

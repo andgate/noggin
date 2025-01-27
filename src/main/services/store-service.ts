@@ -4,7 +4,8 @@ import Store from 'electron-store'
 // Initialize store
 export const store = new Store<NogginStoreSchema>({
     defaults: {
-        userSettings: {},
-        libraryPaths: [],
+        userSettings: {
+            libraryPaths: [],
+        },
     },
 })

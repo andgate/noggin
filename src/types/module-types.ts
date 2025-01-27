@@ -5,8 +5,8 @@ export const moduleMetadataSchema = z.object({
     title: z.string(),
     slug: z.string(),
     overview: z.string(),
-    createdAt: z.number(),
-    updatedAt: z.number(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
 })
 
 export const moduleStatsSchema = z.object({

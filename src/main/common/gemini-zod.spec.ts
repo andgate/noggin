@@ -1,4 +1,3 @@
-// src/__tests__/main.test.ts
 import { describe, expect, test } from 'vitest'
 import { z } from 'zod'
 import { SchemaType, toGeminiSchema, toZodSchema } from './gemini-zod'
