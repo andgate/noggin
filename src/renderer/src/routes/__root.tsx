@@ -87,6 +87,7 @@ function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
 
     return (
         <AppShell
+            data-testid="app-shell"
             header={{ height: 0 }}
             navbar={{
                 width: { base: 280 },

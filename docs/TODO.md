@@ -2,6 +2,7 @@
 
 - Implement libraries (almost done)
 - Bring test coverage to 70% or higher
+    - playwright is broken with electron-vite setup
 - Can't manage libraries in settings?
 - Deleting modules doesn't work properly
 - Module objects contain an id (which is the slug) and a metadata object (which also has the slug). We should only have one slug.

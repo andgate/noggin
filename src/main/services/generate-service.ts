@@ -1,4 +1,5 @@
 import { Part } from '@google/generative-ai'
+import { convertGeneratedQuiz } from '@noggin/shared/quiz-utils'
 import { GenerateQuizOptions, SimpleFile } from '@noggin/types/electron-types'
 import {
     GeneratedQuiz,
@@ -10,7 +11,6 @@ import { Quiz, Submission } from '@noggin/types/quiz-types'
 import fs from 'fs'
 import { compact } from 'lodash'
 import mime from 'mime'
-import { convertGeneratedQuiz } from 'src/shared/quiz-utils'
 import { z } from 'zod'
 import { geminiService } from './gemini-service'
 import { readModuleQuiz } from './mod-service'

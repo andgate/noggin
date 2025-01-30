@@ -1,7 +1,7 @@
 import { Button, Group, Modal, Stack, Text, TextInput, Textarea } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
-import { slugify } from '@noggin/common/slug'
+import { slugify } from '@noggin/shared/slug'
 import { LibraryForm, libraryFormSchema } from '@noggin/types/library-types'
 import { useLibrary } from '@renderer/app/hooks/use-library'
 import { DirectoryPicker } from './DirectoryPicker'
