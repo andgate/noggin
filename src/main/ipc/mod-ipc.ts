@@ -13,36 +13,21 @@ import {
     getModuleSubmissions,
     getQuizAttemptCount,
     getQuizSubmissions,
-    getRegisteredPaths,
     readModuleBySlug,
     readModuleData,
     readModuleMetadata,
     readModuleQuiz,
     readModuleSubmission,
-    registerModulePath,
     removeModule,
     saveModuleQuiz,
     saveModuleStats,
     saveModuleSubmission,
-    unregisterModulePath,
     writeModuleData,
     writeModuleMetadata,
     writeModuleSource,
 } from '../services/mod-service'
 
 export function registerModuleIPC(): void {
-    ipcMain.handle('modules:getRegisteredPaths', async () => {
-        return getRegisteredPaths()
-    })
-
-    ipcMain.handle('modules:registerModulePath', async (_, modulePath: string) => {
-        await registerModulePath(modulePath)
-    })
-
-    ipcMain.handle('modules:unregisterModulePath', async (_, modulePath: string) => {
-        await unregisterModulePath(modulePath)
-    })
-
     ipcMain.handle('modules:readModuleData', async (_, modulePath: string) => {
         return readModuleData(modulePath)
     })

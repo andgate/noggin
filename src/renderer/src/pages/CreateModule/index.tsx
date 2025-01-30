@@ -14,6 +14,7 @@ import { SimpleFile } from '@noggin/types/electron-types'
 import { Mod } from '@noggin/types/module-types'
 import { useModule } from '@renderer/app/hooks/use-module'
 import { useNavigate } from '@tanstack/react-router'
+import * as path from 'path'
 import { useCallback, useState } from 'react'
 import { LibrarySelector } from './components/LibrarySelector'
 import { SourceSelectionView } from './components/SourceSelectionView'
@@ -85,21 +86,24 @@ export function CreateModulePage() {
     const { analyzeContent } = useModuleGenerator()
 
     const saveModule = useCallback(
-        async (modulePath: string, moduleData: GeneratedModule) => {
-            const fullModPath = `${modulePath}/${moduleData.slug}`
+        async (libraryPath: string, moduleData: GeneratedModule) => {
+            const moduleSlug = moduleData.slug
+            const fullModPath = path.join(libraryPath, moduleSlug)
+
+            const now = new Date().toISOString()
 
             // Create module metadata
             const metadata = {
                 title: moduleData.title,
-                slug: moduleData.slug,
+                slug: moduleSlug,
                 overview: moduleData.overview,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
+                createdAt: now,
+                updatedAt: now,
             }
 
             // Create the initial module structure
             const mod: Mod = {
-                id: moduleData.slug,
+                id: `${moduleData.slug}-${now}`,
                 path: fullModPath,
                 metadata,
                 sources: [], // Start with empty sources
@@ -107,18 +111,17 @@ export function CreateModulePage() {
                 submissions: [],
             }
 
-            // Register the module path first
-            await moduleService.registerModulePath(fullModPath)
-            await moduleService.writeModuleData(fullModPath, mod)
+            // Write module data first
+            await moduleService.writeModuleData(libraryPath, mod)
 
-            // Then copy each source file and update the metadata with new paths
+            // Then copy each source file and update the metadata
             const sourcePaths = await Promise.all(
                 moduleData.sources.map((file) => moduleService.writeModuleSource(fullModPath, file))
             )
 
             // Update module with new source paths
             mod.sources = sourcePaths
-            await moduleService.writeModuleData(fullModPath, mod)
+            await moduleService.writeModuleData(libraryPath, mod)
         },
         [moduleService]
     )

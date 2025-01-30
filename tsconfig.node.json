@@ -4,9 +4,8 @@
         "electron.vite.config.*",
         "src/main/**/*",
         "src/preload/**/*",
-        "src/drizzle/**/*",
         "src/types/**/*",
-        "src/common/**/*",
+        "src/shared/**/*",
     ],
     "compilerOptions": {
         "composite": true,
@@ -14,7 +13,7 @@
         "baseUrl": ".",
         "paths": {
             "@noggin/types/*": ["src/types/*"],
-            "@noggin/common/*": ["src/common/*"]
+            "@noggin/shared/*": ["src/shared/*"]
         },
 
 

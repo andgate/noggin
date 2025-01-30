@@ -5,12 +5,10 @@
         "src/renderer/src/**/*",
         "src/renderer/src/**/*.tsx",
         "src/preload/*.d.ts",
-        "src/drizzle/**/*",
-        "src/drizzle/**/*.tsx",
         "src/types/**/*",
         "src/types/**/*.tsx",
-        "src/common/**/*",
-        "src/common/**/*.tsx"
+        "src/shared/**/*",
+        "src/shared/**/*.tsx"
     ],
     "compilerOptions": {
         "composite": true,
@@ -18,7 +16,7 @@
         "paths": {
             "@renderer/*": ["src/renderer/src/*"],
             "@noggin/types/*": ["src/types/*"],
-            "@noggin/common/*": ["src/common/*"]
+            "@noggin/shared/*": ["src/shared/*"]
         },
 
         /* Base Options */

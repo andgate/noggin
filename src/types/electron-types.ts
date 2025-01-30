@@ -15,9 +15,6 @@ interface StoreAPI {
 }
 
 interface ModuleAPI {
-    getRegisteredPaths: () => Promise<string[]>
-    registerModulePath: (modulePath: string) => Promise<void>
-    unregisterModulePath: (modulePath: string) => Promise<void>
     readModuleData: (modulePath: string) => Promise<Mod>
     writeModuleData: (modulePath: string, mod: Mod) => Promise<void>
     removeModule: (modulePath: string) => Promise<void>

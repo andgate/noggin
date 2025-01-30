@@ -1,6 +1,6 @@
-import { updateSubmissionWithGrades } from '@noggin/common/submission-utils'
 import { Submission } from '@noggin/types/quiz-types'
 import { useCallback } from 'react'
+import { updateSubmissionWithGrades } from 'src/shared/submission-utils'
 
 export function useGradesGenerator(moduleSlug: string) {
     const gradeSubmission = useCallback(

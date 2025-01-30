@@ -16,11 +16,6 @@ const api: NogginElectronAPI = {
         clear: () => ipcRenderer.invoke('store:clear'),
     },
     modules: {
-        getRegisteredPaths: () => ipcRenderer.invoke('modules:getRegisteredPaths'),
-        registerModulePath: (modulePath: string) =>
-            ipcRenderer.invoke('modules:registerModulePath', modulePath),
-        unregisterModulePath: (modulePath: string) =>
-            ipcRenderer.invoke('modules:unregisterModulePath', modulePath),
         readModuleData: (modulePath: string) =>
             ipcRenderer.invoke('modules:readModuleData', modulePath),
         writeModuleData: (modulePath: string, mod: Mod) =>

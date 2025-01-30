@@ -2,10 +2,10 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { GoogleAIFileManager } from '@google/generative-ai/server'
 import { GenerateContentOptions } from '@noggin/types/electron-types'
 import { toGeminiSchema } from '../common/gemini-zod'
-import { store } from './store-service'
+import { getStoreValue } from './store-service'
 
 function getApiKey(): string {
-    const apiKey = store.get('userSettings.geminiApiKey') as string
+    const apiKey = getStoreValue('userSettings')?.geminiApiKey as string
     if (typeof apiKey !== 'string') {
         throw new Error('Type error: geminiApiKey must be a string')
     }

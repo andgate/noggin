@@ -27,7 +27,7 @@ import { glob } from 'glob'
 import path from 'path'
 import { z } from 'zod'
 import { calculatePriority } from '../common/spaced-repetition'
-import { store } from './store-service'
+import { getRegisteredLibraries } from './library-service'
 
 // Helper to read and parse JSON files
 async function readJsonFile<T>(filePath: string, schema: z.ZodSchema<T>): Promise<T> {
@@ -38,27 +38,6 @@ async function readJsonFile<T>(filePath: string, schema: z.ZodSchema<T>): Promis
 // Helper to ensure directory exists
 async function ensureDir(dirPath: string): Promise<void> {
     await fs.mkdir(dirPath, { recursive: true })
-}
-
-// Path management functions
-export async function getRegisteredPaths(): Promise<string[]> {
-    return store.get('modulePaths', [])
-}
-
-export async function registerModulePath(modPath: string): Promise<void> {
-    const paths = await getRegisteredPaths()
-    const normalizedPath = path.normalize(modPath)
-    if (!paths.includes(modPath)) {
-        store.set('modulePaths', [...paths, normalizedPath])
-    }
-}
-
-export async function unregisterModulePath(modPath: string): Promise<void> {
-    const paths = await getRegisteredPaths()
-    store.set(
-        'modulePaths',
-        paths.filter((p) => p !== modPath)
-    )
 }
 
 // Module data reading functions
@@ -84,10 +63,11 @@ export async function readModuleData(modPath: string): Promise<Mod> {
 }
 
 // Module data writing functions
-export async function writeModuleData(modPath: string, mod: Mod): Promise<void> {
-    await ensureModuleDirectories(modPath)
-    await writeModuleMetadata(modPath, mod.metadata)
-    await writeSubmissions(modPath, mod.submissions)
+export async function writeModuleData(libraryPath: string, mod: Mod): Promise<void> {
+    const modulePath = path.join(libraryPath, `${mod.id}.mod`)
+    await ensureModuleDirectories(modulePath)
+    await writeModuleMetadata(modulePath, mod.metadata)
+    await writeSubmissions(modulePath, mod.submissions)
     await saveModuleStats(mod.metadata.slug, mod.stats)
 }
 
@@ -109,7 +89,6 @@ async function removeDirectoryRecursively(dirPath: string): Promise<void> {
 export async function removeModule(modPath: string): Promise<void> {
     try {
         await removeDirectoryRecursively(modPath)
-        await unregisterModulePath(modPath)
     } catch (error) {
         console.error(`Failed to remove module at ${modPath}:`, error)
         throw error
@@ -169,15 +148,18 @@ export async function deleteModuleSource(sourcePath: string): Promise<void> {
 }
 
 export async function resolveModulePath(moduleSlug: string): Promise<string | null> {
-    const paths = await getRegisteredPaths()
+    const paths = await getAllModulePaths()
     return paths.find((p) => path.basename(p) === moduleSlug) || null
 }
 
 export async function readModuleBySlug(moduleSlug: string): Promise<Mod> {
-    const modulePath = await resolveModulePath(moduleSlug)
+    const modulePaths = await getAllModulePaths()
+    const modulePath = modulePaths.find((p) => path.basename(p, '.mod') === moduleSlug)
+
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
     }
+
     return readModuleData(modulePath)
 }
 
@@ -370,7 +352,7 @@ export async function saveModuleStats(moduleSlug: string, stats?: ModuleStats): 
 }
 
 export async function getAllModuleStats(): Promise<ModuleStats[]> {
-    const paths = await getRegisteredPaths()
+    const paths = await getAllModulePaths()
     const statsPromises = paths.map(async (modPath) => {
         const moduleSlug = path.basename(modPath)
         try {
@@ -386,36 +368,36 @@ export async function getAllModuleStats(): Promise<ModuleStats[]> {
 }
 
 export async function getDueModules(): Promise<Mod[]> {
-    const allStats = await getAllModuleStats()
-    const now = new Date()
-    const dueStats = allStats.filter((stats) => {
-        const nextDue = new Date(stats.nextDueDate)
-        return nextDue <= now
-    })
-
-    // Sort by priority (overdue modules and lower boxes first)
-    dueStats.sort((a, b) => calculatePriority(b) - calculatePriority(a))
-
-    // Fetch full module data for due modules
-    const modulePromises = dueStats.map(async (stats) => {
+    const modulePaths = await getAllModulePaths()
+    const modulePromises = modulePaths.map(async (modPath) => {
         try {
-            const mod = await readModuleBySlug(stats.moduleId)
+            const mod = await readModuleData(modPath)
+            const stats = await getModuleStats(path.basename(modPath, '.mod'))
             return {
                 ...mod,
                 stats,
-            }
+            } satisfies Mod
         } catch (error) {
-            console.error(`Failed to read module ${stats.moduleId}:`, error)
+            console.error(`Failed to read module at ${modPath}:`, error)
             return null
         }
     })
 
     const modules = await Promise.all(modulePromises)
-    return modules.filter((mod): mod is Mod & { stats: ModuleStats } => mod !== null)
+    const validModules = modules.filter((mod): mod is NonNullable<typeof mod> => mod !== null)
+
+    // Filter and sort due modules as before
+    const now = new Date()
+    return validModules
+        .filter((mod) => {
+            const nextDue = new Date(mod.stats?.nextDueDate || '')
+            return nextDue <= now
+        })
+        .sort((a, b) => calculatePriority(b.stats) - calculatePriority(a.stats))
 }
 
 export async function getModuleOverviews(): Promise<ModuleOverview[]> {
-    const paths = await getRegisteredPaths()
+    const paths = await getAllModulePaths()
     const overviews = await Promise.all(
         paths.map(async (modPath) => {
             try {
@@ -454,4 +436,20 @@ export async function writeModuleMetadata(
     const metadataPath = path.join(modPath, '.mod', 'metadata.json')
     await ensureDir(path.dirname(metadataPath))
     await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2))
+}
+
+async function getAllModulePaths(): Promise<string[]> {
+    const libraries = await getRegisteredLibraries()
+    const modulePaths: string[] = []
+
+    for (const libraryPath of libraries) {
+        // Find all .mod directories in the library
+        const modules = await glob('*/*.mod', {
+            cwd: libraryPath,
+            absolute: true,
+        })
+        modulePaths.push(...modules)
+    }
+
+    return modulePaths
 }

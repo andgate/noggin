@@ -15,17 +15,24 @@ export default defineConfig({
         },
         resolve: {
             alias: {
-                '@noggin/types': resolve('src/types'),
-                '@noggin/common': resolve('src/common'),
+                '@noggin/types': resolve(__dirname, 'src/types'),
+                '@noggin/shared': resolve(__dirname, 'src/shared'),
             },
         },
         plugins: [externalizeDepsPlugin({ exclude: ['lodash'] })],
         test: {
-            exclude: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/*.e2e.*'],
+            root: './',
+            exclude: [
+                '**/node_modules/**',
+                '**/dist/**',
+                '**/build/**',
+                '**/*.e2e.*',
+                'tests-e2e/**',
+            ],
             reporters: ['default', 'html'],
             environment: 'node',
             globals: true,
-            setupFiles: [resolve(__dirname, './test/setup.node.ts')],
+            setupFiles: [resolve(__dirname, 'test/setup.node.ts')],
         },
     },
     preload: {
@@ -38,7 +45,7 @@ export default defineConfig({
         },
         resolve: {
             alias: {
-                '@noggin/types': resolve('src/types'),
+                '@noggin/types': resolve(__dirname, 'src/types'),
             },
         },
         plugins: [externalizeDepsPlugin()],
@@ -54,9 +61,9 @@ export default defineConfig({
         },
         resolve: {
             alias: {
-                '@renderer': resolve('src/renderer/src'),
-                '@noggin/types': resolve('src/types'),
-                '@noggin/common': resolve('src/common'),
+                '@renderer': resolve(__dirname, 'src/renderer/src'),
+                '@noggin/types': resolve(__dirname, 'src/types'),
+                '@noggin/shared': resolve(__dirname, 'src/shared'),
             },
         },
         plugins: [TanStackRouterVite(), viteReact()],
@@ -67,11 +74,17 @@ export default defineConfig({
             port: 33482,
         },
         test: {
-            exclude: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/*.e2e.*'],
+            exclude: [
+                '**/node_modules/**',
+                '**/dist/**',
+                '**/build/**',
+                '**/*.e2e.*',
+                'tests-e2e/**',
+            ],
             reporters: ['default', 'html'],
             environment: 'happy-dom',
             globals: true,
-            setupFiles: [resolve(__dirname, './test/setup.ts')],
+            setupFiles: [resolve(__dirname, 'test/setup.ts')],
         },
     },
 })

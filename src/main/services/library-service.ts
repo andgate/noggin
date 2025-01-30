@@ -1,40 +1,45 @@
-import { ensureDir } from '@noggin/common/fs-extra'
-import { slugify } from '@noggin/common/slug'
+import { ensureDir } from '@noggin/shared/fs-extra'
+import { slugify } from '@noggin/shared/slug'
 import { Library, LibraryMetadata } from '@noggin/types/library-types'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { store } from './store-service'
-
-// Update store schema to use library paths instead of module paths
-const LIBRARY_PATHS_KEY = 'libraryPaths'
+import { getStoreValue, setStoreValue } from './store-service'
 
 export async function getRegisteredLibraries(): Promise<string[]> {
-    return store.get(LIBRARY_PATHS_KEY, [])
+    const settings = await getStoreValue('userSettings')
+    return settings.libraryPaths
 }
 
 export async function registerLibrary(libraryPath: string): Promise<void> {
-    const paths = await getRegisteredLibraries()
-    const normalizedPath = path.normalize(libraryPath)
-    if (!paths.includes(normalizedPath)) {
-        store.set(LIBRARY_PATHS_KEY, [...paths, normalizedPath])
+    const settings = await getStoreValue('userSettings')
+    const normalizedPath = path.normalize(libraryPath).replace(/\\/g, '/')
+    if (
+        !settings.libraryPaths.some((p) => path.normalize(p).replace(/\\/g, '/') === normalizedPath)
+    ) {
+        setStoreValue('userSettings', {
+            ...settings,
+            libraryPaths: [...settings.libraryPaths, libraryPath],
+        })
     }
 }
 
 export async function unregisterLibrary(libraryPath: string): Promise<void> {
-    const paths = await getRegisteredLibraries()
-    store.set(
-        LIBRARY_PATHS_KEY,
-        paths.filter((p) => p !== libraryPath)
-    )
+    const settings = await getStoreValue('userSettings')
+    setStoreValue('userSettings', {
+        ...settings,
+        libraryPaths: settings.libraryPaths.filter((p) => p !== libraryPath),
+    })
 }
 
 export async function createLibrary(libraryPath: string, metadata: LibraryMetadata): Promise<void> {
+    const normalizedPath = path.normalize(libraryPath).replace(/\\/g, '/')
     // Ensure the library directory exists
-    await ensureDir(libraryPath)
-    await ensureDir(path.join(libraryPath, '.lib'))
+    await ensureDir(normalizedPath)
+    const libPath = path.join(normalizedPath, '.lib').replace(/\\/g, '/')
+    await ensureDir(libPath)
 
     // Write metadata
-    const metadataPath = path.join(libraryPath, '.lib', 'meta.json')
+    const metadataPath = path.join(normalizedPath, '.lib', 'meta.json').replace(/\\/g, '/')
     const metadataWithSlug = {
         ...metadata,
         slug: slugify(metadata.name),
