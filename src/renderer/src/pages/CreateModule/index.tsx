@@ -11,10 +11,9 @@ import {
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { SimpleFile } from '@noggin/types/electron-types'
-import { Mod } from '@noggin/types/module-types'
+import { Mod, ModuleMetadata } from '@noggin/types/module-types'
 import { useModule } from '@renderer/app/hooks/use-module'
 import { useNavigate } from '@tanstack/react-router'
-import * as path from 'path'
 import { useCallback, useState } from 'react'
 import { LibrarySelector } from './components/LibrarySelector'
 import { SourceSelectionView } from './components/SourceSelectionView'
@@ -87,41 +86,56 @@ export function CreateModulePage() {
 
     const saveModule = useCallback(
         async (libraryPath: string, moduleData: GeneratedModule) => {
-            const moduleSlug = moduleData.slug
-            const fullModPath = path.join(libraryPath, moduleSlug)
+            try {
+                console.log('Starting saveModule with:', { libraryPath, moduleData })
 
-            const now = new Date().toISOString()
+                const now = new Date().toISOString() // Keep full ISO for metadata
+                const timestamp = now
+                    .replace(/[-:]/g, '') // Remove dashes and colons
+                    .replace(/\.\d{3}/, '') // Remove milliseconds
+                const moduleId = `${moduleData.slug}-${timestamp}`
 
-            // Create module metadata
-            const metadata = {
-                title: moduleData.title,
-                slug: moduleSlug,
-                overview: moduleData.overview,
-                createdAt: now,
-                updatedAt: now,
+                console.log('Generated moduleId:', moduleId)
+
+                const fullModPath = await window.api.path.join(libraryPath, moduleId)
+                console.log('Generated fullModPath:', fullModPath)
+
+                // Create module metadata
+                const metadata: ModuleMetadata = {
+                    title: moduleData.title,
+                    slug: moduleData.slug,
+                    overview: moduleData.overview,
+                    createdAt: now,
+                    updatedAt: now,
+                }
+
+                // Create the initial module structure
+                const mod: Mod = {
+                    id: moduleId,
+                    path: fullModPath,
+                    metadata,
+                    sources: [], // Start with empty sources
+                    quizzes: [],
+                    submissions: [],
+                }
+
+                // Write module data first
+                await moduleService.writeModuleData(libraryPath, mod)
+
+                // Then copy each source file and update the metadata
+                const sourcePaths = await Promise.all(
+                    moduleData.sources.map((file) =>
+                        moduleService.writeModuleSource(fullModPath, file)
+                    )
+                )
+
+                // Update module with new source paths
+                mod.sources = sourcePaths
+                await moduleService.writeModuleData(libraryPath, mod)
+            } catch (error) {
+                console.error('Error in saveModule:', error)
+                throw error
             }
-
-            // Create the initial module structure
-            const mod: Mod = {
-                id: `${moduleData.slug}-${now}`,
-                path: fullModPath,
-                metadata,
-                sources: [], // Start with empty sources
-                quizzes: [],
-                submissions: [],
-            }
-
-            // Write module data first
-            await moduleService.writeModuleData(libraryPath, mod)
-
-            // Then copy each source file and update the metadata
-            const sourcePaths = await Promise.all(
-                moduleData.sources.map((file) => moduleService.writeModuleSource(fullModPath, file))
-            )
-
-            // Update module with new source paths
-            mod.sources = sourcePaths
-            await moduleService.writeModuleData(libraryPath, mod)
         },
         [moduleService]
     )

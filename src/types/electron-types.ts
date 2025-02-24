@@ -20,25 +20,34 @@ interface ModuleAPI {
     removeModule: (modulePath: string) => Promise<void>
     writeModuleSource: (modPath: string, sourceFile: SimpleFile) => Promise<string>
     deleteModuleSource: (sourcePath: string) => Promise<void>
-    readModuleBySlug: (moduleSlug: string) => Promise<Mod>
-    saveModuleQuiz: (moduleSlug: string, quiz: Quiz) => Promise<void>
-    deleteModuleQuiz: (moduleSlug: string, quizId: string) => Promise<void>
-    readModuleQuiz: (moduleSlug: string, quizId: string) => Promise<Quiz>
+    readModuleBySlug: (libraryId: string, moduleSlug: string) => Promise<Mod>
+    saveModuleQuiz: (libraryId: string, moduleSlug: string, quiz: Quiz) => Promise<void>
+    deleteModuleQuiz: (libraryId: string, moduleSlug: string, quizId: string) => Promise<void>
+    readModuleQuiz: (libraryId: string, moduleSlug: string, quizId: string) => Promise<Quiz>
     readModuleSubmission: (
+        libraryId: string,
         moduleSlug: string,
         quizId: string,
         attempt: number
     ) => Promise<Submission>
-    saveModuleSubmission: (moduleSlug: string, submission: Submission) => Promise<void>
-    getQuizAttemptCount: (moduleSlug: string, quizId: string) => Promise<number>
-    getLatestModuleQuiz: (moduleSlug: string) => Promise<Quiz>
-    getModuleSubmissions: (moduleSlug: string) => Promise<Submission[]>
-    getQuizSubmissions: (moduleSlug: string, quizId: string) => Promise<Submission[]>
-    getModuleStats: (moduleSlug: string) => Promise<ModuleStats>
-    saveModuleStats: (moduleSlug: string, stats: ModuleStats) => Promise<void>
+    saveModuleSubmission: (
+        libraryId: string,
+        moduleSlug: string,
+        submission: Submission
+    ) => Promise<void>
+    getQuizAttemptCount: (libraryId: string, moduleSlug: string, quizId: string) => Promise<number>
+    getLatestModuleQuiz: (libraryId: string, moduleSlug: string) => Promise<Quiz>
+    getModuleSubmissions: (libraryId: string, moduleSlug: string) => Promise<Submission[]>
+    getQuizSubmissions: (
+        libraryId: string,
+        moduleSlug: string,
+        quizId: string
+    ) => Promise<Submission[]>
+    getModuleStats: (libraryId: string, moduleSlug: string) => Promise<ModuleStats>
+    saveModuleStats: (libraryId: string, moduleSlug: string, stats: ModuleStats) => Promise<void>
     getAllModuleStats: () => Promise<ModuleStats[]>
     getDueModules: () => Promise<Mod[]>
-    getModuleOverviews: () => Promise<ModuleOverview[]>
+    getModuleOverviews: (libraryId: string) => Promise<ModuleOverview[]>
     readModuleMetadata: (modPath: string) => Promise<ModuleMetadata>
     writeModuleMetadata: (modPath: string, metadata: ModuleMetadata) => Promise<void>
 }
@@ -103,7 +112,7 @@ interface GenerateAPI {
 }
 
 interface ModuleExplorerAPI {
-    showModuleContextMenu: (moduleId: string) => Promise<void>
+    showModuleContextMenu: (libraryId: string, moduleId: string) => Promise<void>
     showLibraryContextMenu: (librarySlug: string) => Promise<void>
 }
 
@@ -117,9 +126,14 @@ interface LibraryAPI {
     getAllLibraries: () => Promise<Library[]>
 }
 
+interface PathAPI {
+    join: (...paths: string[]) => Promise<string>
+}
+
 export interface NogginElectronAPI {
     store: StoreAPI
     modules: ModuleAPI
+    path: PathAPI
     openai: OpenAIAPI
     filesystem: FilesystemAPI
     gemini: GeminiAPI

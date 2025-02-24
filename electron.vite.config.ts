@@ -21,7 +21,8 @@ export default defineConfig({
         },
         plugins: [externalizeDepsPlugin({ exclude: ['lodash'] })],
         test: {
-            root: './',
+            name: 'main',
+            include: ['src/main/**/*.{test,spec}.{js,ts}'],
             exclude: [
                 '**/node_modules/**',
                 '**/dist/**',
@@ -32,7 +33,7 @@ export default defineConfig({
             reporters: ['default', 'html'],
             environment: 'node',
             globals: true,
-            setupFiles: [resolve(__dirname, 'test/setup.node.ts')],
+            setupFiles: [resolve(__dirname, 'tests/setup.node.ts')],
         },
     },
     preload: {
@@ -64,6 +65,7 @@ export default defineConfig({
                 '@renderer': resolve(__dirname, 'src/renderer/src'),
                 '@noggin/types': resolve(__dirname, 'src/types'),
                 '@noggin/shared': resolve(__dirname, 'src/shared'),
+                '@test-utils': resolve(__dirname, 'tests/test-utils'),
             },
         },
         plugins: [TanStackRouterVite(), viteReact()],
@@ -74,7 +76,9 @@ export default defineConfig({
             port: 33482,
         },
         test: {
+            name: 'renderer',
             exclude: [
+                'src/main/**',
                 '**/node_modules/**',
                 '**/dist/**',
                 '**/build/**',
@@ -82,9 +86,9 @@ export default defineConfig({
                 'tests-e2e/**',
             ],
             reporters: ['default', 'html'],
-            environment: 'happy-dom',
+            environment: 'jsdom',
             globals: true,
-            setupFiles: [resolve(__dirname, 'test/setup.ts')],
+            setupFiles: [resolve(__dirname, 'tests/setup.web.ts')],
         },
     },
 })

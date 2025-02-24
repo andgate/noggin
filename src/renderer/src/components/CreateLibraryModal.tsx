@@ -29,7 +29,7 @@ export function CreateLibraryModal({ opened, onClose, onCreated }: CreateLibrary
             await createLibrary(values.path, {
                 name: values.name,
                 description: values.description,
-                createdAt: Date.now(),
+                createdAt: Date.now().toLocaleString(),
                 slug: slugify(values.name),
             })
             notifications.show({

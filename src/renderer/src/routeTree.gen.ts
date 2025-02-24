@@ -13,11 +13,11 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as ModuleCreateImport } from './routes/module/create'
-import { Route as ModuleViewModuleIdImport } from './routes/module/view.$moduleId'
 import { Route as LibraryViewLibraryIdImport } from './routes/library/view.$libraryId'
 import { Route as SubmissionModuleIdQuizIdAttemptImport } from './routes/submission.$moduleId.$quizId.$attempt'
 import { Route as QuizViewModuleIdQuizIdImport } from './routes/quiz/view.$moduleId.$quizId'
 import { Route as QuizSessionModuleIdQuizIdImport } from './routes/quiz/session.$moduleId.$quizId'
+import { Route as ModuleViewLibraryIdModuleIdImport } from './routes/module/view.$libraryId.$moduleId'
 
 // Create/Update Routes
 
@@ -30,12 +30,6 @@ const IndexRoute = IndexImport.update({
 const ModuleCreateRoute = ModuleCreateImport.update({
   id: '/module/create',
   path: '/module/create',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const ModuleViewModuleIdRoute = ModuleViewModuleIdImport.update({
-  id: '/module/view/$moduleId',
-  path: '/module/view/$moduleId',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -64,6 +58,13 @@ const QuizSessionModuleIdQuizIdRoute = QuizSessionModuleIdQuizIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ModuleViewLibraryIdModuleIdRoute =
+  ModuleViewLibraryIdModuleIdImport.update({
+    id: '/module/view/$libraryId/$moduleId',
+    path: '/module/view/$libraryId/$moduleId',
+    getParentRoute: () => rootRoute,
+  } as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -89,11 +90,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LibraryViewLibraryIdImport
       parentRoute: typeof rootRoute
     }
-    '/module/view/$moduleId': {
-      id: '/module/view/$moduleId'
-      path: '/module/view/$moduleId'
-      fullPath: '/module/view/$moduleId'
-      preLoaderRoute: typeof ModuleViewModuleIdImport
+    '/module/view/$libraryId/$moduleId': {
+      id: '/module/view/$libraryId/$moduleId'
+      path: '/module/view/$libraryId/$moduleId'
+      fullPath: '/module/view/$libraryId/$moduleId'
+      preLoaderRoute: typeof ModuleViewLibraryIdModuleIdImport
       parentRoute: typeof rootRoute
     }
     '/quiz/session/$moduleId/$quizId': {
@@ -126,7 +127,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/module/create': typeof ModuleCreateRoute
   '/library/view/$libraryId': typeof LibraryViewLibraryIdRoute
-  '/module/view/$moduleId': typeof ModuleViewModuleIdRoute
+  '/module/view/$libraryId/$moduleId': typeof ModuleViewLibraryIdModuleIdRoute
   '/quiz/session/$moduleId/$quizId': typeof QuizSessionModuleIdQuizIdRoute
   '/quiz/view/$moduleId/$quizId': typeof QuizViewModuleIdQuizIdRoute
   '/submission/$moduleId/$quizId/$attempt': typeof SubmissionModuleIdQuizIdAttemptRoute
@@ -136,7 +137,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/module/create': typeof ModuleCreateRoute
   '/library/view/$libraryId': typeof LibraryViewLibraryIdRoute
-  '/module/view/$moduleId': typeof ModuleViewModuleIdRoute
+  '/module/view/$libraryId/$moduleId': typeof ModuleViewLibraryIdModuleIdRoute
   '/quiz/session/$moduleId/$quizId': typeof QuizSessionModuleIdQuizIdRoute
   '/quiz/view/$moduleId/$quizId': typeof QuizViewModuleIdQuizIdRoute
   '/submission/$moduleId/$quizId/$attempt': typeof SubmissionModuleIdQuizIdAttemptRoute
@@ -147,7 +148,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/module/create': typeof ModuleCreateRoute
   '/library/view/$libraryId': typeof LibraryViewLibraryIdRoute
-  '/module/view/$moduleId': typeof ModuleViewModuleIdRoute
+  '/module/view/$libraryId/$moduleId': typeof ModuleViewLibraryIdModuleIdRoute
   '/quiz/session/$moduleId/$quizId': typeof QuizSessionModuleIdQuizIdRoute
   '/quiz/view/$moduleId/$quizId': typeof QuizViewModuleIdQuizIdRoute
   '/submission/$moduleId/$quizId/$attempt': typeof SubmissionModuleIdQuizIdAttemptRoute
@@ -159,7 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/module/create'
     | '/library/view/$libraryId'
-    | '/module/view/$moduleId'
+    | '/module/view/$libraryId/$moduleId'
     | '/quiz/session/$moduleId/$quizId'
     | '/quiz/view/$moduleId/$quizId'
     | '/submission/$moduleId/$quizId/$attempt'
@@ -168,7 +169,7 @@ export interface FileRouteTypes {
     | '/'
     | '/module/create'
     | '/library/view/$libraryId'
-    | '/module/view/$moduleId'
+    | '/module/view/$libraryId/$moduleId'
     | '/quiz/session/$moduleId/$quizId'
     | '/quiz/view/$moduleId/$quizId'
     | '/submission/$moduleId/$quizId/$attempt'
@@ -177,7 +178,7 @@ export interface FileRouteTypes {
     | '/'
     | '/module/create'
     | '/library/view/$libraryId'
-    | '/module/view/$moduleId'
+    | '/module/view/$libraryId/$moduleId'
     | '/quiz/session/$moduleId/$quizId'
     | '/quiz/view/$moduleId/$quizId'
     | '/submission/$moduleId/$quizId/$attempt'
@@ -188,7 +189,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ModuleCreateRoute: typeof ModuleCreateRoute
   LibraryViewLibraryIdRoute: typeof LibraryViewLibraryIdRoute
-  ModuleViewModuleIdRoute: typeof ModuleViewModuleIdRoute
+  ModuleViewLibraryIdModuleIdRoute: typeof ModuleViewLibraryIdModuleIdRoute
   QuizSessionModuleIdQuizIdRoute: typeof QuizSessionModuleIdQuizIdRoute
   QuizViewModuleIdQuizIdRoute: typeof QuizViewModuleIdQuizIdRoute
   SubmissionModuleIdQuizIdAttemptRoute: typeof SubmissionModuleIdQuizIdAttemptRoute
@@ -198,7 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ModuleCreateRoute: ModuleCreateRoute,
   LibraryViewLibraryIdRoute: LibraryViewLibraryIdRoute,
-  ModuleViewModuleIdRoute: ModuleViewModuleIdRoute,
+  ModuleViewLibraryIdModuleIdRoute: ModuleViewLibraryIdModuleIdRoute,
   QuizSessionModuleIdQuizIdRoute: QuizSessionModuleIdQuizIdRoute,
   QuizViewModuleIdQuizIdRoute: QuizViewModuleIdQuizIdRoute,
   SubmissionModuleIdQuizIdAttemptRoute: SubmissionModuleIdQuizIdAttemptRoute,
@@ -217,7 +218,7 @@ export const routeTree = rootRoute
         "/",
         "/module/create",
         "/library/view/$libraryId",
-        "/module/view/$moduleId",
+        "/module/view/$libraryId/$moduleId",
         "/quiz/session/$moduleId/$quizId",
         "/quiz/view/$moduleId/$quizId",
         "/submission/$moduleId/$quizId/$attempt"
@@ -232,8 +233,8 @@ export const routeTree = rootRoute
     "/library/view/$libraryId": {
       "filePath": "library/view.$libraryId.tsx"
     },
-    "/module/view/$moduleId": {
-      "filePath": "module/view.$moduleId.tsx"
+    "/module/view/$libraryId/$moduleId": {
+      "filePath": "module/view.$libraryId.$moduleId.tsx"
     },
     "/quiz/session/$moduleId/$quizId": {
       "filePath": "quiz/session.$moduleId.$quizId.tsx"

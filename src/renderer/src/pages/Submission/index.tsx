@@ -36,7 +36,10 @@ function SubmissionPage({ moduleId, submission }: SubmissionPageProps) {
                 <Group justify="space-between">
                     <Button
                         onClick={() =>
-                            navigate({ to: '/module/view/$moduleId', params: { moduleId } })
+                            navigate({
+                                to: '/module/view/$libraryId/$moduleId',
+                                params: { libraryId: 'nog', moduleId },
+                            })
                         }
                         leftSection={<IconArrowLeft />}
                         variant="subtle"

@@ -12,18 +12,18 @@ A modern quiz application built with Electron, React, and TypeScript.
 
 ## ✨ Features
 
--   Create and manage quizzes
--   Quiz generation with OpenAI
--   Practice mode for quiz taking
--   Submission evaluation with OpenAI
--   View submission results
--   Clean, responsive UI using Mantine components
--   E2E test coverage with Playwright
+- Create and manage quizzes
+- Quiz generation with OpenAI
+- Practice mode for quiz taking
+- Submission evaluation with OpenAI
+- View submission results
+- Clean, responsive UI using Mantine components
+- E2E test coverage with Playwright
 
 ## 📋 Prerequisites
 
--   Node.js (LTS version recommended)
--   pnpm 9.12.3 or higher
+- Node.js (LTS version recommended)
+- pnpm 9.12.3 or higher
 
 ## 🚀 Quick Start
 
@@ -34,31 +34,6 @@ Once downloaded, run the application by double clicking the executable file. The
 First time running the application you will need to enter a valid OpenAI API key in the settings menu.
 
 To get an OpenAI API key, see [here](https://platform.openai.com/api-keys). You will need to create a new key with permissions for `gpt-4o`. This is not a free service and you will need to load credits to your account.
-
-## 👩‍💻 Developer Quick Start
-
-Install dependencies and setup environment
-
-```bash
-pnpm install
-cp .env.example .env.local
-```
-
-Add your OpenAI API key to .env.local
-
-```bash
-VITE_OPENAI_API_KEY=your-api-key-here
-```
-
-From a blank project, initialize database (`sqlite.db`) and start the development app
-
-```bash
-# Creat database
-pnpm push
-
-# Start development server
-pnpm dev
-```
 
 ## 🛠️ Development Setup
 
@@ -75,45 +50,34 @@ cd noggin
 pnpm install
 ```
 
-3. Setup environment variables:
-
-```bash
-cp .env.example .env.local
-```
-
-4. Configure your environment:
-
-The application requires two environment variables:
-
--   `DB_FILE_NAME`: The SQLite database file location
-    -   Recommended value: `file:sqlite.db`
--   `VITE_OPENAI_API_KEY`: Your OpenAI API key
-    -   Get your API key from: https://platform.openai.com/api-keys
-    -   Ensure it has appropriate permissions for chat completions
-
-The easiest way to set these is to copy `.env.example` to `.env.local` and populate the values.
-
-Example `.env.local`:
-
-```bash
-DB_FILE_NAME=file:sqlite.db
-VITE_OPENAI_API_KEY=your-api-key-here
-```
-
-5. Initialize the database:
-
-```bash
-pnpm generate
-pnpm push
-```
-
-## 💻 Development
-
-Start the development server:
+3. Start development server:
 
 ```bash
 pnpm dev
 ```
+
+## 🔍 Debugging
+
+The project includes VSCode debugging configurations for both the main and renderer processes:
+
+1. Open the project in VSCode
+2. Set breakpoints in your code (main process or renderer process)
+3. Go to the Run and Debug view (Ctrl+Shift+D)
+4. Select "Debug All" from the dropdown
+5. Press F5 to start debugging
+
+You can also debug processes individually:
+
+- Use "Debug Main Process" for main process only
+- Note: Renderer process debugging requires the main process to be running first
+
+For debugging E2E tests in Docker:
+
+1. Set breakpoints in your E2E test files
+2. Select "Debug Docker E2E" from the debug configurations
+3. Press F5 to start debugging the Docker-based E2E tests
+
+## 📦 Building
 
 To build the application:
 
@@ -125,24 +89,6 @@ pnpm build:win
 pnpm build:linux
 ```
 
-## 🗃️ Database Migrations
-
-When you make changes to the database schema:
-
-1. Generate a new migration:
-
-```bash
-pnpm generate
-```
-
-2. Apply the migration to your database:
-
-```bash
-pnpm push
-```
-
-Note: Always review generated migrations before applying them to ensure they match your intended changes.
-
 ## 🧪 Testing
 
 Run the test suites:
@@ -153,7 +99,13 @@ pnpm test
 
 # Run E2E tests with Playwright
 pnpm test:e2e
+
+# Run E2E tests in Docker
+docker build -t playwright-e2e-tests -f Dockerfile.e2e .
+docker run --rm --ipc=host playwright-e2e-tests
 ```
+
+The Docker-based E2E tests run in headless mode and are particularly useful for CI environments or ensuring consistent test behavior across different development machines.
 
 ## 📦 Release
 
@@ -176,41 +128,41 @@ Once the release workflow has completed, you can review the release on the repos
 
 ## 📜 Available Scripts
 
--   `pnpm dev` - Start development server
--   `pnpm start` - Start production server
--   `pnpm build` - Build for production
--   `pnpm build:unpack` - Build and unpack without packaging
--   `pnpm build:win` - Build for Windows (without publishing)
--   `pnpm build:linux` - Build for Linux (without publishing)
--   `pnpm publish:win` - Build and publish for Windows
--   `pnpm publish:linux` - Build and publish for Linux
--   `pnpm check` - Type check all code
--   `pnpm check:node` - Type check Node.js code in watch mode
--   `pnpm check:ui` - Type check web code in watch mode
--   `pnpm generate` - Generate database migrations
--   `pnpm push` - Push database changes
--   `pnpm studio` - Open Drizzle Studio
--   `pnpm test` - Run Vitest tests
--   `pnpm test:e2e` - Run Playwright E2E tests with UI
--   `pnpm test:ci` - Run Vitest tests in CI
--   `pnpm test:e2e:ci` - Run Playwright tests in CI
--   `pnpm lint` - Run ESLint
--   `pnpm lint:fix` - Run ESLint with auto-fix
--   `pnpm format` - Format code with Prettier
--   `pnpm rebuild:drizzle` - Rebuild better-sqlite3
--   `pnpm rebuild:electron` - Rebuild Electron dependencies
+- `pnpm dev` - Start development server
+- `pnpm start` - Start production server
+- `pnpm build` - Build for production
+- `pnpm build:unpack` - Build and unpack without packaging
+- `pnpm build:win` - Build for Windows (without publishing)
+- `pnpm build:linux` - Build for Linux (without publishing)
+- `pnpm publish:win` - Build and publish for Windows
+- `pnpm publish:linux` - Build and publish for Linux
+- `pnpm check` - Type check all code
+- `pnpm check:node` - Type check Node.js code in watch mode
+- `pnpm check:ui` - Type check web code in watch mode
+- `pnpm generate` - Generate database migrations
+- `pnpm push` - Push database changes
+- `pnpm studio` - Open Drizzle Studio
+- `pnpm test` - Run Vitest tests
+- `pnpm test:e2e` - Run Playwright E2E tests with UI
+- `pnpm test:ci` - Run Vitest tests in CI
+- `pnpm test:e2e:ci` - Run Playwright tests in CI
+- `pnpm lint` - Run ESLint
+- `pnpm lint:fix` - Run ESLint with auto-fix
+- `pnpm format` - Format code with Prettier
+- `pnpm rebuild:drizzle` - Rebuild better-sqlite3
+- `pnpm rebuild:electron` - Rebuild Electron dependencies
 
 ## 🔧 Tech Stack
 
--   Electron
--   React 18
--   TypeScript
--   Mantine v7
--   TanStack Router & React Query
--   @tabler/icons-react
--   Playwright (Testing)
--   electron-vite
--   Prettier & ESLint
+- Electron
+- React 18
+- TypeScript
+- Mantine v7
+- TanStack Router & React Query
+- @tabler/icons-react
+- Playwright (Testing)
+- electron-vite
+- Prettier & ESLint
 
 ## ⚖️ License
 

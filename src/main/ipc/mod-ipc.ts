@@ -51,59 +51,83 @@ export function registerModuleIPC(): void {
         await deleteModuleSource(sourcePath)
     })
 
-    ipcMain.handle('modules:readModuleBySlug', async (_, moduleSlug: string) => {
-        return readModuleBySlug(moduleSlug)
-    })
-
-    ipcMain.handle('modules:saveModuleQuiz', async (_, moduleSlug: string, quiz: Quiz) => {
-        await saveModuleQuiz(moduleSlug, quiz)
-    })
-
-    ipcMain.handle('modules:deleteModuleQuiz', async (_, moduleSlug: string, quizId: string) => {
-        await deleteModuleQuiz(moduleSlug, quizId)
-    })
-
-    ipcMain.handle('modules:readModuleQuiz', async (_, moduleSlug: string, quizId: string) => {
-        return readModuleQuiz(moduleSlug, quizId)
+    ipcMain.handle('modules:readModuleBySlug', async (_, libraryId: string, moduleSlug: string) => {
+        return readModuleBySlug(libraryId, moduleSlug)
     })
 
     ipcMain.handle(
+        'modules:saveModuleQuiz',
+        async (_, libraryId: string, moduleSlug: string, quiz: Quiz) => {
+            await saveModuleQuiz(libraryId, moduleSlug, quiz)
+        }
+    )
+
+    ipcMain.handle(
+        'modules:deleteModuleQuiz',
+        async (_, libraryId: string, moduleSlug: string, quizId: string) => {
+            await deleteModuleQuiz(libraryId, moduleSlug, quizId)
+        }
+    )
+
+    ipcMain.handle(
+        'modules:readModuleQuiz',
+        async (_, libraryId: string, moduleSlug: string, quizId: string) => {
+            return readModuleQuiz(libraryId, moduleSlug, quizId)
+        }
+    )
+
+    ipcMain.handle(
         'modules:saveModuleSubmission',
-        async (_, moduleSlug: string, submission: Submission) => {
-            await saveModuleSubmission(moduleSlug, submission)
+        async (_, libraryId: string, moduleSlug: string, submission: Submission) => {
+            await saveModuleSubmission(libraryId, moduleSlug, submission)
         }
     )
 
     ipcMain.handle(
         'modules:readModuleSubmission',
-        async (_, moduleSlug: string, quizId: string, attempt: number) => {
-            return readModuleSubmission(moduleSlug, quizId, attempt)
+        async (_, libraryId: string, moduleSlug: string, quizId: string, attempt: number) => {
+            return readModuleSubmission(libraryId, moduleSlug, quizId, attempt)
         }
     )
 
-    ipcMain.handle('modules:getQuizAttemptCount', async (_, moduleSlug: string, quizId: string) => {
-        return getQuizAttemptCount(moduleSlug, quizId)
+    ipcMain.handle(
+        'modules:getQuizAttemptCount',
+        async (_, libraryId: string, moduleSlug: string, quizId: string) => {
+            return getQuizAttemptCount(libraryId, moduleSlug, quizId)
+        }
+    )
+
+    ipcMain.handle(
+        'modules:getLatestModuleQuiz',
+        async (_, libraryId: string, moduleSlug: string) => {
+            return getLatestModuleQuiz(libraryId, moduleSlug)
+        }
+    )
+
+    ipcMain.handle(
+        'modules:getModuleSubmissions',
+        async (_, libraryId: string, moduleSlug: string) => {
+            return getModuleSubmissions(libraryId, moduleSlug)
+        }
+    )
+
+    ipcMain.handle(
+        'modules:getQuizSubmissions',
+        async (_, libraryId: string, moduleSlug: string, quizId: string) => {
+            return getQuizSubmissions(libraryId, moduleSlug, quizId)
+        }
+    )
+
+    ipcMain.handle('modules:getModuleStats', async (_, libraryId: string, moduleSlug: string) => {
+        return getModuleStats(libraryId, moduleSlug)
     })
 
-    ipcMain.handle('modules:getLatestModuleQuiz', async (_, moduleSlug: string) => {
-        return getLatestModuleQuiz(moduleSlug)
-    })
-
-    ipcMain.handle('modules:getModuleSubmissions', async (_, moduleSlug: string) => {
-        return getModuleSubmissions(moduleSlug)
-    })
-
-    ipcMain.handle('modules:getQuizSubmissions', async (_, moduleSlug: string, quizId: string) => {
-        return getQuizSubmissions(moduleSlug, quizId)
-    })
-
-    ipcMain.handle('modules:getModuleStats', async (_, moduleSlug: string) => {
-        return getModuleStats(moduleSlug)
-    })
-
-    ipcMain.handle('modules:saveModuleStats', async (_, moduleSlug: string, stats: ModuleStats) => {
-        await saveModuleStats(moduleSlug, stats)
-    })
+    ipcMain.handle(
+        'modules:saveModuleStats',
+        async (_, libraryId: string, moduleSlug: string, stats: ModuleStats) => {
+            await saveModuleStats(libraryId, moduleSlug, stats)
+        }
+    )
 
     ipcMain.handle('modules:getAllModuleStats', async () => {
         return getAllModuleStats()
@@ -113,7 +137,9 @@ export function registerModuleIPC(): void {
         return getDueModules()
     })
 
-    ipcMain.handle('modules:getModuleOverviews', () => getModuleOverviews())
+    ipcMain.handle('modules:getModuleOverviews', async (_, libraryId: string) => {
+        return getModuleOverviews(libraryId)
+    })
 
     ipcMain.handle('modules:readModuleMetadata', async (_, modPath: string) => {
         return readModuleMetadata(modPath)

@@ -17,7 +17,8 @@ export function calculateNextReviewDate(currentBox: LeitnerBox, lastReviewDate: 
     return nextDate
 }
 
-export function calculatePriority(stats: ModuleStats): number {
+export function calculatePriority(stats?: ModuleStats): number {
+    if (!stats) return 0
     const now = new Date()
     const nextReview = new Date(stats.nextDueDate)
     const daysOverdue = (now.getTime() - nextReview.getTime()) / (1000 * 60 * 60 * 24)

@@ -1,7 +1,7 @@
 import { SimpleFile } from '@noggin/types/electron-types'
 import { dialog, ipcMain } from 'electron'
 import { promises as fs } from 'fs'
-import path from 'path'
+import * as path from 'path'
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20MB in bytes
 
@@ -29,6 +29,10 @@ async function getFileInfo(filepath: string, loadData = false): Promise<SimpleFi
 }
 
 export function registerFilesystemIPC(): void {
+    ipcMain.handle('path:join', (_event, ...paths: string[]) => {
+        return path.join(...paths)
+    })
+
     ipcMain.handle('filesystem:showDirectoryPicker', async (): Promise<SimpleFile[]> => {
         const result = await dialog.showOpenDialog({
             properties: ['openDirectory'],

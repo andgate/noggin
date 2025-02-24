@@ -6,6 +6,7 @@
         "src/preload/**/*",
         "src/types/**/*",
         "src/shared/**/*",
+        "tests/setup.node.ts",
     ],
     "compilerOptions": {
         "composite": true,
@@ -13,7 +14,7 @@
         "baseUrl": ".",
         "paths": {
             "@noggin/types/*": ["src/types/*"],
-            "@noggin/shared/*": ["src/shared/*"]
+            "@noggin/shared/*": ["src/shared/*"],
         },
 
 

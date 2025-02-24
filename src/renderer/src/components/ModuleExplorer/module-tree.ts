@@ -17,6 +17,9 @@ export function moduleToTreeNode(module: ModuleOverview): TreeNodeData {
     return {
         value: `module-${module.slug}`,
         label: module.displayName,
+        nodeProps: {
+            libraryId: module.librarySlug,
+        },
     }
 }
 

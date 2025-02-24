@@ -54,11 +54,13 @@ vi.mock('electron-store', () => {
         },
     }
 })
+
 vi.mock('@noggin/shared/fs-extra', () => ({
-    ensureDir: vi.fn().mockImplementation(async (dirPath: string) => {
+    ensureDir: vi.fn().mockImplementation(async (_dirPath: string) => {
         return Promise.resolve()
     }),
 }))
+
 vi.mock('@noggin/shared/slug', () => ({
     slugify: (str: string) => str.toLowerCase().replace(/\s+/g, '-'),
 }))
@@ -68,7 +70,7 @@ describe('LibraryService', () => {
     const mockMetadata: LibraryMetadata = {
         name: 'Test Library',
         description: 'Test Description',
-        createdAt: Date.now(),
+        createdAt: Date.now().toLocaleString(),
         slug: 'test-library',
     }
 

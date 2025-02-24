@@ -55,12 +55,15 @@ export function PracticeFeed() {
     }
 
     const handleModuleClick = (moduleId: string) => {
-        navigate({ to: '/module/view/$moduleId', params: { moduleId } })
+        navigate({
+            to: '/module/view/$libraryId/$moduleId',
+            params: { libraryId: 'nog', moduleId },
+        })
     }
 
     const handleStartQuiz = async (moduleId: string) => {
         try {
-            const quiz = await window.api.modules.getLatestModuleQuiz(moduleId)
+            const quiz = await window.api.modules.getLatestModuleQuiz('nog', moduleId)
             navigate({
                 to: '/quiz/session/$moduleId/$quizId',
                 params: { moduleId, quizId: quiz.id },

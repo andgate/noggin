@@ -1,0 +1,32 @@
+# From https://mcr.microsoft.com/en-us/artifact/mar/playwright/
+FROM mcr.microsoft.com/playwright:v1.50.1-noble
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json pnpm-lock.yaml ./
+
+# Install pnpm
+RUN npm install -g pnpm@9.12.3
+
+# Install dependencies
+RUN PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 pnpm install --frozen-lockfile
+
+# Copy project files
+COPY . .
+
+# Build the project with electron-vite
+RUN pnpm build
+
+# Create reports directory with appropriate permissions
+RUN mkdir -p e2e-reports && chmod 777 e2e-reports
+
+# Install xvfb
+RUN apt-get update && apt-get install -y xvfb
+
+# Install xvfb-maybe globally
+RUN npm install -g xvfb-maybe
+
+# Run tests with xvfb-maybe
+CMD ["xvfb-maybe", "node", "node_modules/@playwright/test/cli.js", "test"]

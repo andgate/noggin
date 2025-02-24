@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const libraryMetadataSchema = z.object({
     name: z.string(),
     description: z.string(),
-    createdAt: z.number(),
+    createdAt: z.string(),
     slug: z.string(),
 })
 

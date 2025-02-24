@@ -18,7 +18,12 @@ export function QuizPage({ moduleId, quiz, submissions }: QuizPageProps) {
             <Group px="md" py="xs" justify="space-between" bg="var(--mantine-color-dark-6)">
                 <Button
                     variant="subtle"
-                    onClick={() => navigate({ to: '/module/view/$moduleId', params: { moduleId } })}
+                    onClick={() =>
+                        navigate({
+                            to: '/module/view/$libraryId/$moduleId',
+                            params: { libraryId: 'nog', moduleId },
+                        })
+                    }
                 >
                     <Group gap="xs">
                         <IconArrowLeft size={16} />

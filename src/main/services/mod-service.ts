@@ -27,7 +27,7 @@ import { glob } from 'glob'
 import path from 'path'
 import { z } from 'zod'
 import { calculatePriority } from '../common/spaced-repetition'
-import { getRegisteredLibraries } from './library-service'
+import { getAllLibraries, getRegisteredLibraries } from './library-service'
 
 // Helper to read and parse JSON files
 async function readJsonFile<T>(filePath: string, schema: z.ZodSchema<T>): Promise<T> {
@@ -43,12 +43,26 @@ async function ensureDir(dirPath: string): Promise<void> {
 // Module data reading functions
 export async function readModuleData(modPath: string): Promise<Mod> {
     console.log('Reading module data from', modPath)
-    const [metadata, quizzes, submissions, sources, stats] = await Promise.all([
-        readModuleMetadata(modPath),
+
+    // Get metadata first to extract the slug
+    const metadata = await readModuleMetadata(modPath)
+
+    // Find which library this module belongs to
+    const libraries = await getAllLibraries()
+    let libraryId = 'nog' // Default fallback
+
+    for (const lib of libraries) {
+        if (modPath.startsWith(lib.path)) {
+            libraryId = lib.metadata.slug
+            break
+        }
+    }
+
+    const [quizzes, submissions, sources, stats] = await Promise.all([
         readQuizzes(modPath),
         readSubmissions(modPath),
         readSources(modPath),
-        getModuleStats(path.basename(modPath)),
+        getModuleStats(libraryId, metadata.slug),
     ])
 
     return {
@@ -64,11 +78,12 @@ export async function readModuleData(modPath: string): Promise<Mod> {
 
 // Module data writing functions
 export async function writeModuleData(libraryPath: string, mod: Mod): Promise<void> {
-    const modulePath = path.join(libraryPath, `${mod.id}.mod`)
+    console.log('Writing module data to', libraryPath, mod.id)
+    const modulePath = path.join(libraryPath, `${mod.id}`)
     await ensureModuleDirectories(modulePath)
     await writeModuleMetadata(modulePath, mod.metadata)
     await writeSubmissions(modulePath, mod.submissions)
-    await saveModuleStats(mod.metadata.slug, mod.stats)
+    await saveModuleStats(libraryPath, mod.id, mod.stats)
 }
 
 // File system operations
@@ -147,14 +162,39 @@ export async function deleteModuleSource(sourcePath: string): Promise<void> {
     await fs.unlink(sourcePath)
 }
 
-export async function resolveModulePath(moduleSlug: string): Promise<string | null> {
-    const paths = await getAllModulePaths()
-    return paths.find((p) => path.basename(p) === moduleSlug) || null
+export async function resolveModulePath(
+    libraryId: string,
+    moduleSlug: string
+): Promise<string | null> {
+    const libraries = await getAllLibraries()
+    const library = libraries.find((lib) => lib.metadata.slug === libraryId)
+    if (!library) {
+        throw new Error(`Library not found: ${libraryId}`)
+    }
+
+    // Get all modules in this library
+    const modulePaths = await glob('*/.mod', {
+        cwd: library.path,
+        absolute: true,
+    }).then((paths) => paths.map((p) => path.dirname(p)))
+
+    // Read metadata from each module to find the matching slug
+    for (const modPath of modulePaths) {
+        try {
+            const metadata = await readModuleMetadata(modPath)
+            if (metadata.slug === moduleSlug) {
+                return modPath
+            }
+        } catch (error) {
+            console.error(`Failed to read metadata for ${modPath}:`, error)
+        }
+    }
+
+    return null
 }
 
-export async function readModuleBySlug(moduleSlug: string): Promise<Mod> {
-    const modulePaths = await getAllModulePaths()
-    const modulePath = modulePaths.find((p) => path.basename(p, '.mod') === moduleSlug)
+export async function readModuleBySlug(libraryId: string, moduleSlug: string): Promise<Mod> {
+    const modulePath = await resolveModulePath(libraryId, moduleSlug)
 
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
@@ -170,16 +210,24 @@ async function writeQuiz(modPath: string, quiz: Quiz): Promise<void> {
     console.log(`Wrote quiz to ${quizPath}`)
 }
 
-export async function saveModuleQuiz(moduleSlug: string, quiz: Quiz): Promise<void> {
-    const modulePath = await resolveModulePath(moduleSlug)
+export async function saveModuleQuiz(
+    libraryId: string,
+    moduleSlug: string,
+    quiz: Quiz
+): Promise<void> {
+    const modulePath = await resolveModulePath(libraryId, moduleSlug)
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
     }
     await writeQuiz(modulePath, quiz)
 }
 
-export async function deleteModuleQuiz(moduleSlug: string, quizId: string): Promise<void> {
-    const modulePath = await resolveModulePath(moduleSlug)
+export async function deleteModuleQuiz(
+    libraryId: string,
+    moduleSlug: string,
+    quizId: string
+): Promise<void> {
+    const modulePath = await resolveModulePath(libraryId, moduleSlug)
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
     }
@@ -187,8 +235,12 @@ export async function deleteModuleQuiz(moduleSlug: string, quizId: string): Prom
     await fs.unlink(quizPath)
 }
 
-export async function readModuleQuiz(moduleSlug: string, quizId: string): Promise<Quiz> {
-    const modulePath = await resolveModulePath(moduleSlug)
+export async function readModuleQuiz(
+    libraryId: string,
+    moduleSlug: string,
+    quizId: string
+): Promise<Quiz> {
+    const modulePath = await resolveModulePath(libraryId, moduleSlug)
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
     }
@@ -205,10 +257,11 @@ export async function readModuleQuiz(moduleSlug: string, quizId: string): Promis
 }
 
 export async function saveModuleSubmission(
+    libraryId: string,
     moduleSlug: string,
     submission: Submission
 ): Promise<void> {
-    const modulePath = await resolveModulePath(moduleSlug)
+    const modulePath = await resolveModulePath(libraryId, moduleSlug)
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
     }
@@ -224,11 +277,12 @@ export async function saveModuleSubmission(
 }
 
 export async function readModuleSubmission(
+    libraryId: string,
     moduleSlug: string,
     quizId: string,
     attempt: number
 ): Promise<Submission> {
-    const modulePath = await resolveModulePath(moduleSlug)
+    const modulePath = await resolveModulePath(libraryId, moduleSlug)
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
     }
@@ -244,8 +298,12 @@ export async function readModuleSubmission(
     }
 }
 
-export async function getQuizAttemptCount(moduleSlug: string, quizId: string): Promise<number> {
-    const modulePath = await resolveModulePath(moduleSlug)
+export async function getQuizAttemptCount(
+    libraryId: string,
+    moduleSlug: string,
+    quizId: string
+): Promise<number> {
+    const modulePath = await resolveModulePath(libraryId, moduleSlug)
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
     }
@@ -259,8 +317,8 @@ export async function getQuizAttemptCount(moduleSlug: string, quizId: string): P
     return files.length
 }
 
-export async function getLatestModuleQuiz(moduleSlug: string): Promise<Quiz> {
-    const mod = await readModuleBySlug(moduleSlug)
+export async function getLatestModuleQuiz(libraryId: string, moduleSlug: string): Promise<Quiz> {
+    const mod = await readModuleBySlug(libraryId, moduleSlug)
     if (!mod.quizzes.length) {
         throw new Error('No quizzes available for this module')
     }
@@ -274,10 +332,11 @@ export async function getLatestModuleQuiz(moduleSlug: string): Promise<Quiz> {
 }
 
 export async function getQuizSubmissions(
+    libraryId: string,
     moduleSlug: string,
     quizId: string
 ): Promise<Submission[]> {
-    const modulePath = await resolveModulePath(moduleSlug)
+    const modulePath = await resolveModulePath(libraryId, moduleSlug)
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
     }
@@ -296,8 +355,11 @@ export async function getQuizSubmissions(
     )
 }
 
-export async function getModuleSubmissions(moduleSlug: string): Promise<Submission[]> {
-    const modulePath = await resolveModulePath(moduleSlug)
+export async function getModuleSubmissions(
+    libraryId: string,
+    moduleSlug: string
+): Promise<Submission[]> {
+    const modulePath = await resolveModulePath(libraryId, moduleSlug)
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
     }
@@ -316,8 +378,8 @@ export async function getModuleSubmissions(moduleSlug: string): Promise<Submissi
     )
 }
 
-export async function getModuleStats(moduleSlug: string): Promise<ModuleStats> {
-    const modulePath = await resolveModulePath(moduleSlug)
+export async function getModuleStats(libraryId: string, moduleSlug: string): Promise<ModuleStats> {
+    const modulePath = await resolveModulePath(libraryId, moduleSlug)
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
     }
@@ -336,8 +398,12 @@ export async function getModuleStats(moduleSlug: string): Promise<ModuleStats> {
     }
 }
 
-export async function saveModuleStats(moduleSlug: string, stats?: ModuleStats): Promise<void> {
-    const modulePath = await resolveModulePath(moduleSlug)
+export async function saveModuleStats(
+    libraryId: string,
+    moduleSlug: string,
+    stats?: ModuleStats
+): Promise<void> {
+    const modulePath = await resolveModulePath(libraryId, moduleSlug)
     if (!modulePath) {
         throw new Error(`Module not found: ${moduleSlug}`)
     }
@@ -346,78 +412,72 @@ export async function saveModuleStats(moduleSlug: string, stats?: ModuleStats): 
         return // No stats to save
     }
 
-    const statsPath = path.join(modulePath, '.mod', 'stats.json')
+    const statsPath = path.join(modulePath, 'stats.json')
     await ensureDir(path.dirname(statsPath))
     await fs.writeFile(statsPath, JSON.stringify(stats, null, 2))
 }
 
 export async function getAllModuleStats(): Promise<ModuleStats[]> {
-    const paths = await getAllModulePaths()
-    const statsPromises = paths.map(async (modPath) => {
-        const moduleSlug = path.basename(modPath)
-        try {
-            return await getModuleStats(moduleSlug)
-        } catch (error) {
-            console.error(`Failed to get stats for module ${moduleSlug}:`, error)
-            return null
-        }
-    })
+    const libraries = await getAllLibraries()
 
+    // First, collect all promises for module stats
+    const statsPromises: Promise<ModuleStats | null>[] = []
+
+    for (const library of libraries) {
+        const libraryId = library.metadata.slug
+        const overviews = await getModuleOverviews(libraryId)
+
+        for (const overview of overviews) {
+            statsPromises.push(
+                getModuleStats(libraryId, overview.slug).catch((error) => {
+                    console.error(
+                        `Failed to get stats for module ${overview.slug} in library ${libraryId}:`,
+                        error
+                    )
+                    return null
+                })
+            )
+        }
+    }
+
+    // Resolve all promises and filter out nulls
     const stats = await Promise.all(statsPromises)
     return stats.filter((stat): stat is ModuleStats => stat !== null)
 }
 
 export async function getDueModules(): Promise<Mod[]> {
-    const modulePaths = await getAllModulePaths()
-    const modulePromises = modulePaths.map(async (modPath) => {
-        try {
-            const mod = await readModuleData(modPath)
-            const stats = await getModuleStats(path.basename(modPath, '.mod'))
-            return {
-                ...mod,
-                stats,
-            } satisfies Mod
-        } catch (error) {
-            console.error(`Failed to read module at ${modPath}:`, error)
-            return null
+    const libraries = await getAllLibraries()
+    const allModules: Mod[] = []
+
+    for (const library of libraries) {
+        const libraryId = library.metadata.slug
+        const overviews = await getModuleOverviews(libraryId)
+
+        for (const overview of overviews) {
+            try {
+                const mod = await readModuleBySlug(libraryId, overview.slug)
+                const stats = await getModuleStats(libraryId, overview.slug)
+                allModules.push({
+                    ...mod,
+                    stats,
+                })
+            } catch (error) {
+                console.error(
+                    `Failed to read module ${overview.slug} in library ${libraryId}:`,
+                    error
+                )
+            }
         }
-    })
+    }
 
-    const modules = await Promise.all(modulePromises)
-    const validModules = modules.filter((mod): mod is NonNullable<typeof mod> => mod !== null)
-
-    // Filter and sort due modules as before
+    // Filter and sort due modules
     const now = new Date()
-    return validModules
+    return allModules
         .filter((mod) => {
             const nextDue = new Date(mod.stats?.nextDueDate || '')
             return nextDue <= now
         })
         .sort((a, b) => calculatePriority(b.stats) - calculatePriority(a.stats))
-}
-
-export async function getModuleOverviews(): Promise<ModuleOverview[]> {
-    const paths = await getAllModulePaths()
-    const overviews = await Promise.all(
-        paths.map(async (modPath) => {
-            try {
-                const metadata = await readModuleMetadata(modPath)
-                return {
-                    slug: metadata.slug,
-                    displayName: metadata.title,
-                }
-            } catch (error) {
-                console.error(`Failed to read metadata for module at ${modPath}:`, error)
-                // Fallback to using path-based naming if metadata read fails
-                const slug = path.basename(modPath, '.mod')
-                return {
-                    slug,
-                    displayName: slug,
-                }
-            }
-        })
-    )
-    return overviews
 }
 
 export async function readModuleMetadata(modPath: string): Promise<ModuleMetadata> {
@@ -444,12 +504,37 @@ async function getAllModulePaths(): Promise<string[]> {
 
     for (const libraryPath of libraries) {
         // Find all .mod directories in the library
-        const modules = await glob('*/*.mod', {
+        const modules = await glob('*/.mod', {
             cwd: libraryPath,
             absolute: true,
-        })
+        }).then((paths) => paths.map((p) => path.dirname(p)))
         modulePaths.push(...modules)
     }
 
     return modulePaths
+}
+
+export async function getModuleOverviews(libraryId: string): Promise<ModuleOverview[]> {
+    const libraries = await getAllLibraries()
+    const library = libraries.find((lib) => lib.metadata.slug === libraryId)
+    if (!library) {
+        throw new Error(`Library not found: ${libraryId}`)
+    }
+    console.log('Library Path:', library.path)
+    const modulesPaths = await glob('*/.mod', {
+        cwd: library.path,
+        absolute: true,
+    }).then((paths) => paths.map((p) => path.dirname(p)))
+
+    const overviews = await Promise.all(
+        modulesPaths.map(async (modPath): Promise<ModuleOverview> => {
+            const metadata = await readModuleMetadata(modPath)
+            return {
+                slug: metadata.slug,
+                displayName: metadata.title,
+                librarySlug: libraryId,
+            }
+        })
+    )
+    return overviews
 }

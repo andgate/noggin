@@ -26,33 +26,45 @@ const api: NogginElectronAPI = {
             ipcRenderer.invoke('modules:writeModuleSource', modulePath, sourceFile),
         deleteModuleSource: (sourcePath: string) =>
             ipcRenderer.invoke('modules:deleteModuleSource', sourcePath),
-        readModuleBySlug: (moduleSlug: string) =>
-            ipcRenderer.invoke('modules:readModuleBySlug', moduleSlug),
-        saveModuleQuiz: (moduleSlug: string, quiz: Quiz) =>
-            ipcRenderer.invoke('modules:saveModuleQuiz', moduleSlug, quiz),
-        deleteModuleQuiz: (moduleSlug: string, quizId: string) =>
-            ipcRenderer.invoke('modules:deleteModuleQuiz', moduleSlug, quizId),
-        readModuleQuiz: (moduleSlug: string, quizId: string) =>
-            ipcRenderer.invoke('modules:readModuleQuiz', moduleSlug, quizId),
-        readModuleSubmission: (moduleSlug: string, quizId: string, attempt: number) =>
-            ipcRenderer.invoke('modules:readModuleSubmission', moduleSlug, quizId, attempt),
-        saveModuleSubmission: (moduleSlug: string, submission: Submission) =>
-            ipcRenderer.invoke('modules:saveModuleSubmission', moduleSlug, submission),
-        getQuizAttemptCount: (moduleSlug: string, quizId: string) =>
-            ipcRenderer.invoke('modules:getQuizAttemptCount', moduleSlug, quizId),
-        getLatestModuleQuiz: (moduleSlug: string) =>
-            ipcRenderer.invoke('modules:getLatestModuleQuiz', moduleSlug),
-        getModuleSubmissions: (moduleSlug: string) =>
-            ipcRenderer.invoke('modules:getModuleSubmissions', moduleSlug),
-        getQuizSubmissions: (moduleSlug: string, quizId: string) =>
-            ipcRenderer.invoke('modules:getQuizSubmissions', moduleSlug, quizId),
-        getModuleStats: (moduleSlug: string) =>
-            ipcRenderer.invoke('modules:getModuleStats', moduleSlug),
-        saveModuleStats: (moduleSlug: string, stats: ModuleStats) =>
-            ipcRenderer.invoke('modules:saveModuleStats', moduleSlug, stats),
+        readModuleBySlug: (libraryId: string, moduleSlug: string) =>
+            ipcRenderer.invoke('modules:readModuleBySlug', libraryId, moduleSlug),
+        saveModuleQuiz: (libraryId: string, moduleSlug: string, quiz: Quiz) =>
+            ipcRenderer.invoke('modules:saveModuleQuiz', libraryId, moduleSlug, quiz),
+        deleteModuleQuiz: (libraryId: string, moduleSlug: string, quizId: string) =>
+            ipcRenderer.invoke('modules:deleteModuleQuiz', libraryId, moduleSlug, quizId),
+        readModuleQuiz: (libraryId: string, moduleSlug: string, quizId: string) =>
+            ipcRenderer.invoke('modules:readModuleQuiz', libraryId, moduleSlug, quizId),
+        readModuleSubmission: (
+            libraryId: string,
+            moduleSlug: string,
+            quizId: string,
+            attempt: number
+        ) =>
+            ipcRenderer.invoke(
+                'modules:readModuleSubmission',
+                libraryId,
+                moduleSlug,
+                quizId,
+                attempt
+            ),
+        saveModuleSubmission: (libraryId: string, moduleSlug: string, submission: Submission) =>
+            ipcRenderer.invoke('modules:saveModuleSubmission', libraryId, moduleSlug, submission),
+        getQuizAttemptCount: (libraryId: string, moduleSlug: string, quizId: string) =>
+            ipcRenderer.invoke('modules:getQuizAttemptCount', libraryId, moduleSlug, quizId),
+        getLatestModuleQuiz: (libraryId: string, moduleSlug: string) =>
+            ipcRenderer.invoke('modules:getLatestModuleQuiz', libraryId, moduleSlug),
+        getModuleSubmissions: (libraryId: string, moduleSlug: string) =>
+            ipcRenderer.invoke('modules:getModuleSubmissions', libraryId, moduleSlug),
+        getQuizSubmissions: (libraryId: string, moduleSlug: string, quizId: string) =>
+            ipcRenderer.invoke('modules:getQuizSubmissions', libraryId, moduleSlug, quizId),
+        getModuleStats: (libraryId: string, moduleSlug: string) =>
+            ipcRenderer.invoke('modules:getModuleStats', libraryId, moduleSlug),
+        saveModuleStats: (libraryId: string, moduleSlug: string, stats: ModuleStats) =>
+            ipcRenderer.invoke('modules:saveModuleStats', libraryId, moduleSlug, stats),
         getAllModuleStats: () => ipcRenderer.invoke('modules:getAllModuleStats'),
         getDueModules: () => ipcRenderer.invoke('modules:getDueModules'),
-        getModuleOverviews: () => ipcRenderer.invoke('modules:getModuleOverviews'),
+        getModuleOverviews: (libraryId: string) =>
+            ipcRenderer.invoke('modules:getModuleOverviews', libraryId),
         readModuleMetadata: (modPath: string) =>
             ipcRenderer.invoke('modules:readModuleMetadata', modPath),
         writeModuleMetadata: (modPath: string, metadata: ModuleMetadata) =>
@@ -78,8 +90,8 @@ const api: NogginElectronAPI = {
         gradeSubmission: (submission) => ipcRenderer.invoke('generate:gradeSubmission', submission),
     },
     moduleExplorer: {
-        showModuleContextMenu: (moduleId: string) =>
-            ipcRenderer.invoke('moduleExplorer:showContextMenu', moduleId),
+        showModuleContextMenu: (libraryId: string, moduleId: string) =>
+            ipcRenderer.invoke('moduleExplorer:showModuleContextMenu', libraryId, moduleId),
         showLibraryContextMenu: (librarySlug: string) =>
             ipcRenderer.invoke('moduleExplorer:showLibraryContextMenu', librarySlug),
     },
@@ -96,6 +108,9 @@ const api: NogginElectronAPI = {
         readLibraryMetadata: (libraryPath: string) =>
             ipcRenderer.invoke('library:readLibraryMetadata', libraryPath),
         getAllLibraries: () => ipcRenderer.invoke('library:getAllLibraries'),
+    },
+    path: {
+        join: (...args: string[]) => ipcRenderer.invoke('path:join', ...args),
     },
 }
 

@@ -467,7 +467,11 @@ All slugs in the system follow these rules:
 
     - Modules and learning paths append creation timestamp: `<slug>_<timestamp>`
     - Libraries use the basic slug without timestamp
-    - Timestamp format: Unix milliseconds (e.g., 1703567451722)
+    - Timestamp format: Compact ISO 8601 UTC (e.g., `20250217T021330Z`)
+        - Format: `YYYYMMDD'T'HHMMSS'Z'`
+        - No separators (dashes, colons)
+        - No milliseconds
+        - Always UTC timezone (Z suffix)
 
 3. **Usage Rules**:
     - Applications must prevent creation of duplicate slugs within their scope
@@ -480,14 +484,16 @@ Examples:
 - "Computer Science Fundamentals" -> `computer_science_fundamentals`
 - "C++ & Systems Programming!" -> `c_systems_programming`
 - "Web Dev (2024) - Basics" -> `web_dev_2024_basics`
-- Module example: `binary_search_trees_1703567451722`
+- Library: `computer_science_fundamentals`
+- Module: `binary_search_trees_20250217T021330Z`
+- Learning Path: `introduction_to_python_20250217T021330Z`
 
 #### Usage Throughout the System
 
 - **Library Slugs**: Used for library directory names and references
     - Example: `computer_science_fundamentals`
 - **Learning Path Slugs**: Used for learning path directory names and references
-    - Example: `introduction_to_python_1703567451722`
+    - Example: `introduction_to_python_20250217T021330Z`
 - **Module Slugs**: Used for module directory names and references
     - Example: `python_basics_1703567489123`
 - **Quiz Slugs**: Used in quiz filenames, combining with attempt numbers for submissions

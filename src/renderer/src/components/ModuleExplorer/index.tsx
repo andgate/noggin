@@ -6,8 +6,10 @@ import {
     Text,
     Tooltip,
     Tree,
+    TreeNodeData,
     useTree,
 } from '@mantine/core'
+import { ModuleOverview } from '@noggin/types/module-types'
 import { useUiStore } from '@renderer/app/stores/ui-store'
 import {
     IconFile,
@@ -16,11 +18,11 @@ import {
     IconFolderOpen,
     IconFolderPlus,
 } from '@tabler/icons-react'
-import { useQuery } from '@tanstack/react-query'
+import { useQueries, useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { CreateLibraryModal } from '../CreateLibraryModal'
-import { buildModuleTreeData, getInitialExpandedState } from './module-tree'
+import { buildModuleTreeData, getInitialExpandedState, libraryToTreeNode } from './module-tree'
 
 function TreeNode({ node, expanded, elementProps, tree }: RenderTreeNodePayload) {
     const navigate = useNavigate()
@@ -32,7 +34,12 @@ function TreeNode({ node, expanded, elementProps, tree }: RenderTreeNodePayload)
 
         if (node.value.startsWith('module-')) {
             const moduleId = node.value.replace('module-', '')
-            navigate({ to: '/module/view/$moduleId', params: { moduleId } })
+            const libraryId = node.nodeProps?.libraryId
+            if (!libraryId) {
+                console.error(`Library ID not found for module ${moduleId}`)
+                return
+            }
+            navigate({ to: '/module/view/$libraryId/$moduleId', params: { libraryId, moduleId } })
         } else if (node.value.startsWith('library-')) {
             const libraryId = node.value.replace('library-', '')
             if (libraryId !== 'unorganized') {
@@ -47,7 +54,12 @@ function TreeNode({ node, expanded, elementProps, tree }: RenderTreeNodePayload)
             window.api.moduleExplorer.showLibraryContextMenu(libraryId)
         } else if (node.value.startsWith('module-')) {
             const moduleId = node.value.replace('module-', '')
-            window.api.moduleExplorer.showModuleContextMenu(moduleId)
+            const libraryId = node.nodeProps?.libraryId
+            if (!libraryId) {
+                console.error(`Library ID not found for module ${moduleId}`)
+                return
+            }
+            window.api.moduleExplorer.showModuleContextMenu(libraryId, moduleId)
         }
     }
 
@@ -84,15 +96,18 @@ export function ModuleExplorer() {
     const collapsed = useUiStore((s) => s.explorerCollapsed)
     const [createLibraryOpen, setCreateLibraryOpen] = useState(false)
 
-    // Fetch libraries and modules
+    // Fetch libraries first
     const { data: libraries = [], refetch: refetchLibraries } = useQuery({
         queryKey: ['libraries'],
         queryFn: () => window.api.library.getAllLibraries(),
     })
 
-    const { data: moduleOverviews = [] } = useQuery({
-        queryKey: ['moduleOverviews'],
-        queryFn: () => window.api.modules.getModuleOverviews(),
+    // Then fetch modules for each library
+    const moduleQueries = useQueries({
+        queries: libraries.map((library) => ({
+            queryKey: ['moduleOverviews', library.metadata.slug],
+            queryFn: () => window.api.modules.getModuleOverviews(library.metadata.slug),
+        })),
     })
 
     if (collapsed) {
@@ -100,10 +115,21 @@ export function ModuleExplorer() {
     }
 
     // Convert libraries and modules into tree data structure
-    const treeData = useMemo(
-        () => buildModuleTreeData(libraries, moduleOverviews),
-        [libraries, moduleOverviews]
-    )
+    const treeData: TreeNodeData[] = useMemo(() => {
+        const modulesByLibrary = moduleQueries.reduce(
+            (acc, query, index) => {
+                if (query.data) {
+                    acc[libraries[index].metadata.slug] = query.data
+                }
+                return acc
+            },
+            {} as Record<string, ModuleOverview[]>
+        )
+
+        return libraries.map((library) =>
+            libraryToTreeNode(library, modulesByLibrary[library.metadata.slug] || [])
+        )
+    }, [libraries, moduleQueries])
 
     const initialExpandedState = useMemo(() => getInitialExpandedState(treeData), [treeData])
 

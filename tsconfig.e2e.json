@@ -1,5 +1,8 @@
 {
+    "include": [
+        "e2e/**/*"
+    ],
     "compilerOptions": {
-        "types": ["node", "@wdio/globals/types", "@wdio/cucumber-framework"]
+        "types": ["node"]
     }
 }

@@ -8,7 +8,10 @@
         "src/types/**/*",
         "src/types/**/*.tsx",
         "src/shared/**/*",
-        "src/shared/**/*.tsx"
+        "src/shared/**/*.tsx",
+        "tests/render.tsx",
+        "tests/setup.web.ts",
+        "tests/test-utils.ts"
     ],
     "compilerOptions": {
         "composite": true,
@@ -16,8 +19,10 @@
         "paths": {
             "@renderer/*": ["src/renderer/src/*"],
             "@noggin/types/*": ["src/types/*"],
-            "@noggin/shared/*": ["src/shared/*"]
+            "@noggin/shared/*": ["src/shared/*"],
+            "@test-utils": ["./tests/test-utils"]
         },
+        "types": ["node", "@testing-library/jest-dom", "vitest/globals"],
 
         /* Base Options */
         "target": "ES2020",

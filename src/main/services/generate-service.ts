@@ -110,6 +110,9 @@ export const generateService = {
     },
 
     async gradeSubmission(submission: Submission): Promise<GradedSubmission> {
+        // TODO Need to determine the libraryId - maybe from submission or from another context
+        const libraryId = submission.libraryId // Assuming this property exists
+
         // Get the quiz to access its sources
         const quiz = await readModuleQuiz(submission.quizId, submission.quizId)
 
