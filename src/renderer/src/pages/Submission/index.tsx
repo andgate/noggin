@@ -8,12 +8,13 @@ import { SubmissionGradeInfo } from './components/SubmissionGradeInfo'
 import { SubmissionResponseCard } from './components/SubmissionResponseCard'
 
 interface SubmissionPageProps {
+    libraryId: string
     moduleId: string
     submission: Submission
 }
 
-function SubmissionPage({ moduleId, submission }: SubmissionPageProps) {
-    const { gradeSubmission } = useGradesGenerator(moduleId)
+function SubmissionPage({ libraryId, moduleId, submission }: SubmissionPageProps) {
+    const { gradeSubmission } = useGradesGenerator(libraryId, moduleId)
     const router = useRouter()
     const navigate = useNavigate()
     const [isGrading, setIsGrading] = useState(false)

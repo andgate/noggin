@@ -173,10 +173,7 @@ export async function resolveModulePath(
     }
 
     // Get all modules in this library
-    const modulePaths = await glob('*/.mod', {
-        cwd: library.path,
-        absolute: true,
-    }).then((paths) => paths.map((p) => path.dirname(p)))
+    const modulePaths = await scanLibraryModulePaths(library.path)
 
     // Read metadata from each module to find the matching slug
     for (const modPath of modulePaths) {
@@ -498,20 +495,24 @@ export async function writeModuleMetadata(
     await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2))
 }
 
-async function getAllModulePaths(): Promise<string[]> {
+export async function getAllModulePaths(): Promise<string[]> {
     const libraries = await getRegisteredLibraries()
-    const modulePaths: string[] = []
+    const allModulePaths: string[] = []
 
     for (const libraryPath of libraries) {
-        // Find all .mod directories in the library
-        const modules = await glob('*/.mod', {
-            cwd: libraryPath,
-            absolute: true,
-        }).then((paths) => paths.map((p) => path.dirname(p)))
-        modulePaths.push(...modules)
+        const modulePaths = await scanLibraryModulePaths(libraryPath)
+        allModulePaths.push(...modulePaths)
     }
 
-    return modulePaths
+    return allModulePaths
+}
+
+export async function scanLibraryModulePaths(libraryPath: string): Promise<string[]> {
+    // Find all .mod directories under the given library path
+    return glob('*/.mod', {
+        cwd: libraryPath,
+        absolute: true,
+    }).then((paths) => paths.map((p) => path.dirname(p)))
 }
 
 export async function getModuleOverviews(libraryId: string): Promise<ModuleOverview[]> {
@@ -521,10 +522,7 @@ export async function getModuleOverviews(libraryId: string): Promise<ModuleOverv
         throw new Error(`Library not found: ${libraryId}`)
     }
     console.log('Library Path:', library.path)
-    const modulesPaths = await glob('*/.mod', {
-        cwd: library.path,
-        absolute: true,
-    }).then((paths) => paths.map((p) => path.dirname(p)))
+    const modulesPaths = await scanLibraryModulePaths(library.path)
 
     const overviews = await Promise.all(
         modulesPaths.map(async (modPath): Promise<ModuleOverview> => {

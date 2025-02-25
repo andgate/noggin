@@ -73,6 +73,8 @@ export const submissionSchema = z.object({
     quizTitle: z.string(),
     timeElapsed: z.number(),
     timeLimit: z.number(),
+    libraryId: z.string(),
+    moduleSlug: z.string(),
     // Grade out of 100
     grade: gradeSchema.optional(),
     letterGrade: letterGradeSchema.optional(),
