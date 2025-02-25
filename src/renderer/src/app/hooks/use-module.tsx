@@ -9,43 +9,36 @@ export type ModuleContextType = {
     removeModule: (modulePath: string) => Promise<void>
     writeModuleSource: (modPath: string, sourceFile: SimpleFile) => Promise<string>
     deleteModuleSource: (sourcePath: string) => Promise<void>
-    readModuleBySlug: (moduleSlug: string) => Promise<Mod>
-    saveModuleQuiz: (moduleSlug: string, quiz: Quiz) => Promise<void>
-    deleteModuleQuiz: (moduleSlug: string, quizId: string) => Promise<void>
-    readModuleQuiz: (moduleSlug: string, quizId: string) => Promise<Quiz>
+    readModuleBySlug: (libraryId: string, moduleSlug: string) => Promise<Mod>
+    saveModuleQuiz: (libraryId: string, moduleSlug: string, quiz: Quiz) => Promise<void>
+    deleteModuleQuiz: (libraryId: string, moduleSlug: string, quizId: string) => Promise<void>
+    readModuleQuiz: (libraryId: string, moduleSlug: string, quizId: string) => Promise<Quiz>
     readModuleSubmission: (
+        libraryId: string,
         moduleSlug: string,
         quizId: string,
         attempt: number
     ) => Promise<Submission>
-    saveModuleSubmission: (moduleSlug: string, submission: Submission) => Promise<void>
-    getQuizAttemptCount: (moduleSlug: string, quizId: string) => Promise<number>
-    getLatestModuleQuiz: (moduleId: string) => Promise<Quiz>
-    getModuleSubmissions: (moduleSlug: string) => Promise<Submission[]>
-    getQuizSubmissions: (moduleSlug: string, quizId: string) => Promise<Submission[]>
-    getModuleStats: (moduleSlug: string) => Promise<ModuleStats>
-    saveModuleStats: (moduleSlug: string, stats: ModuleStats) => Promise<void>
+    saveModuleSubmission: (
+        libraryId: string,
+        moduleSlug: string,
+        submission: Submission
+    ) => Promise<void>
+    getQuizAttemptCount: (libraryId: string, moduleSlug: string, quizId: string) => Promise<number>
+    getLatestModuleQuiz: (libraryId: string, moduleSlug: string) => Promise<Quiz>
+    getModuleSubmissions: (libraryId: string, moduleSlug: string) => Promise<Submission[]>
+    getQuizSubmissions: (
+        libraryId: string,
+        moduleSlug: string,
+        quizId: string
+    ) => Promise<Submission[]>
+    getModuleStats: (libraryId: string, moduleSlug: string) => Promise<ModuleStats>
+    saveModuleStats: (libraryId: string, moduleSlug: string, stats: ModuleStats) => Promise<void>
     getAllModuleStats: () => Promise<ModuleStats[]>
     getDueModules: () => Promise<Mod[]>
 }
 
-export const ModuleContext = createContext<ModuleContextType>({
-    ...window.api.modules,
-    readModuleBySlug: window.api.modules.readModuleBySlug,
-    saveModuleQuiz: window.api.modules.saveModuleQuiz,
-    deleteModuleQuiz: window.api.modules.deleteModuleQuiz,
-    readModuleQuiz: window.api.modules.readModuleQuiz,
-    readModuleSubmission: window.api.modules.readModuleSubmission,
-    saveModuleSubmission: window.api.modules.saveModuleSubmission,
-    getQuizAttemptCount: window.api.modules.getQuizAttemptCount,
-    getLatestModuleQuiz: window.api.modules.getLatestModuleQuiz,
-    getModuleSubmissions: window.api.modules.getModuleSubmissions,
-    getQuizSubmissions: window.api.modules.getQuizSubmissions,
-    getModuleStats: window.api.modules.getModuleStats,
-    saveModuleStats: window.api.modules.saveModuleStats,
-    getAllModuleStats: window.api.modules.getAllModuleStats,
-    getDueModules: window.api.modules.getDueModules,
-})
+export const ModuleContext = createContext<ModuleContextType>(window.api.modules)
 
 export function ModuleProvider({ children }: { children: React.ReactNode }) {
     return <ModuleContext.Provider value={window.api.modules}>{children}</ModuleContext.Provider>

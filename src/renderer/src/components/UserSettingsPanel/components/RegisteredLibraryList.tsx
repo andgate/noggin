@@ -57,7 +57,7 @@ export function RegisteredLibraryList() {
                 await createLibrary(values.path, {
                     name: values.name,
                     description: values.description,
-                    createdAt: Date.now(),
+                    createdAt: new Date().toISOString(),
                     slug: values.name.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
                 })
 

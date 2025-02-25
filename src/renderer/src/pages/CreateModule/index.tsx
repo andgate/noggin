@@ -107,6 +107,7 @@ export function CreateModulePage() {
                     overview: moduleData.overview,
                     createdAt: now,
                     updatedAt: now,
+                    libraryId: await getLibraryIdFromPath(libraryPath),
                 }
 
                 // Create the initial module structure
@@ -195,6 +196,20 @@ export function CreateModulePage() {
 
     const handleClose = () => {
         navigate({ to: '/' })
+    }
+
+    // Add a helper function to get library ID from path
+    const getLibraryIdFromPath = async (libraryPath: string): Promise<string> => {
+        try {
+            const library = await window.api.library.readLibrary(libraryPath)
+            if (!library || !library.metadata || !library.metadata.slug) {
+                throw new Error(`Could not determine library ID for path: ${libraryPath}`)
+            }
+            return library.metadata.slug
+        } catch (error) {
+            console.error('Error getting library ID from path:', error)
+            throw new Error(`Could not determine library ID for path: ${libraryPath}`)
+        }
     }
 
     return (

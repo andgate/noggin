@@ -6,6 +6,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useEffect, useState } from 'react'
 
 interface QuizSessionPageProps {
+    libraryId: string
     moduleId: string
     quiz: Quiz
 }
@@ -64,10 +65,14 @@ const QuestionCard: React.FC<{
     )
 }
 
-export function QuizSessionPage({ moduleId, quiz }: QuizSessionPageProps) {
+export function QuizSessionPage({ libraryId, moduleId, quiz }: QuizSessionPageProps) {
     const navigate = useNavigate()
     const module = useModule()
     const [startTime] = useState(() => new Date())
+
+    if (!libraryId) {
+        throw new Error('Library ID is required')
+    }
 
     const form = useForm({
         initialValues: quiz.questions.reduce(
@@ -99,21 +104,28 @@ export function QuizSessionPage({ moduleId, quiz }: QuizSessionPageProps) {
                 status: 'pending' as const,
             }))
 
+            const lastAttempt = await module.getQuizAttemptCount(libraryId, moduleId, quiz.id)
+
             const submission = submissionSchema.parse({
                 quizId: quiz.id,
-                attemptNumber: (await module.getQuizAttemptCount(moduleId, quiz.id)) + 1,
+                attemptNumber: lastAttempt + 1,
                 completedAt: new Date().toISOString(),
                 quizTitle: quiz.title,
                 timeElapsed,
                 timeLimit: quiz.timeLimit,
+                libraryId,
+                moduleSlug: moduleId,
                 responses: formattedResponses,
                 status: 'pending' as const,
             })
 
-            await module.saveModuleSubmission(moduleId, submission)
-            navigate({ to: '/quiz/view/$moduleId/$quizId', params: { moduleId, quizId: quiz.id } })
+            await module.saveModuleSubmission(libraryId, moduleId, submission)
+            navigate({
+                to: '/quiz/view/$libraryId/$moduleId/$quizId',
+                params: { libraryId, moduleId, quizId: quiz.id },
+            })
         },
-        [moduleId, quiz, startTime, navigate, module]
+        [libraryId, moduleId, quiz, startTime, navigate, module]
     )
 
     const handleQuit = useCallback(() => {

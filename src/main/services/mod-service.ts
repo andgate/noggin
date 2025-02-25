@@ -478,7 +478,7 @@ export async function getDueModules(): Promise<Mod[]> {
 }
 
 export async function readModuleMetadata(modPath: string): Promise<ModuleMetadata> {
-    const metadataPath = path.join(modPath, '.mod', 'metadata.json')
+    const metadataPath = path.join(modPath, '.mod', 'meta.json')
     try {
         return await readJsonFile(metadataPath, moduleMetadataSchema)
     } catch (error) {
@@ -490,7 +490,7 @@ export async function writeModuleMetadata(
     modPath: string,
     metadata: ModuleMetadata
 ): Promise<void> {
-    const metadataPath = path.join(modPath, '.mod', 'metadata.json')
+    const metadataPath = path.join(modPath, '.mod', 'meta.json')
     await ensureDir(path.dirname(metadataPath))
     await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2))
 }

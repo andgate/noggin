@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { quizSchema, submissionSchema } from './quiz-types'
 
 export const moduleMetadataSchema = z.object({
+    libraryId: z.string(),
     title: z.string(),
     slug: z.string(),
     overview: z.string(),

@@ -22,7 +22,7 @@ import { useQueries, useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { CreateLibraryModal } from '../CreateLibraryModal'
-import { buildModuleTreeData, getInitialExpandedState, libraryToTreeNode } from './module-tree'
+import { getInitialExpandedState, libraryToTreeNode } from './module-tree'
 
 function TreeNode({ node, expanded, elementProps, tree }: RenderTreeNodePayload) {
     const navigate = useNavigate()

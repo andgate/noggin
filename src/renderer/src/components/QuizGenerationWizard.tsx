@@ -7,6 +7,7 @@ import { RainbowWrapper } from './RainbowWrapper'
 
 interface QuizGenerationWizardProps {
     sources: string[]
+    libraryId: string
     moduleSlug: string
     onComplete: (quiz: Quiz) => void
     onCancel: () => void
@@ -151,6 +152,7 @@ function PreviewView({
 
 export function QuizGenerationWizard({
     sources,
+    libraryId,
     moduleSlug,
     onComplete,
     onCancel,
@@ -191,7 +193,7 @@ export function QuizGenerationWizard({
             throw new Error('Invalid quiz data')
         }
 
-        await saveModuleQuiz(moduleSlug, quiz)
+        await saveModuleQuiz(libraryId, moduleSlug, quiz)
         onComplete(quiz)
     }
 

@@ -116,7 +116,7 @@ This dual approach allows flexibility in content organization while maintaining 
 A **module** encapsulates source materials, quizzes, training material, and tracking data. The following structure defines a module:
 
 - **Source Materials**: User-provided materials, such as PDFs or text files, stored in the module root.
-- **Module Metadata**: Essential static module information stored in `.mod/metadata.json`.
+- **Module Metadata**: Essential static module information stored in `.mod/meta.json`.
 - **Module Statistics**: Dynamic usage data stored in `.mod/stats.json`.
 - **Quizzes**: A set of structured, static quizzes stored in `.mod/quizzes/`.
 - **Quiz Submissions**: Individual quiz attempt records stored in `.mod/submissions/`.
@@ -127,7 +127,7 @@ A **module** encapsulates source materials, quizzes, training material, and trac
 ```
 <module_slug>/
 ├── .mod/
-│   ├── metadata.json  # Static module information
+│   ├── meta.json  # Static module information
 │   ├── stats.json     # Dynamic usage statistics
 │   ├── lesson.json    # Current active lesson
 │   ├── quizzes/
@@ -140,7 +140,7 @@ A **module** encapsulates source materials, quizzes, training material, and trac
 ├── source_notes.txt
 ```
 
-#### Module Metadata Format (metadata.json)
+#### Module Metadata Format (meta.json)
 
 Module metadata stores essential static information about each learning module. This immutable data defines the module's identity and core characteristics, serving as a reference point for the learning system:
 

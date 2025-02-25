@@ -54,19 +54,37 @@ export function PracticeFeed() {
         }
     }
 
-    const handleModuleClick = (moduleId: string) => {
+    const handleModuleClick = (moduleId: string, libraryId: string) => {
+        if (!libraryId) {
+            notifications.show({
+                title: 'Error',
+                message: 'Library ID is required for navigation',
+                color: 'red',
+            })
+            return
+        }
+
         navigate({
             to: '/module/view/$libraryId/$moduleId',
-            params: { libraryId: 'nog', moduleId },
+            params: { libraryId, moduleId },
         })
     }
 
-    const handleStartQuiz = async (moduleId: string) => {
+    const handleStartQuiz = async (moduleId: string, libraryId: string) => {
+        if (!libraryId) {
+            notifications.show({
+                title: 'Error',
+                message: 'Library ID is required for navigation',
+                color: 'red',
+            })
+            return
+        }
+
         try {
-            const quiz = await window.api.modules.getLatestModuleQuiz('nog', moduleId)
+            const quiz = await window.api.modules.getLatestModuleQuiz(libraryId, moduleId)
             navigate({
-                to: '/quiz/session/$moduleId/$quizId',
-                params: { moduleId, quizId: quiz.id },
+                to: '/quiz/session/$libraryId/$moduleId/$quizId',
+                params: { libraryId, moduleId, quizId: quiz.id },
             })
         } catch (error) {
             notifications.show({
@@ -95,7 +113,7 @@ export function PracticeFeed() {
                         height: '180px',
                         cursor: 'pointer',
                     }}
-                    onClick={() => handleModuleClick(mod.id)}
+                    onClick={() => handleModuleClick(mod.id, mod.metadata.libraryId)}
                 >
                     <Group justify="space-between" mb="xs">
                         <Text fw={500} size="sm" truncate>
@@ -116,7 +134,7 @@ export function PracticeFeed() {
                             leftSection={<IconPlayerPlay size={14} />}
                             onClick={(e) => {
                                 e.stopPropagation()
-                                handleStartQuiz(mod.id)
+                                handleStartQuiz(mod.id, mod.metadata.libraryId)
                             }}
                             title="Start the most recent quiz for this module"
                         >

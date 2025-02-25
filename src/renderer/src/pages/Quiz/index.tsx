@@ -5,13 +5,18 @@ import { useNavigate } from '@tanstack/react-router'
 import { QuestionList } from './components/QuestionList'
 
 export type QuizPageProps = {
+    libraryId: string
     moduleId: string
     quiz: Quiz
     submissions: Submission[]
 }
 
-export function QuizPage({ moduleId, quiz, submissions }: QuizPageProps) {
+export function QuizPage({ libraryId, moduleId, quiz, submissions }: QuizPageProps) {
     const navigate = useNavigate()
+
+    if (!libraryId) {
+        throw new Error('Library ID is required')
+    }
 
     return (
         <Stack h="100vh">
@@ -21,7 +26,7 @@ export function QuizPage({ moduleId, quiz, submissions }: QuizPageProps) {
                     onClick={() =>
                         navigate({
                             to: '/module/view/$libraryId/$moduleId',
-                            params: { libraryId: 'nog', moduleId },
+                            params: { libraryId, moduleId },
                         })
                     }
                 >
@@ -42,8 +47,8 @@ export function QuizPage({ moduleId, quiz, submissions }: QuizPageProps) {
                                 variant="light"
                                 onClick={() =>
                                     navigate({
-                                        to: '/quiz/session/$moduleId/$quizId',
-                                        params: { moduleId, quizId: quiz.id },
+                                        to: '/quiz/session/$libraryId/$moduleId/$quizId',
+                                        params: { libraryId, moduleId, quizId: quiz.id },
                                     })
                                 }
                             >
@@ -70,8 +75,9 @@ export function QuizPage({ moduleId, quiz, submissions }: QuizPageProps) {
                                                 size="xs"
                                                 onClick={() =>
                                                     navigate({
-                                                        to: '/submission/$moduleId/$quizId/$attempt',
+                                                        to: '/submission/$libraryId/$moduleId/$quizId/$attempt',
                                                         params: {
+                                                            libraryId,
                                                             moduleId,
                                                             quizId: quiz.id,
                                                             attempt: `${submission.attemptNumber}`,
