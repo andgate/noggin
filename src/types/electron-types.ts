@@ -20,31 +20,31 @@ interface ModuleAPI {
     removeModule: (modulePath: string) => Promise<void>
     writeModuleSource: (modPath: string, sourceFile: SimpleFile) => Promise<string>
     deleteModuleSource: (sourcePath: string) => Promise<void>
-    readModuleBySlug: (libraryId: string, moduleSlug: string) => Promise<Mod>
-    saveModuleQuiz: (libraryId: string, moduleSlug: string, quiz: Quiz) => Promise<void>
-    deleteModuleQuiz: (libraryId: string, moduleSlug: string, quizId: string) => Promise<void>
-    readModuleQuiz: (libraryId: string, moduleSlug: string, quizId: string) => Promise<Quiz>
+    readModuleById: (libraryId: string, moduleId: string) => Promise<Mod>
+    saveModuleQuiz: (libraryId: string, moduleId: string, quiz: Quiz) => Promise<void>
+    deleteModuleQuiz: (libraryId: string, moduleId: string, quizId: string) => Promise<void>
+    readModuleQuiz: (libraryId: string, moduleId: string, quizId: string) => Promise<Quiz>
     readModuleSubmission: (
         libraryId: string,
-        moduleSlug: string,
+        moduleId: string,
         quizId: string,
         attempt: number
     ) => Promise<Submission>
     saveModuleSubmission: (
         libraryId: string,
-        moduleSlug: string,
+        moduleId: string,
         submission: Submission
     ) => Promise<void>
-    getQuizAttemptCount: (libraryId: string, moduleSlug: string, quizId: string) => Promise<number>
-    getLatestModuleQuiz: (libraryId: string, moduleSlug: string) => Promise<Quiz>
-    getModuleSubmissions: (libraryId: string, moduleSlug: string) => Promise<Submission[]>
+    getQuizAttemptCount: (libraryId: string, moduleId: string, quizId: string) => Promise<number>
+    getLatestModuleQuiz: (libraryId: string, moduleId: string) => Promise<Quiz>
+    getModuleSubmissions: (libraryId: string, moduleId: string) => Promise<Submission[]>
     getQuizSubmissions: (
         libraryId: string,
-        moduleSlug: string,
+        moduleId: string,
         quizId: string
     ) => Promise<Submission[]>
-    getModuleStats: (libraryId: string, moduleSlug: string) => Promise<ModuleStats>
-    saveModuleStats: (libraryId: string, moduleSlug: string, stats: ModuleStats) => Promise<void>
+    getModuleStats: (libraryId: string, moduleId: string) => Promise<ModuleStats>
+    saveModuleStats: (libraryId: string, moduleId: string, stats: ModuleStats) => Promise<void>
     getAllModuleStats: () => Promise<ModuleStats[]>
     getDueModules: () => Promise<Mod[]>
     getModuleOverviews: (libraryId: string) => Promise<ModuleOverview[]>

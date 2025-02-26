@@ -16,3 +16,8 @@ export function slugify(str: string): string {
         ? parts.join('_').substring(0, 255) // Join with underscores and limit length
         : '' // Return empty string if no parts remain
 }
+
+export function createModuleId(moduleSlug: string, createdAt: string): string {
+    const timestamp = createdAt.replace(/[-:Z]/g, '')
+    return `${moduleSlug}-${timestamp}`
+}

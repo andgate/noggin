@@ -13,7 +13,7 @@ import {
     getModuleSubmissions,
     getQuizAttemptCount,
     getQuizSubmissions,
-    readModuleBySlug,
+    readModuleById,
     readModuleData,
     readModuleMetadata,
     readModuleQuiz,
@@ -51,81 +51,81 @@ export function registerModuleIPC(): void {
         await deleteModuleSource(sourcePath)
     })
 
-    ipcMain.handle('modules:readModuleBySlug', async (_, libraryId: string, moduleSlug: string) => {
-        return readModuleBySlug(libraryId, moduleSlug)
+    ipcMain.handle('modules:readModuleById', async (_, libraryId: string, moduleId: string) => {
+        return readModuleById(libraryId, moduleId)
     })
 
     ipcMain.handle(
         'modules:saveModuleQuiz',
-        async (_, libraryId: string, moduleSlug: string, quiz: Quiz) => {
-            await saveModuleQuiz(libraryId, moduleSlug, quiz)
+        async (_, libraryId: string, moduleId: string, quiz: Quiz) => {
+            await saveModuleQuiz(libraryId, moduleId, quiz)
         }
     )
 
     ipcMain.handle(
         'modules:deleteModuleQuiz',
-        async (_, libraryId: string, moduleSlug: string, quizId: string) => {
-            await deleteModuleQuiz(libraryId, moduleSlug, quizId)
+        async (_, libraryId: string, moduleId: string, quizId: string) => {
+            await deleteModuleQuiz(libraryId, moduleId, quizId)
         }
     )
 
     ipcMain.handle(
         'modules:readModuleQuiz',
-        async (_, libraryId: string, moduleSlug: string, quizId: string) => {
-            return readModuleQuiz(libraryId, moduleSlug, quizId)
+        async (_, libraryId: string, moduleId: string, quizId: string) => {
+            return readModuleQuiz(libraryId, moduleId, quizId)
         }
     )
 
     ipcMain.handle(
         'modules:saveModuleSubmission',
-        async (_, libraryId: string, moduleSlug: string, submission: Submission) => {
-            await saveModuleSubmission(libraryId, moduleSlug, submission)
+        async (_, libraryId: string, moduleId: string, submission: Submission) => {
+            await saveModuleSubmission(libraryId, moduleId, submission)
         }
     )
 
     ipcMain.handle(
         'modules:readModuleSubmission',
-        async (_, libraryId: string, moduleSlug: string, quizId: string, attempt: number) => {
-            return readModuleSubmission(libraryId, moduleSlug, quizId, attempt)
+        async (_, libraryId: string, moduleId: string, quizId: string, attempt: number) => {
+            return readModuleSubmission(libraryId, moduleId, quizId, attempt)
         }
     )
 
     ipcMain.handle(
         'modules:getQuizAttemptCount',
-        async (_, libraryId: string, moduleSlug: string, quizId: string) => {
-            return getQuizAttemptCount(libraryId, moduleSlug, quizId)
+        async (_, libraryId: string, moduleId: string, quizId: string) => {
+            return getQuizAttemptCount(libraryId, moduleId, quizId)
         }
     )
 
     ipcMain.handle(
         'modules:getLatestModuleQuiz',
-        async (_, libraryId: string, moduleSlug: string) => {
-            return getLatestModuleQuiz(libraryId, moduleSlug)
+        async (_, libraryId: string, moduleId: string) => {
+            return getLatestModuleQuiz(libraryId, moduleId)
         }
     )
 
     ipcMain.handle(
         'modules:getModuleSubmissions',
-        async (_, libraryId: string, moduleSlug: string) => {
-            return getModuleSubmissions(libraryId, moduleSlug)
+        async (_, libraryId: string, moduleId: string) => {
+            return getModuleSubmissions(libraryId, moduleId)
         }
     )
 
     ipcMain.handle(
         'modules:getQuizSubmissions',
-        async (_, libraryId: string, moduleSlug: string, quizId: string) => {
-            return getQuizSubmissions(libraryId, moduleSlug, quizId)
+        async (_, libraryId: string, moduleId: string, quizId: string) => {
+            return getQuizSubmissions(libraryId, moduleId, quizId)
         }
     )
 
-    ipcMain.handle('modules:getModuleStats', async (_, libraryId: string, moduleSlug: string) => {
-        return getModuleStats(libraryId, moduleSlug)
+    ipcMain.handle('modules:getModuleStats', async (_, libraryId: string, moduleId: string) => {
+        return getModuleStats(libraryId, moduleId)
     })
 
     ipcMain.handle(
         'modules:saveModuleStats',
-        async (_, libraryId: string, moduleSlug: string, stats: ModuleStats) => {
-            await saveModuleStats(libraryId, moduleSlug, stats)
+        async (_, libraryId: string, moduleId: string, stats: ModuleStats) => {
+            await saveModuleStats(libraryId, moduleId, stats)
         }
     )
 

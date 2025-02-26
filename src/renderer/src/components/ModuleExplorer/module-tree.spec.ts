@@ -46,6 +46,9 @@ describe('module-tree utilities', () => {
             expect(result).toEqual({
                 value: 'module-mod1',
                 label: 'Module 1',
+                nodeProps: {
+                    libraryId: 'lib1',
+                },
             })
         })
     })
@@ -58,8 +61,20 @@ describe('module-tree utilities', () => {
                 value: 'library-lib1',
                 label: 'Library 1',
                 children: [
-                    { value: 'module-mod1', label: 'Module 1' },
-                    { value: 'module-mod2', label: 'Module 2' },
+                    {
+                        value: 'module-mod1',
+                        label: 'Module 1',
+                        nodeProps: {
+                            libraryId: 'lib1',
+                        },
+                    },
+                    {
+                        value: 'module-mod2',
+                        label: 'Module 2',
+                        nodeProps: {
+                            libraryId: 'lib1',
+                        },
+                    },
                 ],
             })
         })
@@ -80,7 +95,15 @@ describe('module-tree utilities', () => {
             expect(result).toEqual({
                 value: 'library-unorganized',
                 label: 'Unorganized',
-                children: [{ value: 'module-mod4', label: 'Module 4' }],
+                children: [
+                    {
+                        value: 'module-mod4',
+                        label: 'Module 4',
+                        nodeProps: {
+                            libraryId: undefined,
+                        },
+                    },
+                ],
             })
         })
 

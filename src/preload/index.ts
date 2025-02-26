@@ -26,41 +26,41 @@ const api: NogginElectronAPI = {
             ipcRenderer.invoke('modules:writeModuleSource', modulePath, sourceFile),
         deleteModuleSource: (sourcePath: string) =>
             ipcRenderer.invoke('modules:deleteModuleSource', sourcePath),
-        readModuleBySlug: (libraryId: string, moduleSlug: string) =>
-            ipcRenderer.invoke('modules:readModuleBySlug', libraryId, moduleSlug),
-        saveModuleQuiz: (libraryId: string, moduleSlug: string, quiz: Quiz) =>
-            ipcRenderer.invoke('modules:saveModuleQuiz', libraryId, moduleSlug, quiz),
-        deleteModuleQuiz: (libraryId: string, moduleSlug: string, quizId: string) =>
-            ipcRenderer.invoke('modules:deleteModuleQuiz', libraryId, moduleSlug, quizId),
-        readModuleQuiz: (libraryId: string, moduleSlug: string, quizId: string) =>
-            ipcRenderer.invoke('modules:readModuleQuiz', libraryId, moduleSlug, quizId),
+        readModuleById: (libraryId: string, moduleId: string) =>
+            ipcRenderer.invoke('modules:readModuleById', libraryId, moduleId),
+        saveModuleQuiz: (libraryId: string, moduleId: string, quiz: Quiz) =>
+            ipcRenderer.invoke('modules:saveModuleQuiz', libraryId, moduleId, quiz),
+        deleteModuleQuiz: (libraryId: string, moduleId: string, quizId: string) =>
+            ipcRenderer.invoke('modules:deleteModuleQuiz', libraryId, moduleId, quizId),
+        readModuleQuiz: (libraryId: string, moduleId: string, quizId: string) =>
+            ipcRenderer.invoke('modules:readModuleQuiz', libraryId, moduleId, quizId),
         readModuleSubmission: (
             libraryId: string,
-            moduleSlug: string,
+            moduleId: string,
             quizId: string,
             attempt: number
         ) =>
             ipcRenderer.invoke(
                 'modules:readModuleSubmission',
                 libraryId,
-                moduleSlug,
+                moduleId,
                 quizId,
                 attempt
             ),
-        saveModuleSubmission: (libraryId: string, moduleSlug: string, submission: Submission) =>
-            ipcRenderer.invoke('modules:saveModuleSubmission', libraryId, moduleSlug, submission),
-        getQuizAttemptCount: (libraryId: string, moduleSlug: string, quizId: string) =>
-            ipcRenderer.invoke('modules:getQuizAttemptCount', libraryId, moduleSlug, quizId),
-        getLatestModuleQuiz: (libraryId: string, moduleSlug: string) =>
-            ipcRenderer.invoke('modules:getLatestModuleQuiz', libraryId, moduleSlug),
-        getModuleSubmissions: (libraryId: string, moduleSlug: string) =>
-            ipcRenderer.invoke('modules:getModuleSubmissions', libraryId, moduleSlug),
-        getQuizSubmissions: (libraryId: string, moduleSlug: string, quizId: string) =>
-            ipcRenderer.invoke('modules:getQuizSubmissions', libraryId, moduleSlug, quizId),
-        getModuleStats: (libraryId: string, moduleSlug: string) =>
-            ipcRenderer.invoke('modules:getModuleStats', libraryId, moduleSlug),
-        saveModuleStats: (libraryId: string, moduleSlug: string, stats: ModuleStats) =>
-            ipcRenderer.invoke('modules:saveModuleStats', libraryId, moduleSlug, stats),
+        saveModuleSubmission: (libraryId: string, moduleId: string, submission: Submission) =>
+            ipcRenderer.invoke('modules:saveModuleSubmission', libraryId, moduleId, submission),
+        getQuizAttemptCount: (libraryId: string, moduleId: string, quizId: string) =>
+            ipcRenderer.invoke('modules:getQuizAttemptCount', libraryId, moduleId, quizId),
+        getLatestModuleQuiz: (libraryId: string, moduleId: string) =>
+            ipcRenderer.invoke('modules:getLatestModuleQuiz', libraryId, moduleId),
+        getModuleSubmissions: (libraryId: string, moduleId: string) =>
+            ipcRenderer.invoke('modules:getModuleSubmissions', libraryId, moduleId),
+        getQuizSubmissions: (libraryId: string, moduleId: string, quizId: string) =>
+            ipcRenderer.invoke('modules:getQuizSubmissions', libraryId, moduleId, quizId),
+        getModuleStats: (libraryId: string, moduleId: string) =>
+            ipcRenderer.invoke('modules:getModuleStats', libraryId, moduleId),
+        saveModuleStats: (libraryId: string, moduleId: string, stats: ModuleStats) =>
+            ipcRenderer.invoke('modules:saveModuleStats', libraryId, moduleId, stats),
         getAllModuleStats: () => ipcRenderer.invoke('modules:getAllModuleStats'),
         getDueModules: () => ipcRenderer.invoke('modules:getDueModules'),
         getModuleOverviews: (libraryId: string) =>

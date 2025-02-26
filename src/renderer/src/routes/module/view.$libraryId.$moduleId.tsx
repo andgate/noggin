@@ -5,7 +5,7 @@ import { ModulePage } from '../../pages/Module'
 export const Route = createFileRoute('/module/view/$libraryId/$moduleId')({
     component: ModuleViewRoot,
     loader: async ({ params }): Promise<Mod> => {
-        return await window.api.modules.readModuleBySlug(params.libraryId, params.moduleId)
+        return await window.api.modules.readModuleById(params.libraryId, params.moduleId)
     },
 })
 

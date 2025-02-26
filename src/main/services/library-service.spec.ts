@@ -22,7 +22,6 @@ vi.mock('./store-service', () => ({
     clearStore: vi.fn(),
 }))
 
-vi.mock('fs/promises')
 vi.mock('electron-store', () => {
     return {
         default: class MockStore {
@@ -66,7 +65,9 @@ vi.mock('@noggin/shared/slug', () => ({
 }))
 
 describe('LibraryService', () => {
-    const mockLibraryPath = '/test/library'.replace(/\\/g, '/')
+    const mockLibraryPath = '/test/library'
+    const existingLibraryPath = '/existing/library'
+
     const mockMetadata: LibraryMetadata = {
         name: 'Test Library',
         description: 'Test Description',
@@ -75,15 +76,21 @@ describe('LibraryService', () => {
     }
 
     const mockSettings = {
-        libraryPaths: ['/existing/library'.replace(/\\/g, '/')],
+        libraryPaths: [existingLibraryPath],
     }
 
     beforeEach(() => {
+        vi.resetAllMocks()
+
         vi.mocked(getStoreValue).mockReturnValue({
-            libraryPaths: ['/existing/library'.replace(/\\/g, '/')],
+            libraryPaths: [existingLibraryPath],
         })
-        vi.mocked(ensureDir).mockClear()
+        vi.mocked(ensureDir).mockResolvedValue(undefined)
         vi.mocked(fs.writeFile).mockResolvedValue(undefined)
+
+        vi.mocked(path.join).mockImplementation((...args) => args.join('/'))
+
+        vi.mocked(path.normalize).mockImplementation((p) => p)
     })
 
     afterEach(() => {
@@ -108,14 +115,14 @@ describe('LibraryService', () => {
         })
 
         it('should not add duplicate library path', async () => {
-            await registerLibrary('/existing/library'.replace(/\\/g, '/'))
+            await registerLibrary(existingLibraryPath)
             expect(setStoreValue).not.toHaveBeenCalled()
         })
     })
 
     describe('unregisterLibrary', () => {
         it('should remove library path from settings', async () => {
-            await unregisterLibrary('/existing/library'.replace(/\\/g, '/'))
+            await unregisterLibrary(existingLibraryPath)
             expect(setStoreValue).toHaveBeenCalledWith('userSettings', {
                 ...mockSettings,
                 libraryPaths: [],
@@ -125,15 +132,12 @@ describe('LibraryService', () => {
 
     describe('createLibrary', () => {
         it('should create library directory and metadata file', async () => {
-            const normalizedPath = path.normalize(mockLibraryPath).replace(/\\/g, '/')
             await createLibrary(mockLibraryPath, mockMetadata)
 
-            expect(ensureDir).toHaveBeenCalledWith(normalizedPath)
-            expect(ensureDir).toHaveBeenCalledWith(
-                path.join(normalizedPath, '.lib').replace(/\\/g, '/')
-            )
+            expect(ensureDir).toHaveBeenCalledWith(mockLibraryPath)
+            expect(ensureDir).toHaveBeenCalledWith(`${mockLibraryPath}/.lib`)
             expect(fs.writeFile).toHaveBeenCalledWith(
-                path.join(normalizedPath, '.lib', 'meta.json').replace(/\\/g, '/'),
+                `${mockLibraryPath}/.lib/meta.json`,
                 JSON.stringify({ ...mockMetadata, slug: 'test-library' }, null, 2)
             )
         })

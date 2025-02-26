@@ -3,6 +3,8 @@ import { quizSchema, submissionSchema } from './quiz-types'
 
 export const moduleMetadataSchema = z.object({
     libraryId: z.string(),
+    id: z.string(),
+    path: z.string(),
     title: z.string(),
     slug: z.string(),
     overview: z.string(),
@@ -18,8 +20,6 @@ export const moduleStatsSchema = z.object({
 })
 
 export const modSchema = z.object({
-    id: z.string(),
-    path: z.string(),
     metadata: moduleMetadataSchema,
     stats: moduleStatsSchema.optional(),
     sources: z.array(z.string()),
@@ -32,6 +32,7 @@ export type ModuleStats = z.infer<typeof moduleStatsSchema>
 export type Mod = z.infer<typeof modSchema>
 
 export const moduleOverviewSchema = z.object({
+    id: z.string(),
     slug: z.string(),
     displayName: z.string(),
     librarySlug: z.string().optional(),

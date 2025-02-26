@@ -1,3 +1,3 @@
-import electronViteConfig from './electron.vite.config'
+import { config } from './electron.vite.config'
 
-export default electronViteConfig.main || {}
+export default config.main
