@@ -3,7 +3,14 @@ import { quizSchema, submissionSchema } from '@noggin/types/quiz-types'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { findFiles, readJsonFile, writeJsonFile } from '../common/fs-utils'
+import {
+    ensureDir,
+    findFiles,
+    readJsonFile,
+    removeDirectoryRecursively,
+    writeJsonFile,
+} from '../common/fs-utils'
+import { getModuleMetadataPath, getQuizPath, getSubmissionPath } from '../common/module-utils'
 import {
     deleteModuleSource,
     ensureModuleDirectories,
@@ -21,6 +28,11 @@ import { resolveModulePath } from './module-discovery-service'
 vi.mock('../common/fs-utils')
 vi.mock('../common/module-utils')
 vi.mock('./module-discovery-service')
+
+// Add mock implementation for module utils functions
+vi.mocked(getModuleMetadataPath).mockImplementation((modPath) => {
+    return path.join(modPath, '.mod', 'meta.json')
+})
 
 describe('ModuleCoreService', () => {
     // Mock data
@@ -55,7 +67,8 @@ describe('ModuleCoreService', () => {
             // Arrange
             const metadataPath = `${mockModulePath}/.mod/meta.json`
 
-            vi.mocked(path.join).mockReturnValueOnce(metadataPath)
+            // Make getModuleMetadataPath return the expected path
+            vi.mocked(getModuleMetadataPath).mockReturnValueOnce(metadataPath)
             vi.mocked(readJsonFile).mockResolvedValueOnce(mockModuleMetadata)
 
             // Act
@@ -71,7 +84,7 @@ describe('ModuleCoreService', () => {
             const metadataPath = `${mockModulePath}/.mod/meta.json`
             const mockError = new Error('Failed to read file')
 
-            vi.mocked(path.join).mockReturnValueOnce(metadataPath)
+            vi.mocked(getModuleMetadataPath).mockReturnValueOnce(metadataPath)
             vi.mocked(readJsonFile).mockRejectedValueOnce(mockError)
 
             // Act & Assert
@@ -86,7 +99,7 @@ describe('ModuleCoreService', () => {
             // Arrange
             const metadataPath = `${mockModulePath}/.mod/meta.json`
 
-            vi.mocked(path.join).mockReturnValueOnce(metadataPath)
+            vi.mocked(getModuleMetadataPath).mockReturnValueOnce(metadataPath)
             vi.mocked(writeJsonFile).mockResolvedValueOnce(undefined)
 
             // Act
@@ -119,29 +132,16 @@ describe('ModuleCoreService', () => {
     describe('readModuleData', () => {
         it('should read all module data components', async () => {
             // Arrange
-            vi.mocked(readModuleMetadata).mockResolvedValueOnce(mockModuleMetadata)
+            // Instead of mocking readModuleMetadata (which is in the same file),
+            // we mock the underlying dependencies
+            const metadataPath = `${mockModulePath}/.mod/meta.json`
+            vi.mocked(getModuleMetadataPath).mockReturnValueOnce(metadataPath)
 
-            // Mock findFiles for sources
-            vi.mocked(findFiles).mockImplementation(async (pattern, _options) => {
-                if (pattern.includes('*.{txt,pdf}')) {
-                    return [`${mockModulePath}/source1.txt`, `${mockModulePath}/source2.pdf`]
-                } else if (pattern.includes('quizzes')) {
-                    return [
-                        `${mockModulePath}/.mod/quizzes/quiz1.json`,
-                        `${mockModulePath}/.mod/quizzes/quiz2.json`,
-                    ]
-                } else if (pattern.includes('submissions')) {
-                    return [
-                        `${mockModulePath}/.mod/submissions/sub1.json`,
-                        `${mockModulePath}/.mod/submissions/sub2.json`,
-                    ]
-                }
-                return []
-            })
-
-            // Mock readJsonFile for quizzes and submissions
+            // Setup readJsonFile to return metadata when called with metadataPath
             vi.mocked(readJsonFile).mockImplementation(async (path, schema) => {
-                if (schema === quizSchema) {
+                if (path === metadataPath && schema === moduleMetadataSchema) {
+                    return mockModuleMetadata
+                } else if (schema === quizSchema) {
                     if (path.includes('quiz1')) {
                         return {
                             id: 'quiz1',
@@ -190,14 +190,33 @@ describe('ModuleCoreService', () => {
                         }
                     }
                 }
-                throw new Error('Unexpected schema')
+                throw new Error(`Unexpected path or schema: ${path}, ${schema}`)
+            })
+
+            // Mock findFiles for sources, quizzes, and submissions
+            vi.mocked(findFiles).mockImplementation(async (pattern, _options) => {
+                if (pattern.includes('*.{txt,pdf}')) {
+                    return [`${mockModulePath}/source1.txt`, `${mockModulePath}/source2.pdf`]
+                } else if (pattern.includes('quizzes')) {
+                    return [
+                        `${mockModulePath}/.mod/quizzes/quiz1.json`,
+                        `${mockModulePath}/.mod/quizzes/quiz2.json`,
+                    ]
+                } else if (pattern.includes('submissions')) {
+                    return [
+                        `${mockModulePath}/.mod/submissions/sub1.json`,
+                        `${mockModulePath}/.mod/submissions/sub2.json`,
+                    ]
+                }
+                return []
             })
 
             // Act
             const result = await readModuleData(mockModulePath)
 
             // Assert
-            expect(readModuleMetadata).toHaveBeenCalledWith(mockModulePath)
+            // We shouldn't expect readModuleMetadata to be called as a mock
+            // since it's an internal function in the same file
             expect(findFiles).toHaveBeenCalledTimes(3)
             expect(result).toEqual({
                 metadata: mockModuleMetadata,
@@ -254,18 +273,32 @@ describe('ModuleCoreService', () => {
     describe('readModuleById', () => {
         it('should resolve path and read module data', async () => {
             // Arrange
-            vi.mocked(resolveModulePath).mockResolvedValueOnce(mockModulePath)
-            vi.mocked(readModuleData).mockResolvedValueOnce({
-                metadata: mockModuleMetadata,
-                stats: {
-                    moduleId: mockModuleId,
-                    currentBox: 1,
-                    lastReviewDate: '2024-01-01T00:00:00Z',
-                    nextDueDate: '2024-01-02T00:00:00Z',
-                },
-                sources: [`${mockModulePath}/source1.txt`],
-                quizzes: [],
-                submissions: [],
+            const metadataPath = `${mockModulePath}/.mod/meta.json`
+
+            // Mock resolveModulePath to return the module path
+            vi.mocked(resolveModulePath).mockResolvedValue(mockModulePath)
+
+            // Mock getModuleMetadataPath for the readModuleMetadata function
+            vi.mocked(getModuleMetadataPath).mockReturnValue(metadataPath)
+
+            // Mock readJsonFile to return mockModuleMetadata when called with metadata path
+            vi.mocked(readJsonFile).mockImplementation(async (path, schema) => {
+                if (path === metadataPath && schema === moduleMetadataSchema) {
+                    return mockModuleMetadata
+                }
+                throw new Error(`Unexpected path or schema: ${path}, ${schema}`)
+            })
+
+            // Mock findFiles for sources
+            vi.mocked(findFiles).mockImplementation(async (pattern, _options) => {
+                if (pattern.includes('*.{txt,pdf}')) {
+                    return [`${mockModulePath}/source1.txt`]
+                } else if (pattern.includes('quizzes')) {
+                    return []
+                } else if (pattern.includes('submissions')) {
+                    return []
+                }
+                return []
             })
 
             // Act
@@ -273,8 +306,11 @@ describe('ModuleCoreService', () => {
 
             // Assert
             expect(resolveModulePath).toHaveBeenCalledWith(mockLibraryId, mockModuleId)
-            expect(readModuleData).toHaveBeenCalledWith(mockModulePath)
+            // We can't expect readModuleData to be called directly since it's in the same file
             expect(result.metadata).toEqual(mockModuleMetadata)
+            expect(result.sources).toEqual([`${mockModulePath}/source1.txt`])
+            expect(result.quizzes).toEqual([])
+            expect(result.submissions).toEqual([])
         })
 
         it('should throw an error if module not found', async () => {
@@ -320,49 +356,58 @@ describe('ModuleCoreService', () => {
                 sources: [`${mockModulePath}/source1.txt`],
             }
 
-            // Mock quiz path and submission path
+            // Mock paths
+            const modDirPath = `${mockModulePath}/.mod`
+            const quizzesPath = `${mockModulePath}/.mod/quizzes`
+            const submissionsPath = `${mockModulePath}/.mod/submissions`
+            const metadataPath = `${mockModulePath}/.mod/meta.json`
             const quizPath = `${mockModulePath}/.mod/quizzes/quiz1.json`
             const subPath = `${mockModulePath}/.mod/submissions/quiz1-1.json`
 
-            vi.mocked(path.join).mockReturnValueOnce(quizPath).mockReturnValueOnce(subPath)
+            // Setup path.join mocks for ensureModuleDirectories
+            vi.mocked(path.join)
+                .mockReturnValueOnce(quizzesPath) // for ensureModuleDirectories
+                .mockReturnValueOnce(submissionsPath) // for ensureModuleDirectories
 
-            // Setup mocks for sub-functions
-            vi.mocked(ensureModuleDirectories).mockResolvedValueOnce(undefined)
-            vi.mocked(writeModuleMetadata).mockResolvedValueOnce(undefined)
+            // Mock getModuleMetadataPath for writeModuleMetadata
+            vi.mocked(getModuleMetadataPath).mockReturnValueOnce(metadataPath)
+
+            // Mock getQuizPath and getSubmissionPath
+            vi.mocked(getQuizPath).mockReturnValueOnce(quizPath)
+            vi.mocked(getSubmissionPath).mockReturnValueOnce(subPath)
+
+            // Mock the fs utility functions
+            vi.mocked(ensureDir).mockResolvedValue(undefined)
             vi.mocked(writeJsonFile).mockResolvedValue(undefined)
 
             // Act
             await writeModuleData(mockModulePath, mod)
 
             // Assert
-            expect(ensureModuleDirectories).toHaveBeenCalledWith(mockModulePath)
-            expect(writeModuleMetadata).toHaveBeenCalledWith(mockModulePath, mockModuleMetadata)
-            expect(writeJsonFile).toHaveBeenCalledTimes(2) // One for quiz, one for submission
+            expect(ensureDir).toHaveBeenCalledWith(quizzesPath)
+            expect(ensureDir).toHaveBeenCalledWith(submissionsPath)
+            expect(writeJsonFile).toHaveBeenCalledWith(metadataPath, mockModuleMetadata)
+            expect(writeJsonFile).toHaveBeenCalledWith(quizPath, mod.quizzes[0])
+            expect(writeJsonFile).toHaveBeenCalledWith(subPath, mod.submissions[0])
         })
     })
 
     describe('removeModule', () => {
         it('should remove module directory recursively', async () => {
             // Arrange
-            vi.mocked(fs.rm).mockResolvedValueOnce(undefined)
+            vi.mocked(removeDirectoryRecursively).mockResolvedValueOnce(undefined)
 
             // Act
             await removeModule(mockModulePath)
 
             // Assert
-            expect(fs.rm).toHaveBeenCalledWith(
-                mockModulePath,
-                expect.objectContaining({
-                    recursive: true,
-                    force: true,
-                })
-            )
+            expect(removeDirectoryRecursively).toHaveBeenCalledWith(mockModulePath)
         })
 
         it('should propagate errors from file system operations', async () => {
             // Arrange
             const mockError = new Error('Failed to remove directory')
-            vi.mocked(fs.rm).mockRejectedValueOnce(mockError)
+            vi.mocked(removeDirectoryRecursively).mockRejectedValueOnce(mockError)
 
             // Act & Assert
             await expect(removeModule(mockModulePath)).rejects.toThrow(mockError)

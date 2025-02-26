@@ -68,13 +68,8 @@ export async function getAllLibraries(): Promise<Library[]> {
     const paths = await getRegisteredLibraries()
     const libraries = await Promise.all(
         paths.map(async (path) => {
-            try {
-                return await readLibrary(path)
-            } catch (error) {
-                console.error(`Failed to read library at ${path}:`, error)
-                return null
-            }
+            return await readLibrary(path)
         })
     )
-    return libraries.filter((lib): lib is Library => lib !== null)
+    return libraries
 }

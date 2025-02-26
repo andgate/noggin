@@ -191,11 +191,10 @@ describe('LibraryService', () => {
             })
         })
 
-        it('should filter out libraries that fail to load', async () => {
+        it('should throw error when a library fails to load', async () => {
             vi.mocked(fs.readFile).mockRejectedValue(new Error('Failed to read'))
 
-            const libraries = await getAllLibraries()
-            expect(libraries).toHaveLength(0)
+            await expect(getAllLibraries()).rejects.toThrow('Failed to read')
         })
     })
 })
