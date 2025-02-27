@@ -357,7 +357,6 @@ describe('ModuleCoreService', () => {
             }
 
             // Mock paths
-            const modDirPath = `${mockModulePath}/.mod`
             const quizzesPath = `${mockModulePath}/.mod/quizzes`
             const submissionsPath = `${mockModulePath}/.mod/submissions`
             const metadataPath = `${mockModulePath}/.mod/meta.json`

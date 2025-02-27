@@ -3,18 +3,25 @@ import * as fs from 'fs/promises'
 import { glob } from 'glob'
 import * as path from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { readJsonFile } from '../common/fs-utils'
+import { findFiles, readJsonFile } from '../common/fs-utils'
+import { getModuleMetadataPath } from '../common/module-utils'
 import { getAllLibraries, getRegisteredLibraries } from './library-service'
 import {
     getAllModulePaths,
     getModuleOverviews,
     resolveModulePath,
-    scanLibraryModulePaths,
 } from './module-discovery-service'
 
 // Mock dependencies - only mock application modules, not system modules that are globally mocked
 vi.mock('./library-service')
 vi.mock('../common/fs-utils')
+vi.mock('../common/module-utils', async () => {
+    const actual = await vi.importActual('../common/module-utils')
+    return {
+        ...actual,
+        getModuleMetadataPath: vi.fn((modPath) => `${modPath}/.mod/meta.json`),
+    }
+})
 vi.mock('@noggin/shared/slug', () => ({
     createModuleId: vi.fn((slug, createdAt) => `${slug}-${createdAt.replace(/[-:]/g, '')}`),
 }))
@@ -53,6 +60,14 @@ describe('ModuleDiscoveryService', () => {
         vi.resetAllMocks()
         vi.mocked(getRegisteredLibraries).mockResolvedValue([mockLibraryPath])
         vi.mocked(getAllLibraries).mockResolvedValue(mockLibraries)
+
+        // Set up path.dirname to convert .mod paths to module paths
+        vi.mocked(path.dirname).mockImplementation((p) => {
+            if (p.endsWith('/.mod')) {
+                return p.replace('/.mod', '')
+            }
+            return p.split('/').slice(0, -1).join('/') || '.'
+        })
     })
 
     afterEach(() => {
@@ -62,9 +77,10 @@ describe('ModuleDiscoveryService', () => {
     describe('getAllModulePaths', () => {
         it('should return all module paths from all libraries', async () => {
             // Arrange
-            vi.mocked(scanLibraryModulePaths).mockResolvedValueOnce([
-                `${mockLibraryPath}/module1`,
-                `${mockLibraryPath}/module2`,
+            // Mock findFiles to return module directories
+            vi.mocked(findFiles).mockResolvedValueOnce([
+                `${mockLibraryPath}/module1/.mod`,
+                `${mockLibraryPath}/module2/.mod`,
             ])
 
             // Act
@@ -77,7 +93,7 @@ describe('ModuleDiscoveryService', () => {
 
         it('should return empty array if no modules found', async () => {
             // Arrange
-            vi.mocked(scanLibraryModulePaths).mockResolvedValueOnce([])
+            vi.mocked(findFiles).mockResolvedValueOnce([])
 
             // Act
             const result = await getAllModulePaths()
@@ -95,18 +111,15 @@ describe('ModuleDiscoveryService', () => {
                 `${mockLibraryPath}/module2/.mod`,
             ]
 
-            vi.mocked(glob).mockResolvedValueOnce(mockModPaths)
-
-            // Mock path.dirname to return parent directory
-            vi.mocked(path.dirname).mockImplementation((p) =>
-                p.endsWith('.mod') ? p.replace('/.mod', '') : p
-            )
+            vi.mocked(findFiles).mockResolvedValueOnce(mockModPaths)
 
             // Act
+            // Import scanLibraryModulePaths inside the test to ensure mocks have been set up
+            const { scanLibraryModulePaths } = await import('./module-discovery-service')
             const result = await scanLibraryModulePaths(mockLibraryPath)
 
             // Assert
-            expect(glob).toHaveBeenCalledWith('*/.mod', {
+            expect(findFiles).toHaveBeenCalledWith('*/.mod', {
                 cwd: mockLibraryPath,
                 absolute: true,
             })
@@ -115,9 +128,11 @@ describe('ModuleDiscoveryService', () => {
 
         it('should return empty array if no modules found', async () => {
             // Arrange
-            vi.mocked(glob).mockResolvedValueOnce([])
+            vi.mocked(findFiles).mockResolvedValueOnce([])
 
             // Act
+            // Import scanLibraryModulePaths inside the test to ensure mocks have been set up
+            const { scanLibraryModulePaths } = await import('./module-discovery-service')
             const result = await scanLibraryModulePaths(mockLibraryPath)
 
             // Assert
@@ -128,20 +143,26 @@ describe('ModuleDiscoveryService', () => {
     describe('getModuleOverviews', () => {
         it('should return overview information for all modules in a library', async () => {
             // Arrange
-            const modulePaths = [`${mockLibraryPath}/module1`, `${mockLibraryPath}/module2`]
+            const module1Path = `${mockLibraryPath}/module1`
+            const module2Path = `${mockLibraryPath}/module2`
+            const module1MetaPath = `${module1Path}/.mod/meta.json`
+            const module2MetaPath = `${module2Path}/.mod/meta.json`
 
-            vi.mocked(scanLibraryModulePaths).mockResolvedValueOnce(modulePaths)
+            vi.mocked(findFiles).mockResolvedValueOnce([
+                `${module1Path}/.mod`,
+                `${module2Path}/.mod`,
+            ])
 
-            // Mock readJsonFile to return module metadata
+            // Mock readJsonFile to return module metadata by checking the exact file path
             vi.mocked(readJsonFile).mockImplementation(async (path, schema) => {
                 if (schema === moduleMetadataSchema) {
-                    if (path.includes('module1')) {
+                    if (path === module1MetaPath) {
                         return {
                             ...mockModuleMetadata,
                             id: 'module1-id',
                             slug: 'module1',
                         }
-                    } else {
+                    } else if (path === module2MetaPath) {
                         return {
                             ...mockModuleMetadata,
                             id: 'module2-id',
@@ -149,7 +170,7 @@ describe('ModuleDiscoveryService', () => {
                         }
                     }
                 }
-                throw new Error('Unexpected schema')
+                throw new Error(`Unexpected path: ${path}`)
             })
 
             // Act
@@ -157,7 +178,10 @@ describe('ModuleDiscoveryService', () => {
 
             // Assert
             expect(getAllLibraries).toHaveBeenCalled()
-            expect(scanLibraryModulePaths).toHaveBeenCalledWith(mockLibraryPath)
+            expect(findFiles).toHaveBeenCalledWith('*/.mod', {
+                cwd: mockLibraryPath,
+                absolute: true,
+            })
             expect(result).toHaveLength(2)
             expect(result[0]).toEqual({
                 id: 'module1-id',
@@ -187,12 +211,14 @@ describe('ModuleDiscoveryService', () => {
     describe('resolveModulePath', () => {
         it('should resolve module path from library and module IDs', async () => {
             // Arrange
-            const modulePaths = [`${mockLibraryPath}/test-module`]
-            vi.mocked(scanLibraryModulePaths).mockResolvedValueOnce(modulePaths)
+            const modulePath = `${mockLibraryPath}/test-module`
+            const metadataPath = `${modulePath}/.mod/meta.json`
+
+            vi.mocked(findFiles).mockResolvedValueOnce([`${modulePath}/.mod`])
 
             // Mock readJsonFile to return module metadata
             vi.mocked(readJsonFile).mockImplementation(async (path, schema) => {
-                if (schema === moduleMetadataSchema) {
+                if (schema === moduleMetadataSchema && path === metadataPath) {
                     return {
                         ...mockModuleMetadata,
                         slug: 'test-module',
@@ -200,7 +226,7 @@ describe('ModuleDiscoveryService', () => {
                         id: mockModuleId,
                     }
                 }
-                throw new Error('Unexpected schema')
+                throw new Error(`Unexpected path: ${path}`)
             })
 
             // Act
@@ -208,7 +234,10 @@ describe('ModuleDiscoveryService', () => {
 
             // Assert
             expect(getAllLibraries).toHaveBeenCalled()
-            expect(scanLibraryModulePaths).toHaveBeenCalledWith(mockLibraryPath)
+            expect(findFiles).toHaveBeenCalledWith('*/.mod', {
+                cwd: mockLibraryPath,
+                absolute: true,
+            })
             expect(result).toBe(`${mockLibraryPath}/test-module`)
         })
 
@@ -224,12 +253,14 @@ describe('ModuleDiscoveryService', () => {
 
         it('should return null if module not found', async () => {
             // Arrange
-            const modulePaths = [`${mockLibraryPath}/test-module`]
-            vi.mocked(scanLibraryModulePaths).mockResolvedValueOnce(modulePaths)
+            const modulePath = `${mockLibraryPath}/test-module`
+            const metadataPath = `${modulePath}/.mod/meta.json`
+
+            vi.mocked(findFiles).mockResolvedValueOnce([`${modulePath}/.mod`])
 
             // Mock readJsonFile to return different module metadata (non-matching ID)
             vi.mocked(readJsonFile).mockImplementation(async (path, schema) => {
-                if (schema === moduleMetadataSchema) {
+                if (schema === moduleMetadataSchema && path === metadataPath) {
                     return {
                         ...mockModuleMetadata,
                         slug: 'different-module',
@@ -237,7 +268,7 @@ describe('ModuleDiscoveryService', () => {
                         id: 'different-module-id',
                     }
                 }
-                throw new Error('Unexpected schema')
+                throw new Error(`Unexpected path: ${path}`)
             })
 
             // Act
