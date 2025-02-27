@@ -28,6 +28,48 @@ This approach allows:
 2. Easier testing of the common modules themselves
 3. Clearer dependencies between modules being tested
 
+## Vitest Mocking Limitations and Solutions
+
+### Mocking Functions in the Same File
+
+Vitest cannot effectively mock functions defined in the same file as the functions being tested. This is a fundamental limitation of how the module system works.
+
+For example, in a file like `module-core-service.ts`, you cannot mock `readModuleMetadata` when testing `readModuleData` if both are defined in the same file.
+
+```typescript
+// This won't work:
+vi.mocked(readModuleMetadata).mockResolvedValue(mockData) // ❌
+```
+
+### Solution: Mock Underlying Dependencies
+
+Instead of trying to mock functions defined in the same file, mock the underlying dependencies that these functions call:
+
+1. Identify the external dependencies used by the function under test
+2. Set up mocks for those dependencies with appropriate return values
+3. Verify that the function correctly uses those dependencies
+
+Example from `module-core-service.spec.ts`:
+
+```typescript
+// Instead of mocking readModuleMetadata directly:
+vi.mocked(getModuleMetadataPath).mockReturnValue(metadataPath)
+vi.mocked(readJsonFile).mockImplementation(async (path, schema) => {
+    if (path === metadataPath && schema === moduleMetadataSchema) {
+        return mockModuleMetadata
+    }
+    // other conditions...
+})
+```
+
+When a function calls another function from the same file, adjust your assertion strategy to verify the final results rather than checking if the internal function was called.
+
+### Benefits of This Approach
+
+1. Tests are more resilient to internal refactoring
+2. Tests focus on the public API behavior rather than implementation details
+3. Better isolation of the specific functionality being tested
+
 ## Mock Implementations
 
 Custom mock implementations are defined in this directory for system modules, and can be imported or customized as needed in individual test files. For application modules, mock implementations are typically defined inline in the test files.
@@ -38,3 +80,6 @@ Custom mock implementations are defined in this directory for system modules, an
 2. Don't re-mock system dependencies that are already mocked globally
 3. Mock only what's necessary for the test
 4. Reset mocks between tests with `vi.resetAllMocks()` to prevent test pollution
+5. When testing functions that call other functions in the same file, mock the underlying dependencies instead
+6. Focus assertions on final results rather than internal function calls when dealing with same-file functions
+7. Consider refactoring complex modules to separate files if testing becomes too complicated
