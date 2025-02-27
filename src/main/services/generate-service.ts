@@ -23,6 +23,11 @@ const analysisResultSchema = z.object({
 
 export const generateService = {
     async analyzeContent(files: SimpleFile[]) {
+        console.log(
+            '🔍 generateService.analyzeContent called with files:',
+            files.map((f) => f.path)
+        )
+
         const fileDataParts = compact(
             files.map(
                 (file) =>
@@ -34,6 +39,7 @@ export const generateService = {
                     }
             )
         )
+        console.log(`🔍 Processed ${fileDataParts.length} file data parts`)
 
         const parts = [
             {
@@ -45,10 +51,18 @@ export const generateService = {
             },
         ]
 
-        return await geminiService.generateContent({
-            parts,
-            schema: analysisResultSchema,
-        })
+        console.log('🔍 Calling geminiService.generateContent')
+        try {
+            const result = await geminiService.generateContent({
+                parts,
+                schema: analysisResultSchema,
+            })
+            console.log('🔍 geminiService.generateContent succeeded with result:', result)
+            return result
+        } catch (error) {
+            console.error('🔍 Error in geminiService.generateContent:', error)
+            throw error
+        }
     },
 
     async generateQuiz({

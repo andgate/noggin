@@ -34,11 +34,11 @@ export function PracticeFeed() {
 
     const handleDeleteMod = async (modId?: string) => {
         if (!modId) return
-        const mod = modules.find((m) => m.id === modId)
+        const mod = modules.find((m) => m.metadata.id === modId)
         if (!mod) return
 
         try {
-            await removeModule(mod.path)
+            await removeModule(mod.metadata.path)
             await fetchModules()
             notifications.show({
                 title: 'Success',
@@ -103,7 +103,7 @@ export function PracticeFeed() {
         >
             {modules?.map((mod: Mod) => (
                 <Card
-                    key={mod.id}
+                    key={mod.metadata.id}
                     shadow="sm"
                     padding="md"
                     radius="md"
@@ -113,7 +113,7 @@ export function PracticeFeed() {
                         height: '180px',
                         cursor: 'pointer',
                     }}
-                    onClick={() => handleModuleClick(mod.id, mod.metadata.libraryId)}
+                    onClick={() => handleModuleClick(mod.metadata.id, mod.metadata.libraryId)}
                 >
                     <Group justify="space-between" mb="xs">
                         <Text fw={500} size="sm" truncate>
@@ -134,7 +134,7 @@ export function PracticeFeed() {
                             leftSection={<IconPlayerPlay size={14} />}
                             onClick={(e) => {
                                 e.stopPropagation()
-                                handleStartQuiz(mod.id, mod.metadata.libraryId)
+                                handleStartQuiz(mod.metadata.id, mod.metadata.libraryId)
                             }}
                             title="Start the most recent quiz for this module"
                         >
@@ -157,7 +157,7 @@ export function PracticeFeed() {
                                     const confirmed = window.confirm(
                                         'Are you sure you want to delete this module?'
                                     )
-                                    if (confirmed) handleDeleteMod(mod.id)
+                                    if (confirmed) handleDeleteMod(mod.metadata.id)
                                 }}
                             >
                                 <IconTrash size={18} />

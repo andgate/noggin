@@ -90,12 +90,36 @@ export function CreateModulePage() {
                 console.log('Starting saveModule with:', { libraryPath, moduleData })
 
                 const now = new Date().toISOString() // Keep full ISO for metadata
+                console.log('ISO timestamp:', now)
+
                 const timestamp = now
                     .replace(/[-:]/g, '') // Remove dashes and colons
                     .replace(/\.\d{3}/, '') // Remove milliseconds
-                const moduleId = `${moduleData.slug}-${timestamp}`
+                console.log('Formatted timestamp:', timestamp)
 
+                const moduleId = `${moduleData.slug}-${timestamp}`
                 console.log('Generated moduleId:', moduleId)
+
+                // Generate the module ID with our utility function to see if there's any difference
+                const utilModuleId = await window.api.modules.readModuleMetadata('dummy').then(
+                    () => null,
+                    async () => {
+                        try {
+                            // We need to dynamically import this to use it in the renderer
+                            const { createModuleId } = await import('@noggin/shared/slug')
+                            const id = createModuleId(moduleData.slug, now)
+                            console.log('Module ID from utility function:', id)
+                            return id
+                        } catch (error) {
+                            console.error('Error importing createModuleId:', error)
+                            return null
+                        }
+                    }
+                )
+
+                if (utilModuleId && utilModuleId !== moduleId) {
+                    console.warn('Module ID mismatch!', { moduleId, utilModuleId })
+                }
 
                 const fullModPath = await window.api.path.join(libraryPath, moduleId)
                 console.log('Generated fullModPath:', fullModPath)
@@ -120,8 +144,10 @@ export function CreateModulePage() {
                     submissions: [],
                 }
 
+                console.log('About to write module data to:', fullModPath)
                 // Write module data first
                 await moduleService.writeModuleData(fullModPath, mod)
+                console.log('Module data written successfully')
 
                 // Then copy each source file and update the metadata
                 const sourcePaths = await Promise.all(
@@ -142,23 +168,48 @@ export function CreateModulePage() {
     )
 
     const handleGenerate = async () => {
+        alert('Generate button clicked!') // This will show a popup when the button is clicked
         try {
+            console.log(
+                '📋 handleGenerate called with files:',
+                files.map((f) => f.path)
+            )
             setIsLoading(true)
             setStep('generate')
 
+            console.log('📋 About to call analyzeContent')
             const analysis = await analyzeContent(files)
+            console.log('📋 analyzeContent returned:', analysis)
+
             const data: GeneratedModule = {
                 ...analysis,
                 sources: files,
             }
 
+            console.log('📋 Setting generatedData and moving to review step')
             setGeneratedData(data)
             setStep('review')
         } catch (error: any) {
+            console.error('📋 Error in handleGenerate:', error)
+
+            let errorMessage = error.message || 'Failed to generate module'
+            let errorTitle = 'Generation Failed'
+
+            // Check for common API key issues
+            if (errorMessage.includes('API key')) {
+                errorTitle = 'API Key Issue'
+                errorMessage = `${errorMessage} Please check your API key in Settings.`
+            } else if (errorMessage.includes('timed out')) {
+                errorTitle = 'Request Timed Out'
+                errorMessage =
+                    'The AI request took too long to complete. Please try again with a smaller file or check your internet connection.'
+            }
+
             notifications.show({
-                title: 'Generation Failed',
-                message: error.message || 'Failed to generate module',
+                title: errorTitle,
+                message: errorMessage,
                 color: 'red',
+                autoClose: 8000, // Longer display time for error messages
             })
             setStep('select')
         } finally {
@@ -167,10 +218,17 @@ export function CreateModulePage() {
     }
 
     const handleSave = async (selectedPath: string) => {
-        if (!generatedData) return
+        console.log('📋 handleSave called with path:', selectedPath)
+        if (!generatedData) {
+            console.error('📋 No generatedData available!')
+            return
+        }
 
         try {
+            console.log('📋 About to call saveModule with:', { selectedPath, generatedData })
             await saveModule(selectedPath, generatedData)
+            console.log('📋 saveModule completed successfully')
+
             notifications.show({
                 title: 'Module Created',
                 message: `Module "${generatedData.title}" has been created successfully`,
@@ -178,6 +236,7 @@ export function CreateModulePage() {
             })
             handleClose()
         } catch (error: any) {
+            console.error('📋 Error in handleSave:', error)
             notifications.show({
                 title: 'Save Failed',
                 message: error.message || 'Failed to save module',

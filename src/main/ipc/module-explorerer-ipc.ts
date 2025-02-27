@@ -21,7 +21,7 @@ export function registerModuleExplorerIPC(): void {
                         // dumbass hack to get tanstack router navigation working in the node process lol
                         console.log(`Navigating to module: ${moduleId}`)
                         window.webContents.executeJavaScript(
-                            `window.history.pushState(null, '', '/module/view/${moduleId}'); window.dispatchEvent(new PopStateEvent('popstate'))`
+                            `window.history.pushState(null, '', '/module/view/${libraryId}/${moduleId}'); window.dispatchEvent(new PopStateEvent('popstate'))`
                         )
                         console.log('Navigation command executed')
                     },

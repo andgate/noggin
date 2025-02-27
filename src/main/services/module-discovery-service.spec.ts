@@ -1,10 +1,14 @@
+import { createModuleId } from '@noggin/shared/slug'
 import { moduleMetadataSchema } from '@noggin/types/module-types'
 import * as fs from 'fs/promises'
 import { glob } from 'glob'
 import * as path from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import * as fsUtils from '../common/fs-utils'
 import { findFiles, readJsonFile } from '../common/fs-utils'
+import * as moduleUtils from '../common/module-utils'
 import { getModuleMetadataPath } from '../common/module-utils'
+import * as libraryService from './library-service'
 import { getAllLibraries, getRegisteredLibraries } from './library-service'
 import {
     getAllModulePaths,
@@ -209,36 +213,54 @@ describe('ModuleDiscoveryService', () => {
     })
 
     describe('resolveModulePath', () => {
-        it('should resolve module path from library and module IDs', async () => {
+        it('should correctly resolve a module path using the moduleId', async () => {
             // Arrange
-            const modulePath = `${mockLibraryPath}/test-module`
-            const metadataPath = `${modulePath}/.mod/meta.json`
+            const libraryId = 'test-library'
+            const moduleSlug = 'test-module'
+            const createdAt = '2024-01-01T12:34:56.789Z'
+            const moduleId = createModuleId(moduleSlug, createdAt)
 
+            const libraryPath = '/path/to/library'
+            const modulePath = '/path/to/library/test-module-20240101T123456Z'
+
+            // Mock getAllLibraries
+            vi.mocked(getAllLibraries).mockResolvedValueOnce([
+                {
+                    path: libraryPath,
+                    metadata: {
+                        slug: libraryId,
+                        name: 'Test Library',
+                        description: 'Test Description',
+                        createdAt: '2024-01-01T00:00:00Z',
+                    },
+                },
+            ])
+
+            // Mock findFiles for scanLibraryModulePaths
             vi.mocked(findFiles).mockResolvedValueOnce([`${modulePath}/.mod`])
 
-            // Mock readJsonFile to return module metadata
-            vi.mocked(readJsonFile).mockImplementation(async (path, schema) => {
-                if (schema === moduleMetadataSchema && path === metadataPath) {
+            // Mock readJsonFile for metadata
+            vi.mocked(readJsonFile).mockImplementationOnce(async (path, schema) => {
+                if (path.includes(modulePath)) {
                     return {
-                        ...mockModuleMetadata,
-                        slug: 'test-module',
-                        createdAt: '2024-01-01T00:00:00Z',
-                        id: mockModuleId,
+                        id: moduleId,
+                        slug: moduleSlug,
+                        title: 'Test Module',
+                        overview: 'Test Overview',
+                        createdAt: createdAt,
+                        updatedAt: createdAt,
+                        libraryId: libraryId,
+                        path: modulePath,
                     }
                 }
                 throw new Error(`Unexpected path: ${path}`)
             })
 
             // Act
-            const result = await resolveModulePath(mockLibraryId, mockModuleId)
+            const result = await resolveModulePath(libraryId, moduleId)
 
             // Assert
-            expect(getAllLibraries).toHaveBeenCalled()
-            expect(findFiles).toHaveBeenCalledWith('*/.mod', {
-                cwd: mockLibraryPath,
-                absolute: true,
-            })
-            expect(result).toBe(`${mockLibraryPath}/test-module`)
+            expect(result).toBe(modulePath)
         })
 
         it('should throw error if library not found', async () => {

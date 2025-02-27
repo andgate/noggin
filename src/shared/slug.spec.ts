@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { slugify } from './slug'
+import { createModuleId, slugify } from './slug'
 
 describe('slugify', () => {
     // Basic functionality
@@ -67,5 +67,33 @@ describe('slugify', () => {
         expect(slugify('Computer Science Fundamentals')).toBe('computer_science_fundamentals')
         expect(slugify('C++ & Systems Programming!')).toBe('c_systems_programming')
         expect(slugify('Web Dev (2024) - Basics')).toBe('web_dev_2024_basics')
+    })
+})
+
+describe('createModuleId', () => {
+    it('creates consistent module IDs by removing dashes, colons, and milliseconds from timestamps', () => {
+        const slug = 'test-module'
+        const createdAt = '2024-01-01T12:34:56.789Z'
+
+        // Expected format based on updated implementation
+        const expected = 'test-module-20240101T123456Z'
+
+        expect(createModuleId(slug, createdAt)).toBe(expected)
+    })
+
+    it('matches the ID format used in the CreateModule page', () => {
+        const slug = 'test-module'
+        const createdAt = '2024-01-01T12:34:56.789Z'
+
+        // Simulate how IDs are created in the CreateModule page
+        const timestamp = createdAt
+            .replace(/[-:]/g, '') // Only removes dashes and colons
+            .replace(/\.\d{3}/, '') // Removes milliseconds
+        const createModulePageId = `${slug}-${timestamp}`
+
+        // This should match what createModuleId produces
+        const createModuleIdResult = createModuleId(slug, createdAt)
+
+        expect(createModuleIdResult).toBe(createModulePageId)
     })
 })

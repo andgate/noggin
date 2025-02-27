@@ -3,10 +3,17 @@ import { generateService } from '../services/generate-service'
 
 export function registerGenerateIPC(): void {
     ipcMain.handle('generate:analyzeContent', async (_event, files) => {
+        console.log(
+            '📟 IPC: generate:analyzeContent received with files:',
+            files.map((f) => f.path)
+        )
         try {
-            return await generateService.analyzeContent(files)
+            console.log('📟 Calling generateService.analyzeContent')
+            const result = await generateService.analyzeContent(files)
+            console.log('📟 generateService.analyzeContent succeeded with result:', result)
+            return result
         } catch (error) {
-            console.error('Content analysis error:', error)
+            console.error('📟 Content analysis error:', error)
             throw error
         }
     })

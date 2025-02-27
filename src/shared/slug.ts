@@ -18,6 +18,12 @@ export function slugify(str: string): string {
 }
 
 export function createModuleId(moduleSlug: string, createdAt: string): string {
-    const timestamp = createdAt.replace(/[-:Z]/g, '')
-    return `${moduleSlug}-${timestamp}`
+    console.log(`createModuleId called with slug: ${moduleSlug}, createdAt: ${createdAt}`)
+    const timestamp = createdAt
+        .replace(/[-:]/g, '') // Remove dashes and colons
+        .replace(/\.\d{3}/, '') // Remove milliseconds
+    console.log(`Formatted timestamp: ${timestamp}`)
+    const moduleId = `${moduleSlug}-${timestamp}`
+    console.log(`Generated module ID: ${moduleId}`)
+    return moduleId
 }

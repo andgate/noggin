@@ -15,7 +15,7 @@ export function groupModulesByLibrary(modules: ModuleOverview[]): Record<string,
 // Convert module to tree node
 export function moduleToTreeNode(module: ModuleOverview): TreeNodeData {
     return {
-        value: `module-${module.slug}`,
+        value: `module-${module.id}`,
         label: module.displayName,
         nodeProps: {
             libraryId: module.librarySlug,

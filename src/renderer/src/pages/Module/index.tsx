@@ -34,7 +34,7 @@ export function ModulePage({ module }: ModulePageProps) {
 
     const handleDeleteQuiz = async (quizId: string) => {
         try {
-            await deleteModuleQuiz(module.metadata.libraryId, module.id, quizId)
+            await deleteModuleQuiz(module.metadata.libraryId, module.metadata.id, quizId)
             // Refresh the module data or update state to remove the quiz
             notifications.show({
                 title: 'Quiz deleted',
@@ -106,7 +106,7 @@ export function ModulePage({ module }: ModulePageProps) {
                                     <Grid.Col key={quiz.id} span={6}>
                                         <QuizCard
                                             libraryId={module.metadata.libraryId}
-                                            moduleId={module.id}
+                                            moduleId={module.metadata.id}
                                             quizId={quiz.id}
                                             title={quiz.title}
                                             questionCount={quiz.questions.length}
@@ -136,7 +136,7 @@ export function ModulePage({ module }: ModulePageProps) {
                 <QuizGenerationWizard
                     sources={module.sources}
                     libraryId={module.metadata.libraryId}
-                    moduleSlug={module.id}
+                    moduleSlug={module.metadata.id}
                     onComplete={handleQuizGenerated}
                     onCancel={() => setIsGenerating(false)}
                 />

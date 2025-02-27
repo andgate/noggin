@@ -68,10 +68,32 @@ async function readSubmissions(modPath: string) {
  * Ensure a module's directory structure exists
  */
 export async function ensureModuleDirectories(modPath: string) {
-    await Promise.all([
-        ensureDir(path.join(modPath, '.mod/quizzes')),
-        ensureDir(path.join(modPath, '.mod/submissions')),
-    ])
+    console.log(`ensureModuleDirectories called for path: ${modPath}`)
+    try {
+        // Ensure main module directory exists
+        await ensureDir(modPath)
+        console.log(`Main module directory created/verified: ${modPath}`)
+
+        // Ensure .mod directory exists
+        const modDirPath = path.join(modPath, '.mod')
+        await ensureDir(modDirPath)
+        console.log(`.mod directory created/verified: ${modDirPath}`)
+
+        // Ensure quizzes directory exists
+        const quizzesPath = path.join(modPath, '.mod/quizzes')
+        await ensureDir(quizzesPath)
+        console.log(`Quizzes directory created/verified: ${quizzesPath}`)
+
+        // Ensure submissions directory exists
+        const submissionsPath = path.join(modPath, '.mod/submissions')
+        await ensureDir(submissionsPath)
+        console.log(`Submissions directory created/verified: ${submissionsPath}`)
+
+        console.log(`All module directories created/verified for: ${modPath}`)
+    } catch (error) {
+        console.error(`Error ensuring module directories for ${modPath}:`, error)
+        throw error
+    }
 }
 
 /**
@@ -129,40 +151,58 @@ export async function readModuleById(libraryId: string, moduleId: string): Promi
  * Write all data for a module
  */
 export async function writeModuleData(modPath: string, mod: Mod): Promise<void> {
-    // Ensure module directories exist
-    await ensureModuleDirectories(modPath)
+    console.log(`writeModuleData called with modPath: ${modPath}`)
+    console.log(`Module data:`, {
+        id: mod.metadata.id,
+        slug: mod.metadata.slug,
+        createdAt: mod.metadata.createdAt,
+        path: mod.metadata.path,
+    })
 
-    // Write metadata
-    await writeModuleMetadata(modPath, mod.metadata)
+    try {
+        // Ensure the module directories exist
+        await ensureModuleDirectories(modPath)
+        console.log(`Module directories ensured at ${modPath}`)
 
-    // Write quizzes
-    if (mod.quizzes && mod.quizzes.length > 0) {
-        await Promise.all(
-            mod.quizzes.map((quiz) => {
-                const quizPath = getQuizPath(modPath, quiz.id)
-                return writeJsonFile(quizPath, quiz)
-            })
-        )
+        // Write metadata
+        const metadataPath = getModuleMetadataPath(modPath)
+        await writeJsonFile(metadataPath, mod.metadata)
+        console.log(`Metadata written to ${metadataPath}`)
+
+        // Write quizzes
+        if (mod.quizzes && mod.quizzes.length > 0) {
+            console.log(`Writing ${mod.quizzes.length} quizzes`)
+            await Promise.all(
+                mod.quizzes.map(async (quiz) => {
+                    const quizPath = getQuizPath(modPath, quiz.id)
+                    await writeJsonFile(quizPath, quiz)
+                })
+            )
+        }
+
+        // Write submissions
+        if (mod.submissions && mod.submissions.length > 0) {
+            console.log(`Writing ${mod.submissions.length} submissions`)
+            await Promise.all(
+                mod.submissions.map(async (submission) => {
+                    const submissionPath = getSubmissionPath(
+                        modPath,
+                        submission.quizId,
+                        submission.attemptNumber
+                    )
+                    await writeJsonFile(submissionPath, submission)
+                })
+            )
+        }
+
+        // Note: We don't write sources here as they are handled separately
+        // and shouldn't be overwritten from this function
+
+        console.log(`Successfully wrote module data to ${modPath}`)
+    } catch (error) {
+        console.error(`Error writing module data to ${modPath}:`, error)
+        throw error
     }
-
-    // Write submissions
-    if (mod.submissions && mod.submissions.length > 0) {
-        await Promise.all(
-            mod.submissions.map((submission) => {
-                const subPath = getSubmissionPath(
-                    modPath,
-                    submission.quizId,
-                    submission.attemptNumber
-                )
-                return writeJsonFile(subPath, submission)
-            })
-        )
-    }
-
-    // Note: We don't write sources here as they are handled separately
-    // and shouldn't be overwritten from this function
-
-    console.log(`Successfully wrote module data to ${modPath}`)
 }
 
 /**
