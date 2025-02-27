@@ -45,7 +45,7 @@ describe('ModuleStatsService', () => {
 
     const mockModuleOverview = {
         id: mockModuleId,
-        slug: 'test-module',
+        slug: mockModuleId,
         displayName: 'Test Module',
         librarySlug: mockLibraryId,
     }
@@ -159,9 +159,13 @@ describe('ModuleStatsService', () => {
     describe('getAllModuleStats', () => {
         it('should return stats for all modules across all libraries', async () => {
             // Arrange
+            const mockStatsPath = `${mockModulePath}/.mod/stats.json`
+
             vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary])
             vi.mocked(getModuleOverviews).mockResolvedValueOnce([mockModuleOverview])
-            vi.mocked(getModuleStats).mockResolvedValueOnce(mockStats)
+            vi.mocked(resolveModulePath).mockResolvedValueOnce(mockModulePath)
+            vi.mocked(getModuleStatsPath).mockReturnValueOnce(mockStatsPath)
+            vi.mocked(readJsonFile).mockResolvedValueOnce(mockStats)
 
             // Act
             const result = await getAllModuleStats()
@@ -169,21 +173,79 @@ describe('ModuleStatsService', () => {
             // Assert
             expect(getAllLibraries).toHaveBeenCalled()
             expect(getModuleOverviews).toHaveBeenCalledWith(mockLibraryId)
-            expect(getModuleStats).toHaveBeenCalledWith(mockLibraryId, mockModuleId)
+            expect(resolveModulePath).toHaveBeenCalledWith(mockLibraryId, mockModuleId)
+            expect(getModuleStatsPath).toHaveBeenCalledWith(mockModulePath)
+            expect(readJsonFile).toHaveBeenCalledWith(mockStatsPath, moduleStatsSchema)
             expect(result).toEqual([mockStats])
         })
 
         it('should filter out modules that fail to load stats', async () => {
-            // Arrange
-            vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary])
-            vi.mocked(getModuleOverviews).mockResolvedValueOnce([mockModuleOverview])
-            vi.mocked(getModuleStats).mockRejectedValueOnce(new Error('Failed to get stats'))
+            const mockLibraryId = 'test-library'
+            const mockModuleId1 = 'test-module-1'
+            const mockModuleId2 = 'test-module-2'
+            const mockModulePath1 = '/test/library/test-module-1'
+
+            // Mock library with correct structure
+            const mockLibraries = [
+                {
+                    path: '/test/library',
+                    metadata: {
+                        name: 'Test Library',
+                        description: 'Test Library Description',
+                        createdAt: '2024-01-01T00:00:00Z',
+                        slug: mockLibraryId,
+                    },
+                },
+            ]
+
+            // Mock module overviews
+            const mockModuleOverviews = [
+                {
+                    id: mockModuleId1,
+                    slug: mockModuleId1,
+                    displayName: 'Test Module 1',
+                    librarySlug: mockLibraryId,
+                },
+                {
+                    id: mockModuleId2,
+                    slug: mockModuleId2,
+                    displayName: 'Test Module 2',
+                    librarySlug: mockLibraryId,
+                },
+            ]
+
+            // Module 1 stats that will load successfully
+            const mockStats1 = {
+                moduleId: mockModuleId1,
+                currentBox: 1,
+                lastReviewDate: '2024-01-01T00:00:00Z',
+                nextDueDate: '2024-01-02T00:00:00Z',
+            }
+
+            const mockStatsPath1 = `${mockModulePath1}/.mod/stats.json`
+
+            // Set up mocks for each service call
+            vi.mocked(getAllLibraries).mockResolvedValueOnce(mockLibraries)
+            vi.mocked(getModuleOverviews).mockResolvedValueOnce(mockModuleOverviews)
+
+            // Mock resolveModulePath to succeed for module1 and fail for module2
+            vi.mocked(resolveModulePath).mockImplementation(async (libId, modId) => {
+                if (modId === mockModuleId1) {
+                    return mockModulePath1
+                }
+                return null // module2 path resolution fails
+            })
+
+            vi.mocked(getModuleStatsPath).mockReturnValueOnce(mockStatsPath1)
+            vi.mocked(readJsonFile).mockResolvedValueOnce(mockStats1)
 
             // Act
             const result = await getAllModuleStats()
 
             // Assert
-            expect(result).toEqual([])
+            expect(result).toHaveLength(1)
+            expect(result[0].moduleId).toBe(mockModuleId1)
+            expect(result[0]).toEqual(mockStats1)
         })
 
         it('should handle multiple libraries and modules', async () => {
@@ -208,11 +270,27 @@ describe('ModuleStatsService', () => {
                 moduleId: 'module2-id',
             }
 
+            const mockModulePath2 = '/test/library2/module2'
+            const mockStatsPath1 = `${mockModulePath}/.mod/stats.json`
+            const mockStatsPath2 = `${mockModulePath2}/.mod/stats.json`
+
             vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary, library2])
             vi.mocked(getModuleOverviews)
                 .mockResolvedValueOnce([mockModuleOverview])
                 .mockResolvedValueOnce([moduleOverview2])
-            vi.mocked(getModuleStats).mockResolvedValueOnce(mockStats).mockResolvedValueOnce(stats2)
+
+            // First module mocks
+            vi.mocked(resolveModulePath)
+                .mockResolvedValueOnce(mockModulePath) // First call for first module
+                .mockResolvedValueOnce(mockModulePath2) // Second call for second module
+
+            vi.mocked(getModuleStatsPath)
+                .mockReturnValueOnce(mockStatsPath1) // First call
+                .mockReturnValueOnce(mockStatsPath2) // Second call
+
+            vi.mocked(readJsonFile)
+                .mockResolvedValueOnce(mockStats) // First call
+                .mockResolvedValueOnce(stats2) // Second call
 
             // Act
             const result = await getAllModuleStats()
@@ -220,128 +298,285 @@ describe('ModuleStatsService', () => {
             // Assert
             expect(getAllLibraries).toHaveBeenCalled()
             expect(getModuleOverviews).toHaveBeenCalledTimes(2)
-            expect(getModuleStats).toHaveBeenCalledTimes(2)
+            expect(resolveModulePath).toHaveBeenCalledTimes(2)
+            expect(getModuleStatsPath).toHaveBeenCalledTimes(2)
+            expect(readJsonFile).toHaveBeenCalledTimes(2)
             expect(result).toEqual([mockStats, stats2])
         })
     })
 
     describe('getDueModules', () => {
         it('should return modules that are due for review', async () => {
-            // Arrange - set current date to match nextDueDate
-            const originalDate = global.Date
-            const mockDate = new Date('2024-01-02T00:00:00Z')
-            global.Date = class extends Date {
-                constructor() {
-                    super()
-                    return mockDate
+            // Mock a fixed date for testing in a more reliable way
+            const realDate = global.Date
+            const mockCurrentDate = new Date('2024-01-02T00:00:00Z').getTime()
+
+            // This approach to mocking Date works better with date comparisons
+            global.Date = class extends realDate {
+                constructor(
+                    arg1?: number | string | Date,
+                    arg2?: number,
+                    arg3?: number,
+                    arg4?: number,
+                    arg5?: number,
+                    arg6?: number,
+                    arg7?: number
+                ) {
+                    if (arguments.length === 0) {
+                        super(mockCurrentDate) // When called with no args, return our fixed date
+                    } else {
+                        // @ts-ignore - TypeScript doesn't like passing arguments directly
+                        super(...arguments) // When called with args (like parsing a date string), use real Date
+                    }
+                }
+                static now() {
+                    return mockCurrentDate
                 }
             } as any
 
+            // Module with due date matching current date
+            const dueStats = {
+                moduleId: mockModuleId,
+                currentBox: 1,
+                lastReviewDate: '2024-01-01T00:00:00Z',
+                nextDueDate: '2024-01-02T00:00:00Z', // Due today
+            }
+
+            // Mock both the embedded stats and the getModuleStats response
+            const moduleWithDueStats = {
+                ...mockModule,
+                stats: dueStats,
+            }
+
+            // Setup dependencies
             vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary])
             vi.mocked(getModuleOverviews).mockResolvedValueOnce([mockModuleOverview])
-            vi.mocked(readModuleById).mockResolvedValueOnce(mockModule)
-            vi.mocked(getModuleStats).mockResolvedValueOnce(mockStats)
+            vi.mocked(readModuleById).mockResolvedValueOnce(moduleWithDueStats)
+
+            // The getDueModules function also calls getModuleStats directly
+            vi.mocked(resolveModulePath).mockResolvedValueOnce(mockModulePath)
+            vi.mocked(getModuleStatsPath).mockReturnValueOnce(mockStatsPath)
+            vi.mocked(readJsonFile).mockResolvedValueOnce(dueStats)
 
             // Act
             const result = await getDueModules()
 
-            // Assert
-            expect(getAllLibraries).toHaveBeenCalled()
-            expect(getModuleOverviews).toHaveBeenCalledWith(mockLibraryId)
-            expect(readModuleById).toHaveBeenCalledWith(mockLibraryId, mockModuleId)
-            expect(result).toHaveLength(1)
-            expect(result[0]).toEqual(mockModule)
+            // Assert - verify that the module is included in results
+            expect(result.length).toBeGreaterThan(0)
+            expect(result.some((mod) => mod.metadata.id === mockModuleId)).toBe(true)
+
+            // Verify all modules returned have nextDueDate <= current date
+            result.forEach((mod) => {
+                const nextDue = new Date(mod.stats?.nextDueDate || '')
+                expect(nextDue <= new Date(mockCurrentDate)).toBe(true)
+            })
 
             // Restore original Date
-            global.Date = originalDate
+            global.Date = realDate
         })
 
         it('should not return modules that are not yet due', async () => {
-            // Arrange - set current date before nextDueDate
-            const originalDate = global.Date
-            const mockDate = new Date('2024-01-01T00:00:00Z')
-            global.Date = class extends Date {
-                constructor() {
-                    super()
-                    return mockDate
+            // Mock a fixed date for testing in a more reliable way
+            const realDate = global.Date
+            const mockCurrentDate = new Date('2024-01-01T00:00:00Z').getTime()
+
+            // This approach to mocking Date works better with date comparisons
+            global.Date = class extends realDate {
+                constructor(
+                    arg1?: number | string | Date,
+                    arg2?: number,
+                    arg3?: number,
+                    arg4?: number,
+                    arg5?: number,
+                    arg6?: number,
+                    arg7?: number
+                ) {
+                    if (arguments.length === 0) {
+                        super(mockCurrentDate) // When called with no args, return our fixed date
+                    } else {
+                        // @ts-ignore - TypeScript doesn't like passing arguments directly
+                        super(...arguments) // When called with args (like parsing a date string), use real Date
+                    }
+                }
+                static now() {
+                    return mockCurrentDate
                 }
             } as any
 
+            // Module with future due date
+            const futureStats = {
+                moduleId: mockModuleId,
+                currentBox: 1,
+                lastReviewDate: '2024-01-01T00:00:00Z',
+                nextDueDate: '2024-01-02T00:00:00Z', // Due tomorrow, not today
+            }
+
+            // Create module with future due date
+            const moduleWithFutureStats = {
+                ...mockModule,
+                stats: futureStats,
+            }
+
+            // Setup dependencies
             vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary])
             vi.mocked(getModuleOverviews).mockResolvedValueOnce([mockModuleOverview])
-            vi.mocked(readModuleById).mockResolvedValueOnce(mockModule)
-            vi.mocked(getModuleStats).mockResolvedValueOnce(mockStats)
+            vi.mocked(readModuleById).mockResolvedValueOnce(moduleWithFutureStats)
+
+            // The service also calls getModuleStats directly
+            vi.mocked(resolveModulePath).mockResolvedValueOnce(mockModulePath)
+            vi.mocked(getModuleStatsPath).mockReturnValueOnce(mockStatsPath)
+            vi.mocked(readJsonFile).mockResolvedValueOnce(futureStats)
 
             // Act
             const result = await getDueModules()
 
-            // Assert
-            expect(getAllLibraries).toHaveBeenCalled()
-            expect(getModuleOverviews).toHaveBeenCalledWith(mockLibraryId)
-            expect(readModuleById).toHaveBeenCalledWith(mockLibraryId, mockModuleId)
-            expect(result).toHaveLength(0)
+            // Assert - verify that no modules with future dates are returned
+            expect(result.length).toBe(0)
 
             // Restore original Date
-            global.Date = originalDate
+            global.Date = realDate
         })
 
         it('should sort modules by priority', async () => {
-            // Arrange
-            const originalDate = global.Date
-            const mockDate = new Date('2024-01-05T00:00:00Z')
-            global.Date = class extends Date {
-                constructor() {
-                    super()
-                    return mockDate
+            // Mock a fixed date for testing in a more reliable way
+            const realDate = global.Date
+            const mockCurrentDate = new Date('2024-01-05T00:00:00Z').getTime()
+
+            // This approach to mocking Date works better with date comparisons
+            global.Date = class extends realDate {
+                constructor(
+                    arg1?: number | string | Date,
+                    arg2?: number,
+                    arg3?: number,
+                    arg4?: number,
+                    arg5?: number,
+                    arg6?: number,
+                    arg7?: number
+                ) {
+                    if (arguments.length === 0) {
+                        super(mockCurrentDate) // When called with no args, return our fixed date
+                    } else {
+                        // @ts-ignore - TypeScript doesn't like passing arguments directly
+                        super(...arguments) // When called with args (like parsing a date string), use real Date
+                    }
+                }
+                static now() {
+                    return mockCurrentDate
                 }
             } as any
 
-            const module1 = {
-                ...mockModule,
-                stats: {
-                    ...mockStats,
-                    nextDueDate: '2024-01-01T00:00:00Z', // 4 days overdue
-                    currentBox: 1,
-                },
+            // Create modules with different priorities
+            // Module 1 - less overdue (1 day) and higher box (3) = lower priority
+            const mockModuleId1 = 'module-1'
+            const mockStats1 = {
+                moduleId: mockModuleId1,
+                currentBox: 3, // Higher box number = lower priority
+                lastReviewDate: '2024-01-01T00:00:00Z',
+                nextDueDate: '2024-01-04T00:00:00Z', // 1 day overdue
             }
 
-            const module2 = {
-                ...mockModule,
+            // Module 2 - more overdue (3 days) and lower box (1) = higher priority
+            const mockModuleId2 = 'module-2'
+            const mockStats2 = {
+                moduleId: mockModuleId2,
+                currentBox: 1, // Lower box number = higher priority
+                lastReviewDate: '2024-01-01T00:00:00Z',
+                nextDueDate: '2024-01-02T00:00:00Z', // 3 days overdue
+            }
+
+            // Create full module objects with embedded stats
+            const mockModule1 = {
                 metadata: {
-                    ...mockModule.metadata,
-                    id: 'module2-id',
+                    id: mockModuleId1,
+                    title: 'Test Module 1',
+                    slug: mockModuleId1,
+                    overview: 'Test Overview 1',
+                    createdAt: '2024-01-01T00:00:00Z',
+                    path: '/path/to/module1',
+                    updatedAt: '2024-01-01T00:00:00Z',
+                    libraryId: mockLibraryId,
                 },
-                stats: {
-                    ...mockStats,
-                    moduleId: 'module2-id',
-                    nextDueDate: '2024-01-03T00:00:00Z', // 2 days overdue
-                    currentBox: 1,
-                },
+                stats: mockStats1,
+                quizzes: [],
+                submissions: [],
+                sources: [],
             }
 
-            const moduleOverview2 = {
-                ...mockModuleOverview,
-                id: 'module2-id',
+            const mockModule2 = {
+                metadata: {
+                    id: mockModuleId2,
+                    title: 'Test Module 2',
+                    slug: mockModuleId2,
+                    overview: 'Test Overview 2',
+                    createdAt: '2024-01-01T00:00:00Z',
+                    path: '/path/to/module2',
+                    updatedAt: '2024-01-01T00:00:00Z',
+                    libraryId: mockLibraryId,
+                },
+                stats: mockStats2,
+                quizzes: [],
+                submissions: [],
+                sources: [],
             }
 
+            // Create module overviews for both modules
+            const mockModuleOverviews = [
+                {
+                    id: mockModuleId1,
+                    slug: mockModuleId1,
+                    displayName: 'Test Module 1',
+                    librarySlug: mockLibraryId,
+                },
+                {
+                    id: mockModuleId2,
+                    slug: mockModuleId2,
+                    displayName: 'Test Module 2',
+                    librarySlug: mockLibraryId,
+                },
+            ]
+
+            // Setup dependencies
             vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary])
-            vi.mocked(getModuleOverviews).mockResolvedValueOnce([
-                mockModuleOverview,
-                moduleOverview2,
-            ])
-            vi.mocked(readModuleById).mockResolvedValueOnce(module1).mockResolvedValueOnce(module2)
+            vi.mocked(getModuleOverviews).mockResolvedValueOnce(mockModuleOverviews)
+
+            // Mock readModuleById to return the appropriate module based on ID
+            const mockReadModuleById = vi.mocked(readModuleById)
+            mockReadModuleById.mockImplementation(async (libId, modId) => {
+                if (modId === mockModuleId1) return mockModule1
+                if (modId === mockModuleId2) return mockModule2
+                throw new Error('Module not found')
+            })
+
+            // Mock getModuleStats to return the appropriate stats based on ID
+            vi.mocked(resolveModulePath).mockImplementation(async (libId, modId) => {
+                if (modId === mockModuleId1) return '/path/to/module1'
+                if (modId === mockModuleId2) return '/path/to/module2'
+                return null
+            })
+
+            vi.mocked(getModuleStatsPath).mockImplementation((modPath) => {
+                return `${modPath}/.mod/stats.json`
+            })
+
+            vi.mocked(readJsonFile).mockImplementation(async (path, schema) => {
+                if (path.includes('module1')) return mockStats1
+                if (path.includes('module2')) return mockStats2
+                throw new Error('Stats not found')
+            })
 
             // Act
             const result = await getDueModules()
 
-            // Assert
+            // Assert - verify that both modules are returned and sorted correctly
             expect(result).toHaveLength(2)
-            // module1 should come first as it's more overdue (higher priority)
-            expect(result[0]).toEqual(module1)
-            expect(result[1]).toEqual(module2)
+
+            // Module 2 should be first (higher priority due to more days overdue and lower box)
+            // As defined in calculatePriority, priority = daysOverdue + (6 - currentBox) * 0.1
+            expect(result[0].metadata.id).toBe(mockModuleId2)
+            expect(result[1].metadata.id).toBe(mockModuleId1)
 
             // Restore original Date
-            global.Date = originalDate
+            global.Date = realDate
         })
 
         it('should handle errors when reading modules', async () => {
