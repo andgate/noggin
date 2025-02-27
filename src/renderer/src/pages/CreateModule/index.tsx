@@ -102,6 +102,8 @@ export function CreateModulePage() {
 
                 // Create module metadata
                 const metadata: ModuleMetadata = {
+                    id: moduleId,
+                    path: fullModPath,
                     title: moduleData.title,
                     slug: moduleData.slug,
                     overview: moduleData.overview,
@@ -112,8 +114,6 @@ export function CreateModulePage() {
 
                 // Create the initial module structure
                 const mod: Mod = {
-                    id: moduleId,
-                    path: fullModPath,
                     metadata,
                     sources: [], // Start with empty sources
                     quizzes: [],
@@ -121,7 +121,7 @@ export function CreateModulePage() {
                 }
 
                 // Write module data first
-                await moduleService.writeModuleData(libraryPath, mod)
+                await moduleService.writeModuleData(fullModPath, mod)
 
                 // Then copy each source file and update the metadata
                 const sourcePaths = await Promise.all(
@@ -132,7 +132,7 @@ export function CreateModulePage() {
 
                 // Update module with new source paths
                 mod.sources = sourcePaths
-                await moduleService.writeModuleData(libraryPath, mod)
+                await moduleService.writeModuleData(fullModPath, mod)
             } catch (error) {
                 console.error('Error in saveModule:', error)
                 throw error

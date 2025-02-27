@@ -1,8 +1,9 @@
-import { moduleMetadataSchema } from '@noggin/types/module-types'
+import { Mod, ModuleMetadata, moduleMetadataSchema } from '@noggin/types/module-types'
 import { quizSchema, submissionSchema } from '@noggin/types/quiz-types'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import * as fsUtils from '../common/fs-utils'
 import {
     ensureDir,
     findFiles,
@@ -60,6 +61,48 @@ describe('ModuleCoreService', () => {
 
     afterEach(() => {
         vi.clearAllMocks()
+    })
+
+    describe('module creation bug', () => {
+        it('should create module in the correct directory path', async () => {
+            // Arrange
+            const libraryPath = '/test/library'
+            const moduleId = 'test-module-20240101T000000Z'
+            const fullModPath = `${libraryPath}/${moduleId}`
+
+            const mod: Mod = {
+                metadata: {
+                    id: moduleId,
+                    title: 'Test Module',
+                    slug: 'test-module',
+                    overview: 'Test Module Overview',
+                    createdAt: '2024-01-01T00:00:00Z',
+                    updatedAt: '2024-01-01T00:00:00Z',
+                    libraryId: 'test-library',
+                    path: fullModPath,
+                },
+                sources: [],
+                quizzes: [],
+                submissions: [],
+            }
+
+            // Spy on the fs-utils functions
+            const ensureDirSpy = vi.spyOn(fsUtils, 'ensureDir').mockResolvedValue(undefined)
+            const writeJsonFileSpy = vi.spyOn(fsUtils, 'writeJsonFile').mockResolvedValue(undefined)
+
+            try {
+                // Act
+                await writeModuleData(fullModPath, mod)
+
+                // Assert - Verify directories are created under fullModPath/.mod
+                expect(ensureDirSpy).toHaveBeenCalledWith(`${fullModPath}/.mod/quizzes`)
+                expect(ensureDirSpy).toHaveBeenCalledWith(`${fullModPath}/.mod/submissions`)
+            } finally {
+                // Clean up
+                ensureDirSpy.mockRestore()
+                writeJsonFileSpy.mockRestore()
+            }
+        })
     })
 
     describe('readModuleMetadata', () => {
