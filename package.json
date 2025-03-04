@@ -2,7 +2,7 @@
     "name": "noggin",
     "description": "Noggin Learning Platform",
     "private": true,
-    "version": "v0.9.0-preview",
+    "version": "v0.9.1-preview",
     "main": "out/main/index.js",
     "type": "module",
     "packageManager": "pnpm@9.12.3",
