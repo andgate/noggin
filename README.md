@@ -149,7 +149,6 @@ Once the release workflow has completed, you can review the release on the repos
 - `pnpm lint` - Run ESLint
 - `pnpm lint:fix` - Run ESLint with auto-fix
 - `pnpm format` - Format code with Prettier
-- `pnpm rebuild:drizzle` - Rebuild better-sqlite3
 - `pnpm rebuild:electron` - Rebuild Electron dependencies
 
 ## 🔧 Tech Stack
