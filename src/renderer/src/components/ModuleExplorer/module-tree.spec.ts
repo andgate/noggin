@@ -3,7 +3,6 @@ import { ModuleOverview } from '@noggin/types/module-types'
 import { describe, expect, it } from 'vitest'
 import {
     buildModuleTreeData,
-    createUnorganizedLibraryNode,
     getInitialExpandedState,
     groupModulesByLibrary,
     libraryToTreeNode,
@@ -13,10 +12,10 @@ import {
 describe('module-tree utilities', () => {
     // Test data
     const mockModules: ModuleOverview[] = [
-        { slug: 'mod1', displayName: 'Module 1', librarySlug: 'lib1' },
-        { slug: 'mod2', displayName: 'Module 2', librarySlug: 'lib1' },
-        { slug: 'mod3', displayName: 'Module 3', librarySlug: 'lib2' },
-        { slug: 'mod4', displayName: 'Module 4' }, // Unorganized
+        { id: 'mod1', slug: 'mod1', displayName: 'Module 1', librarySlug: 'lib1' },
+        { id: 'mod2', slug: 'mod2', displayName: 'Module 2', librarySlug: 'lib1' },
+        { id: 'mod3', slug: 'mod3', displayName: 'Module 3', librarySlug: 'lib2' },
+        { id: 'mod4', slug: 'mod4', displayName: 'Module 4' }, // No library assigned
     ] as ModuleOverview[]
 
     const mockLibraries: Library[] = [
@@ -30,7 +29,6 @@ describe('module-tree utilities', () => {
             expect(result).toEqual({
                 lib1: [mockModules[0], mockModules[1]],
                 lib2: [mockModules[2]],
-                unorganized: [mockModules[3]],
             })
         })
 
@@ -89,48 +87,17 @@ describe('module-tree utilities', () => {
         })
     })
 
-    describe('createUnorganizedLibraryNode', () => {
-        it('creates unorganized library node with modules', () => {
-            const result = createUnorganizedLibraryNode([mockModules[3]])
-            expect(result).toEqual({
-                value: 'library-unorganized',
-                label: 'Unorganized',
-                children: [
-                    {
-                        value: 'module-mod4',
-                        label: 'Module 4',
-                        nodeProps: {
-                            libraryId: undefined,
-                        },
-                    },
-                ],
-            })
-        })
-
-        it('handles empty modules list', () => {
-            const result = createUnorganizedLibraryNode([])
-            expect(result).toEqual({
-                value: 'library-unorganized',
-                label: 'Unorganized',
-                children: [],
-            })
-        })
-    })
-
     describe('buildModuleTreeData', () => {
         it('builds complete tree structure', () => {
             const result = buildModuleTreeData(mockLibraries, mockModules)
-            expect(result).toHaveLength(3) // Unorganized + 2 libraries
-            expect(result[0].value).toBe('library-unorganized')
-            expect(result[1].value).toBe('library-lib1')
-            expect(result[2].value).toBe('library-lib2')
+            expect(result).toHaveLength(2) // Only 2 libraries, no unorganized
+            expect(result[0].value).toBe('library-lib1')
+            expect(result[1].value).toBe('library-lib2')
         })
 
         it('handles empty libraries and modules', () => {
             const result = buildModuleTreeData([], [])
-            expect(result).toHaveLength(1) // Just unorganized library
-            expect(result[0].value).toBe('library-unorganized')
-            expect(result[0].children).toHaveLength(0)
+            expect(result).toHaveLength(0) // No libraries, no tree nodes
         })
     })
 
@@ -139,7 +106,6 @@ describe('module-tree utilities', () => {
             const treeData = buildModuleTreeData(mockLibraries, mockModules)
             const result = getInitialExpandedState(treeData)
             expect(result).toEqual({
-                'library-unorganized': true,
                 'library-lib1': true,
                 'library-lib2': true,
             })

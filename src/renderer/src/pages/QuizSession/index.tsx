@@ -121,8 +121,13 @@ export function QuizSessionPage({ libraryId, moduleId, quiz }: QuizSessionPagePr
 
             await module.saveModuleSubmission(libraryId, moduleId, submission)
             navigate({
-                to: '/quiz/view/$libraryId/$moduleId/$quizId',
-                params: { libraryId, moduleId, quizId: quiz.id },
+                to: '/submission/$libraryId/$moduleId/$quizId/$attempt',
+                params: {
+                    libraryId,
+                    moduleId,
+                    quizId: quiz.id,
+                    attempt: submission.attemptNumber.toString(),
+                },
             })
         },
         [libraryId, moduleId, quiz, startTime, navigate, module]

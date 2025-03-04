@@ -1,6 +1,5 @@
 import { createModuleId } from '@noggin/shared/slug'
 import { moduleMetadataSchema, ModuleOverview } from '@noggin/types/module-types'
-import path from 'path'
 import { readJsonFile } from '../common/fs-utils'
 import { getModuleMetadataPath, scanLibraryModulePaths } from '../common/module-utils'
 import { getAllLibraries, getRegisteredLibraries } from './library-service'

@@ -1,5 +1,4 @@
 import { moduleStatsSchema } from '@noggin/types/module-types'
-import * as path from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readJsonFile, writeJsonFile } from '../common/fs-utils'
 import { getModuleStatsPath } from '../common/module-utils'
@@ -229,7 +228,7 @@ describe('ModuleStatsService', () => {
             vi.mocked(getModuleOverviews).mockResolvedValueOnce(mockModuleOverviews)
 
             // Mock resolveModulePath to succeed for module1 and fail for module2
-            vi.mocked(resolveModulePath).mockImplementation(async (libId, modId) => {
+            vi.mocked(resolveModulePath).mockImplementation(async (_libId, modId) => {
                 if (modId === mockModuleId1) {
                     return mockModulePath1
                 }
@@ -314,13 +313,13 @@ describe('ModuleStatsService', () => {
             // This approach to mocking Date works better with date comparisons
             global.Date = class extends realDate {
                 constructor(
-                    arg1?: number | string | Date,
-                    arg2?: number,
-                    arg3?: number,
-                    arg4?: number,
-                    arg5?: number,
-                    arg6?: number,
-                    arg7?: number
+                    _arg1?: number | string | Date,
+                    _arg2?: number,
+                    _arg3?: number,
+                    _arg4?: number,
+                    _arg5?: number,
+                    _arg6?: number,
+                    _arg7?: number
                 ) {
                     if (arguments.length === 0) {
                         super(mockCurrentDate) // When called with no args, return our fixed date
@@ -383,13 +382,13 @@ describe('ModuleStatsService', () => {
             // This approach to mocking Date works better with date comparisons
             global.Date = class extends realDate {
                 constructor(
-                    arg1?: number | string | Date,
-                    arg2?: number,
-                    arg3?: number,
-                    arg4?: number,
-                    arg5?: number,
-                    arg6?: number,
-                    arg7?: number
+                    _arg1?: number | string | Date,
+                    _arg2?: number,
+                    _arg3?: number,
+                    _arg4?: number,
+                    _arg5?: number,
+                    _arg6?: number,
+                    _arg7?: number
                 ) {
                     if (arguments.length === 0) {
                         super(mockCurrentDate) // When called with no args, return our fixed date
@@ -445,13 +444,13 @@ describe('ModuleStatsService', () => {
             // This approach to mocking Date works better with date comparisons
             global.Date = class extends realDate {
                 constructor(
-                    arg1?: number | string | Date,
-                    arg2?: number,
-                    arg3?: number,
-                    arg4?: number,
-                    arg5?: number,
-                    arg6?: number,
-                    arg7?: number
+                    _arg1?: number | string | Date,
+                    _arg2?: number,
+                    _arg3?: number,
+                    _arg4?: number,
+                    _arg5?: number,
+                    _arg6?: number,
+                    _arg7?: number
                 ) {
                     if (arguments.length === 0) {
                         super(mockCurrentDate) // When called with no args, return our fixed date
@@ -541,14 +540,14 @@ describe('ModuleStatsService', () => {
 
             // Mock readModuleById to return the appropriate module based on ID
             const mockReadModuleById = vi.mocked(readModuleById)
-            mockReadModuleById.mockImplementation(async (libId, modId) => {
+            mockReadModuleById.mockImplementation(async (_libId, modId) => {
                 if (modId === mockModuleId1) return mockModule1
                 if (modId === mockModuleId2) return mockModule2
                 throw new Error('Module not found')
             })
 
             // Mock getModuleStats to return the appropriate stats based on ID
-            vi.mocked(resolveModulePath).mockImplementation(async (libId, modId) => {
+            vi.mocked(resolveModulePath).mockImplementation(async (_libId, modId) => {
                 if (modId === mockModuleId1) return '/path/to/module1'
                 if (modId === mockModuleId2) return '/path/to/module2'
                 return null
@@ -558,7 +557,7 @@ describe('ModuleStatsService', () => {
                 return `${modPath}/.mod/stats.json`
             })
 
-            vi.mocked(readJsonFile).mockImplementation(async (path, schema) => {
+            vi.mocked(readJsonFile).mockImplementation(async (path, _schema) => {
                 if (path.includes('module1')) return mockStats1
                 if (path.includes('module2')) return mockStats2
                 throw new Error('Stats not found')

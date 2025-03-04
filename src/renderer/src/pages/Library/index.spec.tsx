@@ -17,11 +17,13 @@ describe('LibraryPage', () => {
 
     const mockModules: ModuleOverview[] = [
         {
+            id: 'module-1',
             displayName: 'Module 1',
             slug: 'module-1',
             librarySlug: 'test-library',
         },
         {
+            id: 'module-2',
             displayName: 'Module 2',
             slug: 'module-2',
             librarySlug: 'test-library',
@@ -52,6 +54,7 @@ describe('LibraryPage', () => {
         const mixedModules: ModuleOverview[] = [
             ...mockModules,
             {
+                id: 'other-module',
                 displayName: 'Other Module',
                 slug: 'other-module',
                 librarySlug: 'other-library',

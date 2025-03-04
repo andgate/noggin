@@ -5,9 +5,11 @@ import { ModuleOverview } from '@noggin/types/module-types'
 // Helper to group modules by library
 export function groupModulesByLibrary(modules: ModuleOverview[]): Record<string, ModuleOverview[]> {
     return modules.reduce<Record<string, ModuleOverview[]>>((acc, module) => {
-        const librarySlug = module.librarySlug || 'unorganized'
-        acc[librarySlug] = acc[librarySlug] || []
-        acc[librarySlug].push(module)
+        // Only group modules that have a library assigned
+        if (module.librarySlug) {
+            acc[module.librarySlug] = acc[module.librarySlug] || []
+            acc[module.librarySlug].push(module)
+        }
         return acc
     }, {})
 }
@@ -32,15 +34,6 @@ export function libraryToTreeNode(library: Library, modules: ModuleOverview[] = 
     }
 }
 
-// Create unorganized library node
-export function createUnorganizedLibraryNode(modules: ModuleOverview[]): TreeNodeData {
-    return {
-        value: 'library-unorganized',
-        label: 'Unorganized',
-        children: modules.map(moduleToTreeNode),
-    }
-}
-
 // Build complete tree data
 export function buildModuleTreeData(
     libraries: Library[],
@@ -48,13 +41,11 @@ export function buildModuleTreeData(
 ): TreeNodeData[] {
     const modulesByLibrary = groupModulesByLibrary(moduleOverviews)
 
-    const unorganizedLibrary = createUnorganizedLibraryNode(modulesByLibrary.unorganized || [])
-
     const libraryNodes = libraries.map((library) =>
         libraryToTreeNode(library, modulesByLibrary[library.metadata.slug])
     )
 
-    return [unorganizedLibrary, ...libraryNodes]
+    return libraryNodes
 }
 
 // Get initial expanded state for libraries

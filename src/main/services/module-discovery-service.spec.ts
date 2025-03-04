@@ -1,14 +1,8 @@
 import { createModuleId } from '@noggin/shared/slug'
 import { moduleMetadataSchema } from '@noggin/types/module-types'
-import * as fs from 'fs/promises'
-import { glob } from 'glob'
 import * as path from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import * as fsUtils from '../common/fs-utils'
 import { findFiles, readJsonFile } from '../common/fs-utils'
-import * as moduleUtils from '../common/module-utils'
-import { getModuleMetadataPath } from '../common/module-utils'
-import * as libraryService from './library-service'
 import { getAllLibraries, getRegisteredLibraries } from './library-service'
 import {
     getAllModulePaths,
@@ -240,7 +234,7 @@ describe('ModuleDiscoveryService', () => {
             vi.mocked(findFiles).mockResolvedValueOnce([`${modulePath}/.mod`])
 
             // Mock readJsonFile for metadata
-            vi.mocked(readJsonFile).mockImplementationOnce(async (path, schema) => {
+            vi.mocked(readJsonFile).mockImplementationOnce(async (path, _schema) => {
                 if (path.includes(modulePath)) {
                     return {
                         id: moduleId,

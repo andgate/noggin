@@ -23,7 +23,7 @@ function SubmissionPage({ libraryId, moduleId, submission }: SubmissionPageProps
         setIsGrading(true)
         try {
             await gradeSubmission(submission)
-            await router.invalidate()
+            router.invalidate()
         } catch (error) {
             console.error('Failed to grade submission:', error)
         } finally {

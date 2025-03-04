@@ -10,7 +10,7 @@ export function ModuleInfoPanel({ module }: ModuleInfoPanelProps) {
     return (
         <Stack gap="md">
             <Title order={3}>Module Overview</Title>
-            <Text>{module.path}</Text>
+            <Text>{module.metadata.path}</Text>
 
             {/* Module Stats */}
             <Group>

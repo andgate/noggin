@@ -1,4 +1,4 @@
-import { Mod, ModuleMetadata, moduleMetadataSchema } from '@noggin/types/module-types'
+import { Mod, moduleMetadataSchema } from '@noggin/types/module-types'
 import { quizSchema, submissionSchema } from '@noggin/types/quiz-types'
 import * as fs from 'fs/promises'
 import * as path from 'path'
