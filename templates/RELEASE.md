@@ -6,50 +6,65 @@ Welcome to an early preview release of **Noggin**, a modern quiz application des
 
 ## **Key Features** ✨
 
--   **Quiz Creation and Management**
-    Easily create and organize quizzes with a sleek, intuitive interface.
+- **Modular Learning Libraries**
+  Organize your learning content into flexible libraries that can contain multiple learning paths and standalone modules.
 
--   **AI-Powered Quiz Generation**
-    Leverage OpenAI's capabilities to automatically generate engaging quizzes.
+- **Quiz Creation and Management**
+  Easily create and organize quizzes with a sleek, intuitive interface.
 
--   **Practice Mode**
-    Take quizzes in a practice-oriented mode for skill-building and learning.
+- **AI-Powered Quiz Generation**
+  Leverage Gemini's capabilities to automatically generate engaging quizzes.
 
--   **AI-Assisted Submission Evaluation**
-    Get instant feedback on quiz submissions with AI-powered evaluation.
+- **Practice Mode**
+  Take quizzes in a practice-oriented mode for skill-building and learning.
 
--   **Responsive, Modern UI**
-    Built using **Mantine v7**, providing a clean and smooth user experience.
+- **AI-Assisted Submission Evaluation**
+  Get instant feedback on quiz submissions with AI-powered evaluation.
+
+- **Local Storage & Data Ownership**
+  All learning content and progress is stored locally in accessible formats, ensuring full user control.
+
+- **Responsive, Modern UI**
+  Built using **Mantine v7**, providing a clean and smooth user experience.
+
+---
+
+## **Protocol Implementation** 📋
+
+This release introduces the core features of the Noggin Protocol for modular, self-directed learning:
+
+- **Libraries**: Top-level containers for organizing all your learning content
+- **Modules**: Self-contained learning units with source materials and quizzes
+- **Transparent Storage**: All data stored locally in accessible formats
 
 ---
 
 ## **Platform Support** 🖥️
 
--   **Windows**: Installer available
--   **Linux**: Supported formats include **AppImage**, **Snap**, and **Deb** packages
+- **Windows**: Installer available
+- **Linux**: Supported formats include **AppImage**, **Snap**, and **Deb** packages
 
 ---
 
 ## **Important Notes** ⚠️
 
 1. **Alpha Software**: This release is **unstable** and may contain bugs or incomplete features.
-2. **OpenAI API Required**: An OpenAI API key is required for AI-powered functionalities.
+2. **Gemini API Required**: A Gemini API key is required for AI-powered functionalities.
 3. **Electron Dependency**: Limited to **Electron v31** due to current constraints.
-4. **Manual Database Migrations**: Updates to the database schema may require **manual intervention**.
 
 ---
 
 ## **Requirements** 🔧
 
--   **OpenAI API Key**: Necessary for accessing AI features
+- **Gemini API Key**: Necessary for accessing AI features
 
 ---
 
 ## **Known Issues** 🛠️
 
--   **Automatic Database Migrations**: Not yet implemented.
--   **Feature Instability**: Some functionalities may behave unexpectedly.
--   **Technical Limitations**: Refer to **ISSUES.md** for a detailed list of known issues.
+- **Automatic Database Migrations**: Not yet implemented.
+- **Feature Instability**: Some functionalities may behave unexpectedly.
+- **Technical Limitations**: Refer to **ISSUES.md** for a detailed list of known issues.
 
 ---
 

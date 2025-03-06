@@ -105,15 +105,12 @@ describe('module-tree utilities', () => {
         it('returns expanded state for all library nodes', () => {
             const treeData = buildModuleTreeData(mockLibraries, mockModules)
             const result = getInitialExpandedState(treeData)
-            expect(result).toEqual({
-                'library-lib1': true,
-                'library-lib2': true,
-            })
+            expect(result).toEqual(['library-lib1', 'library-lib2'])
         })
 
         it('handles empty tree data', () => {
             const result = getInitialExpandedState([])
-            expect(result).toEqual({})
+            expect(result).toEqual([])
         })
     })
 })

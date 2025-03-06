@@ -20,9 +20,12 @@ import {
 } from '@tabler/icons-react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { CreateLibraryModal } from '../CreateLibraryModal'
 import { getInitialExpandedState, libraryToTreeNode } from './module-tree'
+
+// Type alias for tree expanded state
+type TreeExpandedState = Record<string, boolean>
 
 function TreeNode({ node, expanded, elementProps, tree }: RenderTreeNodePayload) {
     const navigate = useNavigate()
@@ -42,9 +45,7 @@ function TreeNode({ node, expanded, elementProps, tree }: RenderTreeNodePayload)
             navigate({ to: '/module/view/$libraryId/$moduleId', params: { libraryId, moduleId } })
         } else if (node.value.startsWith('library-')) {
             const libraryId = node.value.replace('library-', '')
-            if (libraryId !== 'unorganized') {
-                navigate({ to: '/library/view/$libraryId', params: { libraryId } })
-            }
+            navigate({ to: '/library/view/$libraryId', params: { libraryId } })
         }
     }
 
@@ -96,6 +97,9 @@ export function ModuleExplorer() {
     const collapsed = useUiStore((s) => s.explorerCollapsed)
     const [createLibraryOpen, setCreateLibraryOpen] = useState(false)
 
+    // Use a ref to track if tree data has been initialized
+    const initializedRef = useRef(false)
+
     // Fetch libraries first
     const { data: libraries = [], refetch: refetchLibraries } = useQuery({
         queryKey: ['libraries'],
@@ -109,10 +113,6 @@ export function ModuleExplorer() {
             queryFn: () => window.api.modules.getModuleOverviews(library.metadata.slug),
         })),
     })
-
-    if (collapsed) {
-        return null
-    }
 
     // Convert libraries and modules into tree data structure
     const treeData: TreeNodeData[] = useMemo(() => {
@@ -131,11 +131,33 @@ export function ModuleExplorer() {
         )
     }, [libraries, moduleQueries])
 
-    const initialExpandedState = useMemo(() => getInitialExpandedState(treeData), [treeData])
+    // Create a stable initial expanded state - empty object since we'll initialize later
+    const initialExpandedState = useMemo<TreeExpandedState>(() => ({}), [])
 
+    // Create the tree controller with stable props
     const tree = useTree({
         initialExpandedState,
+        multiple: false,
     })
+
+    // Update the tree data when it changes
+    useEffect(() => {
+        if (treeData.length > 0) {
+            // Initialize tree with the current data, this also sets up the expanded state
+            tree.initialize(treeData)
+
+            // If this is the first time with real data, expand all library nodes
+            if (!initializedRef.current) {
+                const expandedValues = getInitialExpandedState(treeData)
+                expandedValues.forEach((value) => tree.expand(value))
+                initializedRef.current = true
+            }
+        }
+    }, [treeData, tree])
+
+    if (collapsed) {
+        return null
+    }
 
     return (
         <Stack gap={0} h="100%">

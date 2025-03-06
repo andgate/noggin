@@ -48,27 +48,11 @@ export function buildModuleTreeData(
     return libraryNodes
 }
 
-// Get initial expanded state for libraries
-export function getInitialExpandedState(treeData: TreeNodeData[]): Record<string, boolean> {
-    const collectLibraryNodes = (nodes: TreeNodeData[]): string[] => {
-        return nodes.flatMap((node) => {
-            const values: string[] = []
-            if (node.value.startsWith('library-')) {
-                values.push(node.value)
-            }
-            if (node.children) {
-                values.push(...collectLibraryNodes(node.children))
-            }
-            return values
-        })
-    }
-
-    const libraryNodes = collectLibraryNodes(treeData)
-    return libraryNodes.reduce(
-        (acc, value) => {
-            acc[value] = true
-            return acc
-        },
-        {} as Record<string, boolean>
-    )
+export function getInitialExpandedState(nodes: TreeNodeData[]): string[] {
+    return nodes.reduce<string[]>((acc, node) => {
+        if (node.value.startsWith('library-')) {
+            acc.push(node.value)
+        }
+        return acc
+    }, [])
 }
