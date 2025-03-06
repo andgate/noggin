@@ -29,7 +29,9 @@ jobs:
         run: pnpm install
 
       - name: Run Tests
-        run: pnpm test:ci
+        run: |
+          pnpm test:node
+          pnpm test:web
 
       - name: Build and Publish
         env:
