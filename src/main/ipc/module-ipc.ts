@@ -24,7 +24,7 @@ import {
     writeModuleData,
     writeModuleMetadata,
     writeModuleSource,
-} from '../services/mod-service'
+} from '../services/module-service'
 
 export function registerModuleIPC(): void {
     ipcMain.handle('modules:readModuleData', async (_, modulePath: string) => {

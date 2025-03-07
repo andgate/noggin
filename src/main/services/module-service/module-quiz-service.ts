@@ -1,8 +1,8 @@
 import { Quiz, quizSchema } from '@noggin/types/quiz-types'
 import fs from 'fs/promises'
 import path from 'path'
-import { ensureDir, readJsonFile, writeJsonFile } from '../common/fs-utils'
-import { getQuizPath } from '../common/module-utils'
+import { ensureDir, readJsonFile, writeJsonFile } from '../../common/fs-utils'
+import { getQuizPath } from '../../common/module-utils'
 import { readModuleById } from './module-core-service'
 import { resolveModulePath } from './module-discovery-service'
 

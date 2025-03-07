@@ -2,8 +2,8 @@ import { createModuleId } from '@noggin/shared/slug'
 import { moduleMetadataSchema } from '@noggin/types/module-types'
 import * as path from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { findFiles, readJsonFile } from '../common/fs-utils'
-import { getAllLibraries, getRegisteredLibraries } from './library-service'
+import { findFiles, readJsonFile } from '../../common/fs-utils'
+import { getAllLibraries, getRegisteredLibraries } from '../library-service'
 import {
     getAllModulePaths,
     getModuleOverviews,
@@ -11,10 +11,10 @@ import {
 } from './module-discovery-service'
 
 // Mock dependencies - only mock application modules, not system modules that are globally mocked
-vi.mock('./library-service')
-vi.mock('../common/fs-utils')
-vi.mock('../common/module-utils', async () => {
-    const actual = await vi.importActual('../common/module-utils')
+vi.mock('../library-service')
+vi.mock('../../common/fs-utils')
+vi.mock('../../common/module-utils', async () => {
+    const actual = await vi.importActual('../../common/module-utils')
     return {
         ...actual,
         getModuleMetadataPath: vi.fn((modPath) => `${modPath}/.mod/meta.json`),

@@ -1,7 +1,7 @@
 import { Submission, submissionSchema } from '@noggin/types/quiz-types'
 import path from 'path'
-import { ensureDir, findFiles, readJsonFile, writeJsonFile } from '../common/fs-utils'
-import { getSubmissionPath } from '../common/module-utils'
+import { ensureDir, findFiles, readJsonFile, writeJsonFile } from '../../common/fs-utils'
+import { getSubmissionPath } from '../../common/module-utils'
 import { resolveModulePath } from './module-discovery-service'
 
 /**

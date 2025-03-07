@@ -1,10 +1,9 @@
-import { ModuleStats } from '@noggin/types/module-types'
 import { Submission } from '@noggin/types/quiz-types'
 import * as path from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ensureDir, findFiles, readJsonFile, writeJsonFile } from '../common/fs-utils'
-import { getSubmissionPath } from '../common/module-utils'
-import * as spacedRepetition from '../common/spaced-repetition'
+import { ensureDir, findFiles, readJsonFile, writeJsonFile } from '../../common/fs-utils'
+import { getSubmissionPath } from '../../common/module-utils'
+import * as spacedRepetition from '../../common/spaced-repetition'
 import { resolveModulePath } from './module-discovery-service'
 import * as moduleStatsService from './module-stats-service'
 import {
@@ -17,11 +16,11 @@ import {
 } from './module-submission-service'
 
 // Mock dependencies - only mock application modules, not system modules that are globally mocked
-vi.mock('../common/fs-utils')
-vi.mock('../common/module-utils')
+vi.mock('../../common/fs-utils')
+vi.mock('../../common/module-utils')
 vi.mock('./module-discovery-service')
 vi.mock('./module-stats-service')
-vi.mock('../common/spaced-repetition')
+vi.mock('../../common/spaced-repetition')
 
 describe('ModuleSubmissionService', () => {
     // Mock data

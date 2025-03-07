@@ -1,7 +1,7 @@
 import { ModuleStats, moduleStatsSchema } from '@noggin/types/module-types'
-import { readJsonFile, writeJsonFile } from '../common/fs-utils'
-import { getModuleStatsPath } from '../common/module-utils'
-import { getAllLibraries } from './library-service'
+import { readJsonFile, writeJsonFile } from '../../common/fs-utils'
+import { getModuleStatsPath } from '../../common/module-utils'
+import { getAllLibraries } from '../library-service'
 import { getModuleOverviews, resolveModulePath } from './module-discovery-service'
 
 /**

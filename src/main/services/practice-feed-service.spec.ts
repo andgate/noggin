@@ -4,16 +4,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as dateUtils from '../common/date-utils'
 import * as spacedRepetition from '../common/spaced-repetition'
 import { getAllLibraries } from './library-service'
-import { readModuleById } from './module-core-service'
-import { getModuleOverviews } from './module-discovery-service'
-import * as moduleStatsService from './module-stats-service'
+import { readModuleById } from './module-service/module-core-service'
+import { getModuleOverviews } from './module-service/module-discovery-service'
+import * as moduleStatsService from './module-service/module-stats-service'
 import { getDueModules, updateReviewSchedule } from './practice-feed-service'
 
 // Mock dependencies
-vi.mock('./module-stats-service')
+vi.mock('./module-service/module-stats-service')
 vi.mock('./library-service')
-vi.mock('./module-core-service')
-vi.mock('./module-discovery-service')
+vi.mock('./module-service/module-core-service')
+vi.mock('./module-service/module-discovery-service')
 vi.mock('../common/date-utils')
 
 // Important: We do NOT mock spaced-repetition because it contains pure functions
@@ -23,7 +23,6 @@ describe('PracticeFeedService', () => {
     // Mock data
     const mockLibraryId = 'test-library'
     const mockModuleId = 'test-module-20240101T000000Z'
-    const mockModulePath = '/test/library/test-module'
 
     const mockLibrary = {
         path: '/test/library',

@@ -2,8 +2,8 @@ import { Quiz } from '@noggin/types/quiz-types'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ensureDir, readJsonFile, writeJsonFile } from '../common/fs-utils'
-import { getQuizPath } from '../common/module-utils'
+import { ensureDir, readJsonFile, writeJsonFile } from '../../common/fs-utils'
+import { getQuizPath } from '../../common/module-utils'
 import { readModuleById } from './module-core-service'
 import { resolveModulePath } from './module-discovery-service'
 import {
@@ -14,8 +14,8 @@ import {
 } from './module-quiz-service'
 
 // Mock dependencies - only mock application modules, not system modules that are globally mocked
-vi.mock('../common/fs-utils')
-vi.mock('../common/module-utils')
+vi.mock('../../common/fs-utils')
+vi.mock('../../common/module-utils')
 vi.mock('./module-core-service')
 vi.mock('./module-discovery-service')
 

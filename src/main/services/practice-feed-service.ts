@@ -3,9 +3,9 @@ import { Submission } from '@noggin/types/quiz-types'
 import { getCurrentDate } from '../common/date-utils'
 import { calculatePriority, updateModuleStats } from '../common/spaced-repetition'
 import { getAllLibraries } from './library-service'
-import { readModuleById } from './module-core-service'
-import { getModuleOverviews } from './module-discovery-service'
-import { getModuleStats, saveModuleStats } from './module-stats-service'
+import { readModuleById } from './module-service/module-core-service'
+import { getModuleOverviews } from './module-service/module-discovery-service'
+import { getModuleStats, saveModuleStats } from './module-service/module-stats-service'
 
 /**
  * Updates the review schedule for a module based on a completed submission

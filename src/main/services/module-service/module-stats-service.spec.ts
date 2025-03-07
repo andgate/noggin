@@ -1,16 +1,15 @@
 import { moduleStatsSchema } from '@noggin/types/module-types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { readJsonFile, writeJsonFile } from '../common/fs-utils'
-import { getModuleStatsPath } from '../common/module-utils'
-import { getAllLibraries } from './library-service'
-import { readModuleById } from './module-core-service'
+import { readJsonFile, writeJsonFile } from '../../common/fs-utils'
+import { getModuleStatsPath } from '../../common/module-utils'
+import { getAllLibraries } from '../library-service'
 import { getModuleOverviews, resolveModulePath } from './module-discovery-service'
 import { getAllModuleStats, getModuleStats, saveModuleStats } from './module-stats-service'
 
 // Mock dependencies - only mock application modules, not system modules that are globally mocked
-vi.mock('../common/fs-utils')
-vi.mock('../common/module-utils')
-vi.mock('./library-service')
+vi.mock('../../common/fs-utils')
+vi.mock('../../common/module-utils')
+vi.mock('../library-service')
 vi.mock('./module-core-service')
 vi.mock('./module-discovery-service')
 
@@ -42,23 +41,6 @@ describe('ModuleStatsService', () => {
         slug: mockModuleId,
         displayName: 'Test Module',
         librarySlug: mockLibraryId,
-    }
-
-    const mockModule = {
-        metadata: {
-            id: mockModuleId,
-            title: 'Test Module',
-            slug: 'test-module',
-            overview: 'Test Overview',
-            createdAt: '2024-01-01T00:00:00Z',
-            path: mockModulePath,
-            updatedAt: '2024-01-01T00:00:00Z',
-            libraryId: mockLibraryId,
-        },
-        stats: mockStats,
-        quizzes: [],
-        submissions: [],
-        sources: [],
     }
 
     const mockStatsPath = `${mockModulePath}/.mod/stats.json`

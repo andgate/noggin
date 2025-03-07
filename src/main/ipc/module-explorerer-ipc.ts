@@ -1,5 +1,5 @@
 import { BrowserWindow, Menu, MenuItem, clipboard, dialog, ipcMain, shell } from 'electron'
-import { removeModule, resolveModulePath } from '../services/mod-service'
+import { removeModule, resolveModulePath } from '../services/module-service'
 
 export function registerModuleExplorerIPC(): void {
     ipcMain.handle(

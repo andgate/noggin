@@ -13,7 +13,7 @@ import { compact } from 'lodash'
 import mime from 'mime'
 import { z } from 'zod'
 import { geminiService } from './gemini-service'
-import { readModuleQuiz } from './mod-service'
+import { readModuleQuiz } from './module-service'
 
 const analysisResultSchema = z.object({
     title: z.string(),

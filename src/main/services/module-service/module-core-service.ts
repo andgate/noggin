@@ -9,8 +9,8 @@ import {
     readJsonFile,
     removeDirectoryRecursively,
     writeJsonFile,
-} from '../common/fs-utils'
-import { getModuleMetadataPath, getQuizPath, getSubmissionPath } from '../common/module-utils'
+} from '../../common/fs-utils'
+import { getModuleMetadataPath, getQuizPath, getSubmissionPath } from '../../common/module-utils'
 import { resolveModulePath } from './module-discovery-service'
 
 /**
