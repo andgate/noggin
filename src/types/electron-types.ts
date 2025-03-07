@@ -35,6 +35,11 @@ interface ModuleAPI {
         moduleId: string,
         submission: Submission
     ) => Promise<void>
+    updateModuleStatsForSubmission: (
+        libraryId: string,
+        moduleId: string,
+        submission: Submission
+    ) => Promise<boolean>
     getQuizAttemptCount: (libraryId: string, moduleId: string, quizId: string) => Promise<number>
     getLatestModuleQuiz: (libraryId: string, moduleId: string) => Promise<Quiz>
     getModuleSubmissions: (libraryId: string, moduleId: string) => Promise<Submission[]>

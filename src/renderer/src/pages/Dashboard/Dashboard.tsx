@@ -5,7 +5,7 @@ import React, { useState } from 'react'
 import { UserSettingsPanel } from '../../components/UserSettingsPanel'
 import { PracticeFeed } from './components/PracticeFeed'
 
-const DashboardPage: React.FC = () => {
+export const DashboardPage: React.FC = () => {
     const { explorerCollapsed, toggleExplorer } = useUiStore()
     const [settingsOpen, setSettingsOpen] = useState(false)
 
@@ -51,5 +51,3 @@ const DashboardPage: React.FC = () => {
         </Stack>
     )
 }
-
-export default DashboardPage

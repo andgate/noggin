@@ -6,7 +6,7 @@ import { UserSettingsProvider } from '@renderer/app/hooks/use-user-settings'
 import { useUiStore } from '@renderer/app/stores/ui-store'
 import { ModuleExplorer } from '@renderer/components/ModuleExplorer'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createRootRoute, Outlet, ScrollRestoration } from '@tanstack/react-router'
+import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import * as React from 'react'
 import { type ReactNode } from 'react'
@@ -62,7 +62,6 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             <RootProvider>
                 <AppLayout>{children}</AppLayout>
             </RootProvider>
-            <ScrollRestoration />
             {import.meta.env.DEV && <TanStackRouterDevtools position="bottom-left" />}
         </>
     )

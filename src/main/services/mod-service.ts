@@ -50,6 +50,7 @@ export {
     getQuizSubmissions,
     readModuleSubmission,
     saveModuleSubmission,
+    updateModuleStatsForSubmission,
     writeSubmissions,
 } from './module-submission-service'
 

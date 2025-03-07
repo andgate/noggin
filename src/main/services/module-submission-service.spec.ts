@@ -1,15 +1,19 @@
+import { ModuleStats } from '@noggin/types/module-types'
 import { Submission } from '@noggin/types/quiz-types'
 import * as path from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ensureDir, findFiles, readJsonFile, writeJsonFile } from '../common/fs-utils'
 import { getSubmissionPath } from '../common/module-utils'
+import * as spacedRepetition from '../common/spaced-repetition'
 import { resolveModulePath } from './module-discovery-service'
+import * as moduleStatsService from './module-stats-service'
 import {
     getModuleSubmissions,
     getQuizAttemptCount,
     getQuizSubmissions,
     readModuleSubmission,
     saveModuleSubmission,
+    updateModuleStatsForSubmission,
     writeSubmissions,
 } from './module-submission-service'
 
@@ -17,6 +21,8 @@ import {
 vi.mock('../common/fs-utils')
 vi.mock('../common/module-utils')
 vi.mock('./module-discovery-service')
+vi.mock('./module-stats-service')
+vi.mock('../common/spaced-repetition')
 
 describe('ModuleSubmissionService', () => {
     // Mock data
@@ -77,6 +83,11 @@ describe('ModuleSubmissionService', () => {
             )
             expect(ensureDir).toHaveBeenCalledWith(`${mockModulePath}/.mod/submissions`)
             expect(writeJsonFile).toHaveBeenCalledWith(mockSubmissionPath, mockSubmission)
+
+            // Verify that updateModuleStats is not being called
+            expect(moduleStatsService.getModuleStats).not.toHaveBeenCalled()
+            expect(spacedRepetition.updateModuleStats).not.toHaveBeenCalled()
+            expect(moduleStatsService.saveModuleStats).not.toHaveBeenCalled()
         })
 
         it('should throw error if module is not found', async () => {
@@ -87,6 +98,196 @@ describe('ModuleSubmissionService', () => {
             await expect(
                 saveModuleSubmission(mockLibraryId, 'non-existent', mockSubmission)
             ).rejects.toThrow('Module not found: non-existent')
+        })
+    })
+
+    describe('updateModuleStatsForSubmission', () => {
+        it('should not update module stats for ungraded submissions', async () => {
+            // Create a test submission object
+            const submission: Submission = {
+                quizId: 'quiz-1',
+                attemptNumber: 1,
+                completedAt: '2023-01-15T12:00:00Z',
+                quizTitle: 'Test Quiz',
+                timeElapsed: 300,
+                timeLimit: 600,
+                libraryId: mockLibraryId,
+                moduleSlug: mockModuleId,
+                responses: [],
+                status: 'pending',
+            }
+
+            const result = await updateModuleStatsForSubmission(
+                mockLibraryId,
+                mockModuleId,
+                submission
+            )
+
+            // Verify no stats were updated and function returned false
+            expect(result).toBe(false)
+            expect(moduleStatsService.getModuleStats).not.toHaveBeenCalled()
+            expect(moduleStatsService.saveModuleStats).not.toHaveBeenCalled()
+            expect(spacedRepetition.updateModuleStats).not.toHaveBeenCalled()
+        })
+
+        it('should update module stats for graded submissions with passing grade', async () => {
+            // Create test data
+            const currentStats: ModuleStats = {
+                moduleId: mockModuleId,
+                currentBox: 2,
+                lastReviewDate: '2023-01-01T12:00:00Z', // Older than the submission
+                nextDueDate: '2023-01-03T12:00:00Z',
+            }
+
+            const updatedStats: ModuleStats = {
+                moduleId: mockModuleId,
+                currentBox: 3, // Moved up a box because passed
+                lastReviewDate: '2023-01-15T12:00:00Z', // Updated to current date
+                nextDueDate: '2023-01-22T12:00:00Z', // Box 3 = 7 days later
+            }
+
+            // Mock getModuleStats to return our test stats
+            vi.mocked(moduleStatsService.getModuleStats).mockResolvedValue(currentStats)
+
+            // Mock updateModuleStats to return our expected updated stats
+            vi.mocked(spacedRepetition.updateModuleStats).mockReturnValue(updatedStats)
+
+            // Create a graded submission with passing grade
+            const submission: Submission = {
+                quizId: 'quiz-1',
+                attemptNumber: 1,
+                completedAt: '2023-01-15T12:00:00Z',
+                quizTitle: 'Test Quiz',
+                timeElapsed: 300,
+                timeLimit: 600,
+                libraryId: mockLibraryId,
+                moduleSlug: mockModuleId,
+                responses: [],
+                status: 'graded',
+                grade: 75, // Passing grade (above 60)
+                letterGrade: 'C',
+            }
+
+            const result = await updateModuleStatsForSubmission(
+                mockLibraryId,
+                mockModuleId,
+                submission
+            )
+
+            // Verify stats were updated correctly and function returned true
+            expect(result).toBe(true)
+            expect(moduleStatsService.getModuleStats).toHaveBeenCalledWith(
+                mockLibraryId,
+                mockModuleId
+            )
+            expect(spacedRepetition.updateModuleStats).toHaveBeenCalledWith(currentStats, true) // true because passed
+            expect(moduleStatsService.saveModuleStats).toHaveBeenCalledWith(
+                mockLibraryId,
+                mockModuleId,
+                updatedStats
+            )
+        })
+
+        it('should update module stats for graded submissions with failing grade', async () => {
+            // Create test data
+            const currentStats: ModuleStats = {
+                moduleId: mockModuleId,
+                currentBox: 3,
+                lastReviewDate: '2023-01-01T12:00:00Z', // Older than the submission
+                nextDueDate: '2023-01-08T12:00:00Z',
+            }
+
+            const updatedStats: ModuleStats = {
+                moduleId: mockModuleId,
+                currentBox: 1, // Reset to box 1 because failed
+                lastReviewDate: '2023-01-15T12:00:00Z', // Updated to current date
+                nextDueDate: '2023-01-16T12:00:00Z', // Box 1 = 1 day later
+            }
+
+            // Mock getModuleStats to return our test stats
+            vi.mocked(moduleStatsService.getModuleStats).mockResolvedValue(currentStats)
+
+            // Mock updateModuleStats to return our expected updated stats
+            vi.mocked(spacedRepetition.updateModuleStats).mockReturnValue(updatedStats)
+
+            // Create a graded submission with failing grade
+            const submission: Submission = {
+                quizId: 'quiz-1',
+                attemptNumber: 1,
+                completedAt: '2023-01-15T12:00:00Z',
+                quizTitle: 'Test Quiz',
+                timeElapsed: 300,
+                timeLimit: 600,
+                libraryId: mockLibraryId,
+                moduleSlug: mockModuleId,
+                responses: [],
+                status: 'graded',
+                grade: 55, // Failing grade (below 60)
+                letterGrade: 'F',
+            }
+
+            const result = await updateModuleStatsForSubmission(
+                mockLibraryId,
+                mockModuleId,
+                submission
+            )
+
+            // Verify stats were updated correctly and function returned true
+            expect(result).toBe(true)
+            expect(moduleStatsService.getModuleStats).toHaveBeenCalledWith(
+                mockLibraryId,
+                mockModuleId
+            )
+            expect(spacedRepetition.updateModuleStats).toHaveBeenCalledWith(currentStats, false) // false because failed
+            expect(moduleStatsService.saveModuleStats).toHaveBeenCalledWith(
+                mockLibraryId,
+                mockModuleId,
+                updatedStats
+            )
+        })
+
+        it('should not update module stats if submission is older than lastReviewDate', async () => {
+            // Create test data with a more recent lastReviewDate
+            const currentStats: ModuleStats = {
+                moduleId: mockModuleId,
+                currentBox: 2,
+                lastReviewDate: '2023-01-20T12:00:00Z', // More recent than the submission
+                nextDueDate: '2023-01-22T12:00:00Z',
+            }
+
+            // Mock getModuleStats to return our test stats
+            vi.mocked(moduleStatsService.getModuleStats).mockResolvedValue(currentStats)
+
+            // Create a graded submission with an older date
+            const submission: Submission = {
+                quizId: 'quiz-1',
+                attemptNumber: 1,
+                completedAt: '2023-01-15T12:00:00Z', // Older than lastReviewDate
+                quizTitle: 'Test Quiz',
+                timeElapsed: 300,
+                timeLimit: 600,
+                libraryId: mockLibraryId,
+                moduleSlug: mockModuleId,
+                responses: [],
+                status: 'graded',
+                grade: 85,
+                letterGrade: 'B',
+            }
+
+            const result = await updateModuleStatsForSubmission(
+                mockLibraryId,
+                mockModuleId,
+                submission
+            )
+
+            // Verify stats were not updated and function returned false
+            expect(result).toBe(false)
+            expect(moduleStatsService.getModuleStats).toHaveBeenCalledWith(
+                mockLibraryId,
+                mockModuleId
+            )
+            expect(spacedRepetition.updateModuleStats).not.toHaveBeenCalled()
+            expect(moduleStatsService.saveModuleStats).not.toHaveBeenCalled()
         })
     })
 

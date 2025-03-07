@@ -49,6 +49,17 @@ const api: NogginElectronAPI = {
             ),
         saveModuleSubmission: (libraryId: string, moduleId: string, submission: Submission) =>
             ipcRenderer.invoke('modules:saveModuleSubmission', libraryId, moduleId, submission),
+        updateModuleStatsForSubmission: (
+            libraryId: string,
+            moduleId: string,
+            submission: Submission
+        ) =>
+            ipcRenderer.invoke(
+                'modules:updateModuleStatsForSubmission',
+                libraryId,
+                moduleId,
+                submission
+            ),
         getQuizAttemptCount: (libraryId: string, moduleId: string, quizId: string) =>
             ipcRenderer.invoke('modules:getQuizAttemptCount', libraryId, moduleId, quizId),
         getLatestModuleQuiz: (libraryId: string, moduleId: string) =>

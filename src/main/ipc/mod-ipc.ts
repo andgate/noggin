@@ -22,6 +22,7 @@ import {
     saveModuleQuiz,
     saveModuleStats,
     saveModuleSubmission,
+    updateModuleStatsForSubmission,
     writeModuleData,
     writeModuleMetadata,
     writeModuleSource,
@@ -80,6 +81,13 @@ export function registerModuleIPC(): void {
         'modules:saveModuleSubmission',
         async (_, libraryId: string, moduleId: string, submission: Submission) => {
             await saveModuleSubmission(libraryId, moduleId, submission)
+        }
+    )
+
+    ipcMain.handle(
+        'modules:updateModuleStatsForSubmission',
+        async (_, libraryId: string, moduleId: string, submission: Submission) => {
+            return updateModuleStatsForSubmission(libraryId, moduleId, submission)
         }
     )
 
