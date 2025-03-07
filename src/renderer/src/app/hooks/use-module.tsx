@@ -35,7 +35,6 @@ export type ModuleContextType = {
     getModuleStats: (libraryId: string, moduleId: string) => Promise<ModuleStats>
     saveModuleStats: (libraryId: string, moduleId: string, stats: ModuleStats) => Promise<void>
     getAllModuleStats: () => Promise<ModuleStats[]>
-    getDueModules: () => Promise<Mod[]>
 }
 
 export const ModuleContext = createContext<ModuleContextType>(window.api.modules)

@@ -49,17 +49,6 @@ const api: NogginElectronAPI = {
             ),
         saveModuleSubmission: (libraryId: string, moduleId: string, submission: Submission) =>
             ipcRenderer.invoke('modules:saveModuleSubmission', libraryId, moduleId, submission),
-        updateModuleStatsForSubmission: (
-            libraryId: string,
-            moduleId: string,
-            submission: Submission
-        ) =>
-            ipcRenderer.invoke(
-                'modules:updateModuleStatsForSubmission',
-                libraryId,
-                moduleId,
-                submission
-            ),
         getQuizAttemptCount: (libraryId: string, moduleId: string, quizId: string) =>
             ipcRenderer.invoke('modules:getQuizAttemptCount', libraryId, moduleId, quizId),
         getLatestModuleQuiz: (libraryId: string, moduleId: string) =>
@@ -73,7 +62,6 @@ const api: NogginElectronAPI = {
         saveModuleStats: (libraryId: string, moduleId: string, stats: ModuleStats) =>
             ipcRenderer.invoke('modules:saveModuleStats', libraryId, moduleId, stats),
         getAllModuleStats: () => ipcRenderer.invoke('modules:getAllModuleStats'),
-        getDueModules: () => ipcRenderer.invoke('modules:getDueModules'),
         getModuleOverviews: (libraryId: string) =>
             ipcRenderer.invoke('modules:getModuleOverviews', libraryId),
         readModuleMetadata: (modPath: string) =>
@@ -122,6 +110,16 @@ const api: NogginElectronAPI = {
     },
     path: {
         join: (...args: string[]) => ipcRenderer.invoke('path:join', ...args),
+    },
+    practiceFeed: {
+        getDueModules: () => ipcRenderer.invoke('practiceFeed:getDueModules'),
+        updateReviewSchedule: (libraryId: string, moduleId: string, submission: Submission) =>
+            ipcRenderer.invoke(
+                'practiceFeed:updateReviewSchedule',
+                libraryId,
+                moduleId,
+                submission
+            ),
     },
 }
 

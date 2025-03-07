@@ -6,7 +6,6 @@ import {
     deleteModuleQuiz,
     deleteModuleSource,
     getAllModuleStats,
-    getDueModules,
     getLatestModuleQuiz,
     getModuleOverviews,
     getModuleStats,
@@ -22,7 +21,6 @@ import {
     saveModuleQuiz,
     saveModuleStats,
     saveModuleSubmission,
-    updateModuleStatsForSubmission,
     writeModuleData,
     writeModuleMetadata,
     writeModuleSource,
@@ -85,13 +83,6 @@ export function registerModuleIPC(): void {
     )
 
     ipcMain.handle(
-        'modules:updateModuleStatsForSubmission',
-        async (_, libraryId: string, moduleId: string, submission: Submission) => {
-            return updateModuleStatsForSubmission(libraryId, moduleId, submission)
-        }
-    )
-
-    ipcMain.handle(
         'modules:readModuleSubmission',
         async (_, libraryId: string, moduleId: string, quizId: string, attempt: number) => {
             return readModuleSubmission(libraryId, moduleId, quizId, attempt)
@@ -139,10 +130,6 @@ export function registerModuleIPC(): void {
 
     ipcMain.handle('modules:getAllModuleStats', async () => {
         return getAllModuleStats()
-    })
-
-    ipcMain.handle('modules:getDueModules', async () => {
-        return getDueModules()
     })
 
     ipcMain.handle('modules:getModuleOverviews', async (_, libraryId: string) => {

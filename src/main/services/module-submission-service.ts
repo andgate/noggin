@@ -2,45 +2,7 @@ import { Submission, submissionSchema } from '@noggin/types/quiz-types'
 import path from 'path'
 import { ensureDir, findFiles, readJsonFile, writeJsonFile } from '../common/fs-utils'
 import { getSubmissionPath } from '../common/module-utils'
-import { updateModuleStats } from '../common/spaced-repetition'
 import { resolveModulePath } from './module-discovery-service'
-import { getModuleStats, saveModuleStats } from './module-stats-service'
-
-/**
- * Update module stats based on a graded submission
- * This supports the spaced repetition system by adjusting the review schedule
- * based on quiz performance
- */
-export async function updateModuleStatsForSubmission(
-    libraryId: string,
-    moduleId: string,
-    submission: Submission
-): Promise<boolean> {
-    // Only process graded submissions with a grade
-    if (submission.status !== 'graded' || submission.grade === undefined) {
-        return false
-    }
-
-    // Consider a passing grade to be 60% or higher (D or better)
-    const isPassing = submission.grade >= 60
-
-    // Get current module stats
-    const currentStats = await getModuleStats(libraryId, moduleId)
-
-    // Check if this submission is more recent than the last review
-    const submissionDate = new Date(submission.completedAt)
-    const lastReviewDate = new Date(currentStats.lastReviewDate)
-
-    if (submissionDate > lastReviewDate) {
-        // Update the stats based on whether the student passed
-        const updatedStats = updateModuleStats(currentStats, isPassing)
-        await saveModuleStats(libraryId, moduleId, updatedStats)
-        console.log(`Updated spaced repetition stats for module ${moduleId}, passed: ${isPassing}`)
-        return true
-    }
-
-    return false
-}
 
 /**
  * Save a submission to a module
@@ -62,9 +24,6 @@ export async function saveModuleSubmission(
     )
     await ensureDir(path.dirname(submissionPath))
     await writeJsonFile(submissionPath, submission)
-
-    // No longer calling updateModuleStatsForSubmission here
-    // This should be called separately by the client
 }
 
 /**

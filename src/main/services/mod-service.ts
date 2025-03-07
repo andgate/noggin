@@ -12,6 +12,7 @@
  * - module-quiz-service.ts: Quiz management
  * - module-submission-service.ts: Submission management
  * - module-stats-service.ts: Statistics and tracking
+ * - practice-feed-service.ts: Spaced repetition and review scheduling
  */
 
 // Re-export functions from module core service
@@ -50,14 +51,8 @@ export {
     getQuizSubmissions,
     readModuleSubmission,
     saveModuleSubmission,
-    updateModuleStatsForSubmission,
     writeSubmissions,
 } from './module-submission-service'
 
 // Re-export functions from module stats service
-export {
-    getAllModuleStats,
-    getDueModules,
-    getModuleStats,
-    saveModuleStats,
-} from './module-stats-service'
+export { getAllModuleStats, getModuleStats, saveModuleStats } from './module-stats-service'

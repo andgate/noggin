@@ -2,6 +2,7 @@
 // TODO: Add loading states for route transitions via suspense
 import { AppShell, ColorSchemeScript, Divider, MantineProvider } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
+import { PracticeFeedProvider } from '@renderer/app/hooks/use-practice-feed'
 import { UserSettingsProvider } from '@renderer/app/hooks/use-user-settings'
 import { useUiStore } from '@renderer/app/stores/ui-store'
 import { ModuleExplorer } from '@renderer/components/ModuleExplorer'
@@ -71,11 +72,13 @@ const RootProvider = ({ children }: Readonly<{ children: ReactNode }>) => {
     return (
         <>
             <UserSettingsProvider>
-                <ColorSchemeScript nonce="8IBTHwOdqNKAWeKl7plt8g==" defaultColorScheme="dark" />
-                <MantineProvider defaultColorScheme="dark" theme={theme}>
-                    <Notifications />
-                    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-                </MantineProvider>
+                <PracticeFeedProvider>
+                    <ColorSchemeScript nonce="8IBTHwOdqNKAWeKl7plt8g==" defaultColorScheme="dark" />
+                    <MantineProvider defaultColorScheme="dark" theme={theme}>
+                        <Notifications />
+                        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+                    </MantineProvider>
+                </PracticeFeedProvider>
             </UserSettingsProvider>
         </>
     )

@@ -2,12 +2,14 @@ import { ActionIcon, Button, Card, Group, SimpleGrid, Text } from '@mantine/core
 import { notifications } from '@mantine/notifications'
 import { Mod } from '@noggin/types/module-types'
 import { useModule } from '@renderer/app/hooks/use-module'
+import { usePracticeFeed } from '@renderer/app/hooks/use-practice-feed'
 import { IconHistory, IconPlayerPlay, IconPlus, IconTrash } from '@tabler/icons-react'
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 export function PracticeFeed() {
-    const { getDueModules, removeModule } = useModule()
+    const { removeModule } = useModule()
+    const { getDueModules } = usePracticeFeed()
     const [modules, setModules] = useState<Mod[]>([])
     const [_isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()

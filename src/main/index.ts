@@ -8,6 +8,7 @@ import { registerLibraryIPC } from './ipc/library-ipc'
 import { registerModuleIPC } from './ipc/mod-ipc'
 import { registerModuleExplorerIPC } from './ipc/module-explorerer-ipc'
 import { registerOpenAIIPC } from './ipc/openai-ipc'
+import { registerPracticeFeedIPC } from './ipc/practice-feed-ipc'
 import { registerStoreIPC } from './ipc/store-ipc'
 
 function createWindow(): void {
@@ -95,6 +96,7 @@ app.whenReady().then(async () => {
     registerGenerateIPC()
     registerModuleExplorerIPC()
     registerLibraryIPC()
+    registerPracticeFeedIPC()
 
     createWindow()
 

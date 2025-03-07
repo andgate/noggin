@@ -1,9 +1,7 @@
-import { Mod, ModuleStats, moduleStatsSchema } from '@noggin/types/module-types'
+import { ModuleStats, moduleStatsSchema } from '@noggin/types/module-types'
 import { readJsonFile, writeJsonFile } from '../common/fs-utils'
 import { getModuleStatsPath } from '../common/module-utils'
-import { calculatePriority } from '../common/spaced-repetition'
 import { getAllLibraries } from './library-service'
-import { readModuleById } from './module-core-service'
 import { getModuleOverviews, resolveModulePath } from './module-discovery-service'
 
 /**
@@ -51,7 +49,7 @@ export async function saveModuleStats(
 }
 
 /**
- * Get statistics for all modules
+ * Get all module stats from all libraries
  */
 export async function getAllModuleStats(): Promise<ModuleStats[]> {
     const libraries = await getAllLibraries()
@@ -79,42 +77,4 @@ export async function getAllModuleStats(): Promise<ModuleStats[]> {
     // Resolve all promises and filter out nulls
     const stats = await Promise.all(statsPromises)
     return stats.filter((stat): stat is ModuleStats => stat !== null)
-}
-
-/**
- * Get all modules that are due for review
- */
-export async function getDueModules(): Promise<Mod[]> {
-    const libraries = await getAllLibraries()
-    const allModules: Mod[] = []
-
-    for (const library of libraries) {
-        const libraryId = library.metadata.slug
-        const overviews = await getModuleOverviews(libraryId)
-
-        for (const overview of overviews) {
-            try {
-                const mod = await readModuleById(libraryId, overview.id)
-                const stats = await getModuleStats(libraryId, overview.id)
-                allModules.push({
-                    ...mod,
-                    stats,
-                })
-            } catch (error) {
-                console.error(
-                    `Failed to read module ${overview.slug} in library ${libraryId}:`,
-                    error
-                )
-            }
-        }
-    }
-
-    // Filter and sort due modules
-    const now = new Date()
-    return allModules
-        .filter((mod) => {
-            const nextDue = new Date(mod.stats?.nextDueDate || '')
-            return nextDue <= now
-        })
-        .sort((a, b) => calculatePriority(b.stats) - calculatePriority(a.stats))
 }

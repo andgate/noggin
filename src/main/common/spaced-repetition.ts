@@ -1,4 +1,5 @@
 import { ModuleStats } from '@noggin/types/module-types'
+import { getCurrentDate, getCurrentISOString, getDaysBetween } from './date-utils'
 
 const LEITNER_BOXES = {
     1: { days: 1 }, // daily
@@ -19,9 +20,9 @@ export function calculateNextReviewDate(currentBox: LeitnerBox, lastReviewDate: 
 
 export function calculatePriority(stats?: ModuleStats): number {
     if (!stats) return 0
-    const now = new Date()
+    const now = getCurrentDate()
     const nextReview = new Date(stats.nextDueDate)
-    const daysOverdue = (now.getTime() - nextReview.getTime()) / (1000 * 60 * 60 * 24)
+    const daysOverdue = getDaysBetween(now, nextReview)
 
     // Higher priority for overdue items and lower boxes
     return daysOverdue + (6 - stats.currentBox) * 0.1
@@ -30,11 +31,12 @@ export function calculatePriority(stats?: ModuleStats): number {
 export function updateModuleStats(stats: ModuleStats, passed: boolean): ModuleStats {
     const currentBox = stats.currentBox as LeitnerBox
     const newBox = passed ? Math.min(currentBox + 1, 5) : 1
+    const now = getCurrentDate()
 
     return {
         ...stats,
         currentBox: newBox,
-        lastReviewDate: new Date().toISOString(),
-        nextDueDate: calculateNextReviewDate(newBox as LeitnerBox, new Date()).toISOString(),
+        lastReviewDate: getCurrentISOString(),
+        nextDueDate: calculateNextReviewDate(newBox as LeitnerBox, now).toISOString(),
     }
 }

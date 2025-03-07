@@ -8,7 +8,7 @@ export function useGradesGenerator(libraryId: string, moduleSlug: string) {
             const gradedSubmission = await window.api.generate.gradeSubmission(submission)
             const updatedSubmission = updateSubmissionWithGrades(submission, gradedSubmission)
             await window.api.modules.saveModuleSubmission(libraryId, moduleSlug, updatedSubmission)
-            await window.api.modules.updateModuleStatsForSubmission(
+            await window.api.practiceFeed.updateReviewSchedule(
                 libraryId,
                 moduleSlug,
                 updatedSubmission

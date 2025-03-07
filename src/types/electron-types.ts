@@ -35,11 +35,6 @@ interface ModuleAPI {
         moduleId: string,
         submission: Submission
     ) => Promise<void>
-    updateModuleStatsForSubmission: (
-        libraryId: string,
-        moduleId: string,
-        submission: Submission
-    ) => Promise<boolean>
     getQuizAttemptCount: (libraryId: string, moduleId: string, quizId: string) => Promise<number>
     getLatestModuleQuiz: (libraryId: string, moduleId: string) => Promise<Quiz>
     getModuleSubmissions: (libraryId: string, moduleId: string) => Promise<Submission[]>
@@ -51,10 +46,18 @@ interface ModuleAPI {
     getModuleStats: (libraryId: string, moduleId: string) => Promise<ModuleStats>
     saveModuleStats: (libraryId: string, moduleId: string, stats: ModuleStats) => Promise<void>
     getAllModuleStats: () => Promise<ModuleStats[]>
-    getDueModules: () => Promise<Mod[]>
     getModuleOverviews: (libraryId: string) => Promise<ModuleOverview[]>
     readModuleMetadata: (modPath: string) => Promise<ModuleMetadata>
     writeModuleMetadata: (modPath: string, metadata: ModuleMetadata) => Promise<void>
+}
+
+interface PracticeFeedAPI {
+    getDueModules: () => Promise<Mod[]>
+    updateReviewSchedule: (
+        libraryId: string,
+        moduleId: string,
+        submission: Submission
+    ) => Promise<boolean>
 }
 
 interface OpenAIChatOptions<T> {
@@ -145,4 +148,5 @@ export interface NogginElectronAPI {
     generate: GenerateAPI
     moduleExplorer: ModuleExplorerAPI
     library: LibraryAPI
+    practiceFeed: PracticeFeedAPI
 }
