@@ -1,7 +1,7 @@
 import { Button, Container, Group, Stack, Title } from '@mantine/core'
 import { Submission } from '@noggin/types/quiz-types'
 import { useGradesGenerator } from '@renderer/app/hooks/use-grades-generator'
-import { IconArrowLeft } from '@tabler/icons-react'
+import { AppHeader, HeaderAction } from '@renderer/components/layout/AppHeader'
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { SubmissionGradeInfo } from './components/SubmissionGradeInfo'
@@ -19,6 +19,9 @@ export function SubmissionPage({ libraryId, moduleId, submission }: SubmissionPa
     const navigate = useNavigate()
     const [isGrading, setIsGrading] = useState(false)
 
+    // Define which header actions to enable
+    const headerActions: HeaderAction[] = ['explorer', 'settings']
+
     const handleGradeSubmission = async () => {
         setIsGrading(true)
         try {
@@ -31,38 +34,41 @@ export function SubmissionPage({ libraryId, moduleId, submission }: SubmissionPa
         }
     }
 
+    const pageTitle = `${submission.quizTitle} - Attempt ${submission.attemptNumber}`
+
     return (
-        <Container size="md">
-            <Stack gap="md">
-                <Group justify="space-between">
-                    <Button
-                        onClick={() =>
-                            navigate({
-                                to: '/module/view/$libraryId/$moduleId',
-                                params: { libraryId: 'nog', moduleId },
-                            })
-                        }
-                        leftSection={<IconArrowLeft />}
-                        variant="subtle"
-                    >
-                        Back to Module
-                    </Button>
+        <Stack h="100vh" style={{ display: 'flex', flexDirection: 'column' }}>
+            <AppHeader
+                title={pageTitle}
+                backLink={{
+                    to: '/quiz/view/$libraryId/$moduleId/$quizId',
+                    params: {
+                        libraryId,
+                        moduleId,
+                        quizId: submission.quizId,
+                    },
+                    label: 'Back to Quiz',
+                }}
+                actions={headerActions}
+            />
 
-                    <Button color="blue" onClick={handleGradeSubmission} loading={isGrading}>
-                        Grade Submission
-                    </Button>
-                </Group>
-
-                <Title order={2}>{submission.quizTitle}</Title>
-
-                <SubmissionGradeInfo submission={submission} />
-
+            <Container size="md" style={{ flex: 1, overflow: 'auto', padding: '1rem' }}>
                 <Stack gap="md">
-                    {submission.responses.map((response, index) => (
-                        <SubmissionResponseCard key={index} response={response} index={index} />
-                    ))}
+                    <Group justify="flex-end">
+                        <Button color="blue" onClick={handleGradeSubmission} loading={isGrading}>
+                            Grade Submission
+                        </Button>
+                    </Group>
+
+                    <SubmissionGradeInfo submission={submission} />
+
+                    <Stack gap="md">
+                        {submission.responses.map((response, index) => (
+                            <SubmissionResponseCard key={index} response={response} index={index} />
+                        ))}
+                    </Stack>
                 </Stack>
-            </Stack>
-        </Container>
+            </Container>
+        </Stack>
     )
 }

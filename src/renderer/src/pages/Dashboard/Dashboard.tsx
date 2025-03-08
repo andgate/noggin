@@ -1,53 +1,17 @@
-import { ActionIcon, Group, Modal, Stack, Title, Tooltip } from '@mantine/core'
-import { useUiStore } from '@renderer/app/stores/ui-store'
-import { IconLayoutSidebar, IconLayoutSidebarFilled, IconSettings } from '@tabler/icons-react'
-import React, { useState } from 'react'
-import { UserSettingsPanel } from '../../components/UserSettingsPanel'
+import { Stack } from '@mantine/core'
+import { AppHeader, HeaderAction } from '@renderer/components/layout/AppHeader'
+import React from 'react'
 import { PracticeFeed } from './components/PracticeFeed'
 
 export const DashboardPage: React.FC = () => {
-    const { explorerCollapsed, toggleExplorer } = useUiStore()
-    const [settingsOpen, setSettingsOpen] = useState(false)
+    // Define which header actions to enable
+    const headerActions: HeaderAction[] = ['explorer', 'settings']
 
     return (
-        <Stack gap={0} h="100vh">
-            <Group px="md" py="xs" justify="space-between" bg="var(--mantine-color-dark-6)">
-                <Title order={4}>Practice Feed</Title>
-                <Group gap="xs">
-                    <Tooltip
-                        label={
-                            explorerCollapsed
-                                ? 'Expand module explorer'
-                                : 'Collapse module explorer'
-                        }
-                    >
-                        <ActionIcon variant="subtle" onClick={toggleExplorer}>
-                            {explorerCollapsed ? (
-                                <IconLayoutSidebar size={24} />
-                            ) : (
-                                <IconLayoutSidebarFilled size={24} />
-                            )}
-                        </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label="Settings">
-                        <ActionIcon variant="subtle" onClick={() => setSettingsOpen(true)}>
-                            <IconSettings size={24} />
-                        </ActionIcon>
-                    </Tooltip>
-                </Group>
-            </Group>
+        <Stack gap={0} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <AppHeader title="Practice" actions={headerActions} />
 
             <PracticeFeed />
-
-            <Modal
-                opened={settingsOpen}
-                onClose={() => setSettingsOpen(false)}
-                title="Settings"
-                size="lg"
-                closeOnClickOutside={false}
-            >
-                <UserSettingsPanel />
-            </Modal>
         </Stack>
     )
 }

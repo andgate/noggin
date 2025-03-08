@@ -1,11 +1,10 @@
 // TODO: Add theme switching capability
 // TODO: Add loading states for route transitions via suspense
-import { AppShell, ColorSchemeScript, Divider, MantineProvider } from '@mantine/core'
+import { ColorSchemeScript, MantineProvider } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
 import { PracticeFeedProvider } from '@renderer/app/hooks/use-practice-feed'
 import { UserSettingsProvider } from '@renderer/app/hooks/use-user-settings'
-import { useUiStore } from '@renderer/app/stores/ui-store'
-import { ModuleExplorer } from '@renderer/components/ModuleExplorer'
+import { AppLayout } from '@renderer/components/layout/AppLayout'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
@@ -81,33 +80,5 @@ const RootProvider = ({ children }: Readonly<{ children: ReactNode }>) => {
                 </PracticeFeedProvider>
             </UserSettingsProvider>
         </>
-    )
-}
-
-function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
-    const collapsed = useUiStore((s) => s.explorerCollapsed)
-
-    return (
-        <AppShell
-            data-testid="app-shell"
-            header={{ height: 0 }}
-            navbar={{
-                width: { base: 280 },
-                breakpoint: 'sm',
-                collapsed: { desktop: collapsed, mobile: true },
-            }}
-            padding={0}
-        >
-            <AppShell.Navbar p={0}>
-                <ModuleExplorer />
-            </AppShell.Navbar>
-
-            <AppShell.Main>
-                <Divider orientation="vertical" />
-                {React.cloneElement(children as React.ReactElement, {
-                    collapsed,
-                })}
-            </AppShell.Main>
-        </AppShell>
     )
 }

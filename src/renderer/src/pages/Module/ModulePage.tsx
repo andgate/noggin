@@ -1,17 +1,12 @@
-import { ActionIcon, Button, Grid, Group, Modal, Stack, Title, Tooltip } from '@mantine/core'
+import { Button, Grid, Group, Modal, Stack, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { Mod } from '@noggin/types/module-types'
 import { Quiz } from '@noggin/types/quiz-types'
 import { useModule } from '@renderer/app/hooks/use-module'
 import { useUiStore } from '@renderer/app/stores/ui-store'
+import { AppHeader, HeaderAction } from '@renderer/components/layout/AppHeader'
 import { QuizGenerationWizard } from '@renderer/components/QuizGenerationWizard'
 import { UserSettingsPanel } from '@renderer/components/UserSettingsPanel'
-import {
-    IconArrowLeft,
-    IconLayoutSidebar,
-    IconLayoutSidebarFilled,
-    IconSettings,
-} from '@tabler/icons-react'
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ModuleInfoPanel } from './components/ModuleInfoPanel'
@@ -22,11 +17,13 @@ type ModulePageProps = {
 }
 
 export function ModulePage({ module }: ModulePageProps) {
-    const { explorerCollapsed, toggleExplorer } = useUiStore()
-    const [settingsOpen, setSettingsOpen] = useState(false)
+    const { settingsOpen, toggleSettings } = useUiStore()
     const [isGenerating, setIsGenerating] = useState(false)
     const navigate = useNavigate()
     const { deleteModuleQuiz } = useModule()
+
+    // Define which header actions to enable
+    const headerActions: HeaderAction[] = ['explorer', 'settings']
 
     const handleQuizGenerated = (_quiz: Quiz) => {
         setIsGenerating(false)
@@ -52,44 +49,19 @@ export function ModulePage({ module }: ModulePageProps) {
     }
 
     return (
-        <Stack h="100vh">
-            <Group px="md" py="xs" justify="space-between" bg="var(--mantine-color-dark-6)">
-                <Button variant="subtle" onClick={() => navigate({ to: '/' })}>
-                    <Group gap="xs">
-                        <IconArrowLeft size={16} />
-                        Back to Dashboard
-                    </Group>
-                </Button>
+        <Stack h="100vh" style={{ display: 'flex', flexDirection: 'column' }}>
+            <AppHeader
+                title={module.metadata.title}
+                backLink={{
+                    to: '/',
+                    label: 'Back to Dashboard',
+                }}
+                actions={headerActions}
+            />
 
-                <Group gap="xs">
-                    <Tooltip
-                        label={
-                            explorerCollapsed
-                                ? 'Expand module explorer'
-                                : 'Collapse module explorer'
-                        }
-                    >
-                        <ActionIcon variant="subtle" onClick={toggleExplorer}>
-                            {explorerCollapsed ? (
-                                <IconLayoutSidebar size={24} />
-                            ) : (
-                                <IconLayoutSidebarFilled size={24} />
-                            )}
-                        </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label="Settings">
-                        <ActionIcon variant="subtle" onClick={() => setSettingsOpen(true)}>
-                            <IconSettings size={24} />
-                        </ActionIcon>
-                    </Tooltip>
-                </Group>
-            </Group>
-
-            <Stack gap="xl" p="md" style={{ flex: 1 }}>
-                <Title order={2}>{module.metadata.title}</Title>
-
+            <Stack gap="xl" p="md" style={{ flex: 1, overflow: 'auto' }}>
                 <Grid>
-                    <Grid.Col span={explorerCollapsed ? 12 : 8}>
+                    <Grid.Col>
                         <Stack gap="md">
                             <Group justify="space-between" align="center">
                                 <Title order={3}>Quizzes</Title>
@@ -118,12 +90,6 @@ export function ModulePage({ module }: ModulePageProps) {
                             </Grid>
                         </Stack>
                     </Grid.Col>
-
-                    {!explorerCollapsed && (
-                        <Grid.Col span={4}>
-                            <ModuleInfoPanel module={module} />
-                        </Grid.Col>
-                    )}
                 </Grid>
             </Stack>
 
@@ -144,7 +110,7 @@ export function ModulePage({ module }: ModulePageProps) {
 
             <Modal
                 opened={settingsOpen}
-                onClose={() => setSettingsOpen(false)}
+                onClose={toggleSettings}
                 title="Settings"
                 size="lg"
                 closeOnClickOutside={false}

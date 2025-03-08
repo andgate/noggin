@@ -2,6 +2,7 @@ import { Box, Button, Card, Group, Radio, Stack, Textarea, Title } from '@mantin
 import { useForm } from '@mantine/form'
 import { Question, Quiz, submissionSchema } from '@noggin/types/quiz-types'
 import { useModule } from '@renderer/app/hooks/use-module'
+import { AppHeader, HeaderAction } from '@renderer/components/layout/AppHeader'
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -70,6 +71,9 @@ export function QuizSessionPage({ libraryId, moduleId, quiz }: QuizSessionPagePr
     const module = useModule()
     const [startTime] = useState(() => new Date())
 
+    // No settings or explorer during quiz
+    const headerActions: HeaderAction[] = []
+
     if (!libraryId) {
         throw new Error('Library ID is required')
     }
@@ -133,42 +137,41 @@ export function QuizSessionPage({ libraryId, moduleId, quiz }: QuizSessionPagePr
         [libraryId, moduleId, quiz, startTime, navigate, module]
     )
 
-    const handleQuit = useCallback(() => {
-        const confirmed = window.confirm(
-            'Are you sure you want to quit? Your progress will be lost.'
-        )
-        if (confirmed) {
-            navigate({ to: '/' })
-        }
-    }, [navigate])
-
     return (
-        <Box maw={800} mx="auto" p="xl">
-            <Title order={2} mb="lg">
-                {quiz.title}
-            </Title>
+        <Stack h="100vh" style={{ display: 'flex', flexDirection: 'column' }}>
+            <AppHeader
+                title={`Quiz: ${quiz.title}`}
+                backLink={{
+                    to: '/quiz/view/$libraryId/$moduleId/$quizId',
+                    params: { libraryId, moduleId, quizId: quiz.id },
+                    label: 'Exit Quiz',
+                    requireConfirmation: true,
+                    confirmationMessage:
+                        'Are you sure you want to exit? Your progress will be lost.',
+                }}
+                actions={headerActions}
+            />
 
-            <form onSubmit={form.onSubmit(handleSubmit)}>
-                <Stack>
-                    {quiz.questions.map((question, index) => (
-                        <QuestionCard
-                            key={index}
-                            question={question}
-                            index={index}
-                            value={form.values[index.toString()]}
-                            onChange={(value) => form.setFieldValue(index.toString(), value)}
-                        />
-                    ))}
-                    <Group justify="space-between">
-                        <Button variant="light" color="red" onClick={handleQuit}>
-                            Quit Quiz
-                        </Button>
-                        <Button type="submit" size="lg">
-                            Submit Quiz
-                        </Button>
-                    </Group>
-                </Stack>
-            </form>
-        </Box>
+            <Box p="xl" style={{ flex: 1, overflow: 'auto' }}>
+                <form onSubmit={form.onSubmit(handleSubmit)}>
+                    <Stack>
+                        {quiz.questions.map((question, index) => (
+                            <QuestionCard
+                                key={index}
+                                question={question}
+                                index={index}
+                                value={form.values[index.toString()]}
+                                onChange={(value) => form.setFieldValue(index.toString(), value)}
+                            />
+                        ))}
+                        <Group justify="flex-end">
+                            <Button type="submit" size="lg">
+                                Submit Quiz
+                            </Button>
+                        </Group>
+                    </Stack>
+                </form>
+            </Box>
+        </Stack>
     )
 }

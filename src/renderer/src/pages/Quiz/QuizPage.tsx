@@ -1,6 +1,6 @@
 import { Button, Grid, Group, Paper, Stack, Text, Title } from '@mantine/core'
 import { Quiz, Submission } from '@noggin/types/quiz-types'
-import { IconArrowLeft } from '@tabler/icons-react'
+import { AppHeader, HeaderAction } from '@renderer/components/layout/AppHeader'
 import { useNavigate } from '@tanstack/react-router'
 import { QuestionList } from './components/QuestionList'
 
@@ -14,35 +14,31 @@ export type QuizPageProps = {
 export function QuizPage({ libraryId, moduleId, quiz, submissions }: QuizPageProps) {
     const navigate = useNavigate()
 
+    // Define which header actions to enable
+    const headerActions: HeaderAction[] = ['explorer', 'settings']
+
     if (!libraryId) {
         throw new Error('Library ID is required')
     }
 
     return (
-        <Stack h="100vh">
-            <Group px="md" py="xs" justify="space-between" bg="var(--mantine-color-dark-6)">
-                <Button
-                    variant="subtle"
-                    onClick={() =>
-                        navigate({
-                            to: '/module/view/$libraryId/$moduleId',
-                            params: { libraryId, moduleId },
-                        })
-                    }
-                >
-                    <Group gap="xs">
-                        <IconArrowLeft size={16} />
-                        Back to Module
-                    </Group>
-                </Button>
-            </Group>
+        <Stack h="100vh" style={{ display: 'flex', flexDirection: 'column' }}>
+            <AppHeader
+                title={quiz.title}
+                backLink={{
+                    to: '/module/view/$libraryId/$moduleId',
+                    params: { libraryId, moduleId },
+                    label: 'Back to Module',
+                }}
+                actions={headerActions}
+            />
 
-            <Grid p="md" style={{ flex: 1 }}>
+            <Grid p="md" style={{ flex: 1, overflow: 'auto' }}>
                 {/* Left side: Submissions Grid */}
                 <Grid.Col span={8}>
                     <Stack gap="xl">
                         <Group justify="space-between" align="center">
-                            <Title order={2}>{quiz.title}</Title>
+                            <Title order={3}>Attempts</Title>
                             <Button
                                 variant="light"
                                 onClick={() =>
