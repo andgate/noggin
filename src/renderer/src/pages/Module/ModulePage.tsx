@@ -32,71 +32,59 @@ export function ModulePage({ module }: ModulePageProps) {
     const handleDeleteQuiz = async (quizId: string) => {
         try {
             await deleteModuleQuiz(module.metadata.libraryId, module.metadata.id, quizId)
-            // Refresh the module data or update state to remove the quiz
             notifications.show({
                 title: 'Quiz deleted',
-                message: 'The quiz has been successfully deleted',
+                message: 'The quiz has been successfully deleted.',
                 color: 'green',
             })
         } catch (error) {
-            console.error('Failed to delete quiz:', error)
             notifications.show({
                 title: 'Error',
-                message: 'Failed to delete quiz',
+                message: 'Failed to delete quiz.',
                 color: 'red',
             })
         }
     }
 
     return (
-        <Stack h="100vh" style={{ display: 'flex', flexDirection: 'column' }}>
-            <AppHeader
-                title={module.metadata.title}
-                backLink={{
-                    to: '/',
-                    label: 'Back to Dashboard',
-                }}
-                actions={headerActions}
-            />
+        <>
+            <AppHeader title={module.metadata.title} actions={headerActions} />
 
-            <Stack gap="xl" p="md" style={{ flex: 1, overflow: 'auto' }}>
-                <Grid>
-                    <Grid.Col>
-                        <Stack gap="md">
-                            <Group justify="space-between" align="center">
-                                <Title order={3}>Quizzes</Title>
-                                <Button
-                                    variant="gradient"
-                                    gradient={{ from: 'blue', to: 'cyan' }}
-                                    onClick={() => setIsGenerating(true)}
-                                >
-                                    Generate Quiz
-                                </Button>
-                            </Group>
-                            <Grid>
-                                {module.quizzes.map((quiz) => (
-                                    <Grid.Col key={quiz.id} span={6}>
-                                        <QuizCard
-                                            libraryId={module.metadata.libraryId}
-                                            moduleId={module.metadata.id}
-                                            quizId={quiz.id}
-                                            title={quiz.title}
-                                            questionCount={quiz.questions.length}
-                                            createdAt={quiz.createdAt}
-                                            onDelete={() => handleDeleteQuiz(quiz.id)}
-                                        />
-                                    </Grid.Col>
-                                ))}
-                            </Grid>
-                        </Stack>
-                    </Grid.Col>
-                </Grid>
-            </Stack>
+            <Grid gutter="md">
+                <Grid.Col span={{ base: 12, md: 8 }}>
+                    <Stack>
+                        <Group justify="space-between">
+                            <Title order={2}>Quizzes</Title>
+                            <Button onClick={() => setIsGenerating(true)}>Generate Quiz</Button>
+                        </Group>
 
+                        <Grid>
+                            {module.quizzes?.map((quiz) => (
+                                <Grid.Col span={{ base: 12, sm: 6 }} key={quiz.id}>
+                                    <QuizCard
+                                        libraryId={module.metadata.libraryId}
+                                        moduleId={module.metadata.id}
+                                        quizId={quiz.id}
+                                        title={quiz.title}
+                                        questionCount={quiz.questions.length}
+                                        createdAt={quiz.createdAt}
+                                        onDelete={() => handleDeleteQuiz(quiz.id)}
+                                    />
+                                </Grid.Col>
+                            ))}
+                        </Grid>
+                    </Stack>
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, md: 4 }}>
+                    <ModuleInfoPanel module={module} />
+                </Grid.Col>
+            </Grid>
+
+            {/* Quiz generation modal */}
             <Modal
                 opened={isGenerating}
                 onClose={() => setIsGenerating(false)}
-                size="lg"
                 title="Generate Quiz"
             >
                 <QuizGenerationWizard
@@ -108,6 +96,7 @@ export function ModulePage({ module }: ModulePageProps) {
                 />
             </Modal>
 
+            {/* Settings panel */}
             <Modal
                 opened={settingsOpen}
                 onClose={toggleSettings}
@@ -117,6 +106,6 @@ export function ModulePage({ module }: ModulePageProps) {
             >
                 <UserSettingsPanel />
             </Modal>
-        </Stack>
+        </>
     )
 }
