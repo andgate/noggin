@@ -62,7 +62,6 @@ This release introduces the core features of the Noggin Protocol for modular, se
 
 ## **Known Issues** 🛠️
 
-- **Automatic Database Migrations**: Not yet implemented.
 - **Feature Instability**: Some functionalities may behave unexpectedly.
 - **Technical Limitations**: Refer to **ISSUES.md** for a detailed list of known issues.
 
