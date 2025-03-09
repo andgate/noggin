@@ -1,4 +1,3 @@
-import { TreeNodeData } from '@mantine/core'
 import { Library } from '@noggin/types/library-types'
 import { ModuleOverview } from '@noggin/types/module-types'
 import { useEffect, useMemo, useState } from 'react'
