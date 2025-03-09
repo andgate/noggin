@@ -1,14 +1,11 @@
 import { TreeNodeData, useTree } from '@mantine/core'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { TreeExpandedState } from '../types'
 
 /**
  * Custom hook to handle tree state management and initialization
  */
 export function useModuleTree(treeData: TreeNodeData[], initialExpanded: string[] = []) {
-    // Track if tree has been initialized
-    const initializedRef = useRef(false)
-
     // Create a stable initial expanded state - empty object since we'll initialize later
     const emptyState = {} as TreeExpandedState
 
@@ -18,19 +15,13 @@ export function useModuleTree(treeData: TreeNodeData[], initialExpanded: string[
         multiple: false,
     })
 
-    // Update the tree data when it changes
+    // Initialize tree with data and expand nodes only once when data is available
     useEffect(() => {
         if (treeData.length > 0) {
-            // Initialize tree with the current data
             tree.initialize(treeData)
-
-            // If this is the first time with real data, expand all nodes in initialExpanded
-            if (!initializedRef.current) {
-                initialExpanded.forEach((value) => tree.expand(value))
-                initializedRef.current = true
-            }
+            initialExpanded.forEach((value) => tree.expand(value))
         }
-    }, [treeData, initialExpanded])
+    }, [treeData, initialExpanded]) // Only run when treeData or initialExpanded changes
 
     return tree
 }
