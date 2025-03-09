@@ -1,8 +1,15 @@
 import type { Library } from '@noggin/types/library-types'
 import type { ModuleOverview } from '@noggin/types/module-types'
 import { render, screen } from '@test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { LibraryPage } from '.'
+
+// Mock the AppHeader component
+vi.mock('@renderer/components/layout/AppHeader', () => ({
+    AppHeader: vi
+        .fn()
+        .mockImplementation(({ title }) => <div data-testid="mock-header">{title}</div>),
+}))
 
 describe('LibraryPage', () => {
     const mockLibrary: Library = {
@@ -33,7 +40,7 @@ describe('LibraryPage', () => {
     it('should render library metadata', () => {
         const { container } = render(<LibraryPage library={mockLibrary} modules={[]} />)
         expect(container).toBeTruthy()
-        expect(screen.getByText('Test Library')).toBeTruthy()
+        expect(screen.getByTestId('mock-header')).toHaveTextContent('Test Library')
         expect(screen.getByText('A test library description')).toBeTruthy()
     })
 
