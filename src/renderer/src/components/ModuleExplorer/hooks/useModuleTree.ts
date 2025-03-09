@@ -30,7 +30,7 @@ export function useModuleTree(treeData: TreeNodeData[], initialExpanded: string[
                 initializedRef.current = true
             }
         }
-    }, [treeData, tree, initialExpanded])
+    }, [treeData, initialExpanded])
 
     return tree
 }
