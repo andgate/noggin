@@ -7,7 +7,6 @@ import { useUiStore } from '@renderer/app/stores/ui-store'
 import { AppHeader, HeaderAction } from '@renderer/components/layout/AppHeader'
 import { QuizGenerationWizard } from '@renderer/components/QuizGenerationWizard'
 import { UserSettingsPanel } from '@renderer/components/UserSettingsPanel'
-import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ModuleInfoPanel } from './components/ModuleInfoPanel'
 import { QuizCard } from './components/QuizCard'
@@ -19,7 +18,6 @@ type ModulePageProps = {
 export function ModulePage({ module }: ModulePageProps) {
     const { settingsOpen, toggleSettings } = useUiStore()
     const [isGenerating, setIsGenerating] = useState(false)
-    const navigate = useNavigate()
     const { deleteModuleQuiz } = useModule()
 
     // Define which header actions to enable
@@ -48,7 +46,14 @@ export function ModulePage({ module }: ModulePageProps) {
 
     return (
         <>
-            <AppHeader title={module.metadata.title} actions={headerActions} />
+            <AppHeader
+                title={module.metadata.title}
+                actions={headerActions}
+                backLink={{
+                    to: '/',
+                    label: 'Back to Dashboard',
+                }}
+            />
 
             <Grid gutter="md">
                 <Grid.Col span={{ base: 12, md: 8 }}>
