@@ -1,0 +1,8 @@
+---
+description: Noggin Product Specifications
+globs: docs/specs/*.md
+alwaysApply: true
+---
+Follow the project specification files when working on code or tests. The project must follow the project specification files.
+
+DO NOT MODIFY the specification files unless given express permission by the user.
