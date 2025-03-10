@@ -45,7 +45,15 @@ export function ModulePage({ module }: ModulePageProps) {
     }
 
     return (
-        <>
+        <div
+            id="module-page-container"
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100vh',
+                overflow: 'hidden',
+            }}
+        >
             <AppHeader
                 title={module.metadata.title}
                 actions={headerActions}
@@ -55,39 +63,79 @@ export function ModulePage({ module }: ModulePageProps) {
                 }}
             />
 
-            <Grid gutter="md">
-                <Grid.Col span={{ base: 12, md: 8 }}>
-                    <Stack>
+            <div
+                id="module-content-area"
+                style={{
+                    flex: 1,
+                    overflow: 'hidden',
+                    padding: '16px',
+                    width: '100%',
+                    maxWidth: '100%',
+                    display: 'flex',
+                }}
+            >
+                <div
+                    style={{
+                        flex: '0 0 66.66%',
+                        height: '100%',
+                        paddingRight: '8px',
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            height: '100%',
+                        }}
+                    >
                         <Group justify="space-between">
                             <Title order={2}>Quizzes</Title>
-                            <Button onClick={() => setIsGenerating(true)}>Generate Quiz</Button>
+                            <Button id="generate-quiz-btn" onClick={() => setIsGenerating(true)}>
+                                Generate Quiz
+                            </Button>
                         </Group>
 
-                        <Grid>
-                            {module.quizzes?.map((quiz) => (
-                                <Grid.Col span={{ base: 12, sm: 6 }} key={quiz.id}>
-                                    <QuizCard
-                                        libraryId={module.metadata.libraryId}
-                                        moduleId={module.metadata.id}
-                                        quizId={quiz.id}
-                                        title={quiz.title}
-                                        questionCount={quiz.questions.length}
-                                        createdAt={quiz.createdAt}
-                                        onDelete={() => handleDeleteQuiz(quiz.id)}
-                                    />
-                                </Grid.Col>
-                            ))}
-                        </Grid>
-                    </Stack>
-                </Grid.Col>
+                        <div
+                            id="quizzes-list-container"
+                            style={{
+                                overflow: 'auto',
+                                flex: 1,
+                                maxWidth: '100%',
+                                overflowX: 'hidden',
+                            }}
+                        >
+                            <Grid style={{ width: '100%', margin: 0 }}>
+                                {module.quizzes?.map((quiz) => (
+                                    <Grid.Col span={{ base: 12, sm: 6 }} key={quiz.id}>
+                                        <QuizCard
+                                            libraryId={module.metadata.libraryId}
+                                            moduleId={module.metadata.id}
+                                            quizId={quiz.id}
+                                            title={quiz.title}
+                                            questionCount={quiz.questions.length}
+                                            createdAt={quiz.createdAt}
+                                            onDelete={() => handleDeleteQuiz(quiz.id)}
+                                        />
+                                    </Grid.Col>
+                                ))}
+                            </Grid>
+                        </div>
+                    </div>
+                </div>
 
-                <Grid.Col span={{ base: 12, md: 4 }}>
-                    <ModuleInfoPanel module={module} />
-                </Grid.Col>
-            </Grid>
+                <div
+                    id="module-info-section"
+                    style={{ flex: '0 0 33.33%', height: '100%', paddingLeft: '8px' }}
+                >
+                    <div style={{ height: '100%', overflow: 'auto' }}>
+                        <ModuleInfoPanel module={module} />
+                    </div>
+                </div>
+            </div>
 
             {/* Quiz generation modal */}
             <Modal
+                id="quiz-generation-modal"
                 opened={isGenerating}
                 onClose={() => setIsGenerating(false)}
                 title="Generate Quiz"
@@ -111,6 +159,6 @@ export function ModulePage({ module }: ModulePageProps) {
             >
                 <UserSettingsPanel />
             </Modal>
-        </>
+        </div>
     )
 }
