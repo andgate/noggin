@@ -1,4 +1,4 @@
-import { Group, Stack, Text, Title } from '@mantine/core'
+import { Group, Stack, Text, Title, Tooltip } from '@mantine/core'
 import { Mod } from '@noggin/types/module-types'
 import { formatDate } from '@renderer/app/common/format'
 
@@ -7,16 +7,25 @@ type ModuleInfoPanelProps = {
 }
 
 export function ModuleInfoPanel({ module }: ModuleInfoPanelProps) {
+    const truncatedTextStyle = {
+        whiteSpace: 'nowrap' as const,
+        overflow: 'hidden' as const,
+        textOverflow: 'ellipsis' as const,
+        maxWidth: '100%',
+    }
+
     return (
         <Stack
             id="module-info-panel"
             gap="md"
-            style={{ height: '100%', maxWidth: '100%', overflowX: 'hidden' }}
+            style={{ height: '100%', width: '100%', maxWidth: '100%' }}
         >
             <Title order={3}>Module Overview</Title>
-            <Text id="module-path" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-                {module.metadata.path}
-            </Text>
+            <Tooltip label={module.metadata.path} openDelay={800} position="bottom" withinPortal>
+                <Text id="module-path" style={truncatedTextStyle}>
+                    {module.metadata.path}
+                </Text>
+            </Tooltip>
 
             {/* Module Stats */}
             <div id="module-stats">
@@ -38,18 +47,21 @@ export function ModuleInfoPanel({ module }: ModuleInfoPanelProps) {
                     style={{
                         maxHeight: '150px',
                         overflow: 'auto',
-                        overflowX: 'hidden',
                         width: '100%',
                     }}
                 >
                     {module.sources.map((source, index) => (
-                        <Text
+                        <Tooltip
                             key={index}
-                            size="sm"
-                            style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                            label={source}
+                            openDelay={800}
+                            position="bottom"
+                            withinPortal
                         >
-                            {source}
-                        </Text>
+                            <Text size="sm" style={truncatedTextStyle}>
+                                {source}
+                            </Text>
+                        </Tooltip>
                     ))}
                 </div>
             </Stack>
@@ -62,7 +74,6 @@ export function ModuleInfoPanel({ module }: ModuleInfoPanelProps) {
                     style={{
                         maxHeight: '200px',
                         overflow: 'auto',
-                        overflowX: 'hidden',
                         width: '100%',
                     }}
                 >
@@ -74,14 +85,23 @@ export function ModuleInfoPanel({ module }: ModuleInfoPanelProps) {
                         module.submissions.map((submission) => (
                             <Group
                                 key={submission.attemptNumber}
-                                style={{ flexWrap: 'wrap', width: '100%' }}
+                                style={{ width: '100%' }}
+                                wrap="nowrap"
+                                justify="space-between"
                             >
-                                <Text
-                                    size="sm"
-                                    style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                                <Tooltip
+                                    label={submission.quizTitle}
+                                    openDelay={800}
+                                    position="bottom"
+                                    withinPortal
                                 >
-                                    {submission.quizTitle}
-                                </Text>
+                                    <Text
+                                        size="sm"
+                                        style={{ ...truncatedTextStyle, maxWidth: '40%' }}
+                                    >
+                                        {submission.quizTitle}
+                                    </Text>
+                                </Tooltip>
                                 <Text size="sm" c="dimmed">
                                     {formatDate(submission.completedAt)}
                                 </Text>

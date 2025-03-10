@@ -125,9 +125,22 @@ export function ModulePage({ module }: ModulePageProps) {
 
                 <div
                     id="module-info-section"
-                    style={{ flex: '0 0 33.33%', height: '100%', paddingLeft: '8px' }}
+                    style={{
+                        flex: '0 0 33.33%',
+                        height: '100%',
+                        paddingLeft: '8px',
+                        maxWidth: '33.33%',
+                        overflow: 'hidden',
+                    }}
                 >
-                    <div style={{ height: '100%', overflow: 'auto' }}>
+                    <div
+                        style={{
+                            height: '100%',
+                            overflow: 'auto',
+                            width: '100%',
+                            maxWidth: '100%',
+                        }}
+                    >
                         <ModuleInfoPanel module={module} />
                     </div>
                 </div>
