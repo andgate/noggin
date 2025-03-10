@@ -1,6 +1,7 @@
 import { Group, Stack, Text, Title, Tooltip } from '@mantine/core'
 import { Mod } from '@noggin/types/module-types'
 import { formatDate } from '@renderer/app/common/format'
+import { ModuleSubmissionsTable } from './ModuleSubmissionsTable'
 
 type ModuleInfoPanelProps = {
     module: Mod
@@ -77,40 +78,7 @@ export function ModuleInfoPanel({ module }: ModuleInfoPanelProps) {
                         width: '100%',
                     }}
                 >
-                    {module.submissions.length === 0 ? (
-                        <Text size="sm" c="dimmed">
-                            No submissions yet
-                        </Text>
-                    ) : (
-                        module.submissions.map((submission) => (
-                            <Group
-                                key={submission.attemptNumber}
-                                style={{ width: '100%' }}
-                                wrap="nowrap"
-                                justify="space-between"
-                            >
-                                <Tooltip
-                                    label={submission.quizTitle}
-                                    openDelay={800}
-                                    position="bottom"
-                                    withinPortal
-                                >
-                                    <Text
-                                        size="sm"
-                                        style={{ ...truncatedTextStyle, maxWidth: '40%' }}
-                                    >
-                                        {submission.quizTitle}
-                                    </Text>
-                                </Tooltip>
-                                <Text size="sm" c="dimmed">
-                                    {formatDate(submission.completedAt)}
-                                </Text>
-                                {submission.grade && (
-                                    <Text size="sm">Grade: {submission.grade}%</Text>
-                                )}
-                            </Group>
-                        ))
-                    )}
+                    <ModuleSubmissionsTable module={module} />
                 </div>
             </Stack>
         </Stack>
