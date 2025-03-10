@@ -1,4 +1,4 @@
-import { Button, Grid, Group, Modal, Stack, Title } from '@mantine/core'
+import { Button, Grid, Group, Menu, Modal, Stack, Text, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { Mod } from '@noggin/types/module-types'
 import { Quiz } from '@noggin/types/quiz-types'
@@ -7,6 +7,7 @@ import { useUiStore } from '@renderer/app/stores/ui-store'
 import { AppHeader, HeaderAction } from '@renderer/components/layout/AppHeader'
 import { QuizGenerationWizard } from '@renderer/components/QuizGenerationWizard'
 import { UserSettingsPanel } from '@renderer/components/UserSettingsPanel'
+import { IconEdit, IconPlus } from '@tabler/icons-react'
 import { useState } from 'react'
 import { ModuleInfoPanel } from './components/ModuleInfoPanel'
 import { QuizCard } from './components/QuizCard'
@@ -89,10 +90,29 @@ export function ModulePage({ module }: ModulePageProps) {
                         }}
                     >
                         <Group justify="space-between">
-                            <Title order={2}>Quizzes</Title>
-                            <Button id="generate-quiz-btn" onClick={() => setIsGenerating(true)}>
-                                Generate Quiz
-                            </Button>
+                            <Group gap="xs">
+                                <Menu shadow="md" width={150} position="bottom-start">
+                                    <Menu.Target>
+                                        <IconPlus
+                                            size={24}
+                                            color="var(--mantine-color-green-6)"
+                                            style={{ cursor: 'pointer' }}
+                                        />
+                                    </Menu.Target>
+                                    <Menu.Dropdown>
+                                        <Menu.Item
+                                            leftSection={<IconPlus size={14} />}
+                                            onClick={() => setIsGenerating(true)}
+                                        >
+                                            Create Quiz
+                                        </Menu.Item>
+                                        <Menu.Item leftSection={<IconEdit size={14} />}>
+                                            Edit Quizzes
+                                        </Menu.Item>
+                                    </Menu.Dropdown>
+                                </Menu>
+                                <Title order={2}>Quizzes</Title>
+                            </Group>
                         </Group>
 
                         <div
@@ -102,6 +122,7 @@ export function ModulePage({ module }: ModulePageProps) {
                                 flex: 1,
                                 maxWidth: '100%',
                                 overflowX: 'hidden',
+                                marginTop: '16px',
                             }}
                         >
                             <Grid style={{ width: '100%', margin: 0 }}>
