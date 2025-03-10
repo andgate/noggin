@@ -7,7 +7,7 @@ import { useUiStore } from '@renderer/app/stores/ui-store'
 import { AppHeader, HeaderAction } from '@renderer/components/layout/AppHeader'
 import { QuizGenerationWizard } from '@renderer/components/QuizGenerationWizard'
 import { UserSettingsPanel } from '@renderer/components/UserSettingsPanel'
-import { IconEdit, IconPlus } from '@tabler/icons-react'
+import { IconCheck, IconEdit, IconPlus } from '@tabler/icons-react'
 import { useState } from 'react'
 import { ModuleInfoPanel } from './components/ModuleInfoPanel'
 import { QuizCard } from './components/QuizCard'
@@ -19,6 +19,7 @@ type ModulePageProps = {
 export function ModulePage({ module }: ModulePageProps) {
     const { settingsOpen, toggleSettings } = useUiStore()
     const [isGenerating, setIsGenerating] = useState(false)
+    const [editMode, setEditMode] = useState(false)
     const { deleteModuleQuiz } = useModule()
 
     // Define which header actions to enable
@@ -43,6 +44,10 @@ export function ModulePage({ module }: ModulePageProps) {
                 color: 'red',
             })
         }
+    }
+
+    const toggleEditMode = () => {
+        setEditMode((prev) => !prev)
     }
 
     return (
@@ -91,28 +96,40 @@ export function ModulePage({ module }: ModulePageProps) {
                     >
                         <Group justify="space-between">
                             <Group gap="xs">
-                                <Menu shadow="md" width={150} position="bottom-start">
-                                    <Menu.Target>
-                                        <IconPlus
-                                            size={24}
-                                            color="var(--mantine-color-green-6)"
-                                            style={{ cursor: 'pointer' }}
-                                        />
-                                    </Menu.Target>
-                                    <Menu.Dropdown>
-                                        <Menu.Item
-                                            leftSection={<IconPlus size={14} />}
-                                            onClick={() => setIsGenerating(true)}
-                                        >
-                                            Create Quiz
-                                        </Menu.Item>
-                                        <Menu.Item leftSection={<IconEdit size={14} />}>
-                                            Edit Quizzes
-                                        </Menu.Item>
-                                    </Menu.Dropdown>
-                                </Menu>
-                                <Title order={2}>Quizzes</Title>
+                                {!editMode && (
+                                    <Menu shadow="md" width={150} position="bottom-start">
+                                        <Menu.Target>
+                                            <IconPlus
+                                                size={24}
+                                                color="var(--mantine-color-green-6)"
+                                                style={{ cursor: 'pointer' }}
+                                            />
+                                        </Menu.Target>
+                                        <Menu.Dropdown>
+                                            <Menu.Item
+                                                leftSection={<IconPlus size={14} />}
+                                                onClick={() => setIsGenerating(true)}
+                                            >
+                                                Create Quiz
+                                            </Menu.Item>
+                                            <Menu.Item
+                                                leftSection={<IconEdit size={14} />}
+                                                onClick={toggleEditMode}
+                                            >
+                                                Edit Quizzes
+                                            </Menu.Item>
+                                        </Menu.Dropdown>
+                                    </Menu>
+                                )}
+                                <Title order={2}>
+                                    {editMode ? 'Quizzes (editing)' : 'Quizzes'}
+                                </Title>
                             </Group>
+                            {editMode && (
+                                <Button variant="light" size="sm" onClick={toggleEditMode}>
+                                    Done
+                                </Button>
+                            )}
                         </Group>
 
                         <div
@@ -136,6 +153,7 @@ export function ModulePage({ module }: ModulePageProps) {
                                             questionCount={quiz.questions.length}
                                             createdAt={quiz.createdAt}
                                             onDelete={() => handleDeleteQuiz(quiz.id)}
+                                            editMode={editMode}
                                         />
                                     </Grid.Col>
                                 ))}

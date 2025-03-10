@@ -11,6 +11,7 @@ type QuizCardProps = {
     createdAt: string
     quizId: string
     onDelete?: () => void
+    editMode?: boolean
 }
 
 export function QuizCard({
@@ -21,6 +22,7 @@ export function QuizCard({
     questionCount,
     createdAt,
     onDelete,
+    editMode = false,
 }: QuizCardProps) {
     const navigate = useNavigate()
 
@@ -59,7 +61,7 @@ export function QuizCard({
             <Stack gap="sm">
                 <Group justify="space-between">
                     <Text fw={500}>{title}</Text>
-                    {onDelete && (
+                    {onDelete && editMode && (
                         <Tooltip label="Delete quiz">
                             <ActionIcon variant="subtle" color="red" onClick={onDelete}>
                                 <IconTrash size={16} />
