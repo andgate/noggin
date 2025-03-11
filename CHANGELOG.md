@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Improved UI consistency with expandable options for quiz management
+- Improved QuizCard button layout with right-aligned, appropriately sized buttons
 
 ### Fixed
 - Improved long text handling with truncation and ellipsis for file paths and quiz titles

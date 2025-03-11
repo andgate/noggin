@@ -77,13 +77,11 @@ export function QuizCard({
                         {formatDate(createdAt)}
                     </Text>
                 </Group>
-                <Group>
-                    <Button variant="light" onClick={handleViewQuiz} fullWidth>
+                <Group justify="flex-end">
+                    <Button variant="light" onClick={handleViewQuiz}>
                         View Quiz
                     </Button>
-                    <Button onClick={handleStartQuiz} fullWidth>
-                        Start Quiz
-                    </Button>
+                    <Button onClick={handleStartQuiz}>Start Quiz</Button>
                 </Group>
             </Stack>
         </Card>
