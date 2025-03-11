@@ -1,4 +1,4 @@
-import { Group, RenderTreeNodePayload, Text } from '@mantine/core'
+import { Group, RenderTreeNodePayload, Text, Tooltip } from '@mantine/core'
 import { IconFile, IconFolder, IconFolderOpen } from '@tabler/icons-react'
 import { useNavigate } from '@tanstack/react-router'
 import { getNodeIdentifier, isLibraryNode, isModuleNode } from '../types'
@@ -72,25 +72,33 @@ export function TreeNode({ node, expanded, elementProps, tree }: RenderTreeNodeP
     }
 
     return (
-        <Group gap={0} {...elementProps} onContextMenu={handleContextMenu}>
-            <Group
-                gap="xs"
-                bg={isLibraryNode(node) ? 'var(--mantine-color-dark-8)' : undefined}
-                px="xs"
-                py={4}
-                w="100%"
-            >
-                {isModuleNode(node) ? (
-                    <IconFile size={16} />
-                ) : expanded ? (
-                    <IconFolderOpen size={16} />
-                ) : (
-                    <IconFolder size={16} />
-                )}
-                <Text size="sm" truncate c={isLibraryNode(node) ? 'dimmed' : undefined}>
-                    {node.label}
-                </Text>
-            </Group>
+        <Group gap={0} {...elementProps} onContextMenu={handleContextMenu} w="100%">
+            <Tooltip label={node.label} openDelay={800} position="bottom" withinPortal>
+                <Group
+                    gap="xs"
+                    bg={isLibraryNode(node) ? 'var(--mantine-color-dark-8)' : undefined}
+                    px="xs"
+                    py={4}
+                    w="100%"
+                    wrap="nowrap"
+                >
+                    {isModuleNode(node) ? (
+                        <IconFile size={16} style={{ flexShrink: 0 }} />
+                    ) : expanded ? (
+                        <IconFolderOpen size={16} style={{ flexShrink: 0 }} />
+                    ) : (
+                        <IconFolder size={16} style={{ flexShrink: 0 }} />
+                    )}
+                    <Text
+                        size="sm"
+                        truncate="end"
+                        c={isLibraryNode(node) ? 'dimmed' : undefined}
+                        style={{ flexGrow: 1, minWidth: 0 }}
+                    >
+                        {node.label}
+                    </Text>
+                </Group>
+            </Tooltip>
         </Group>
     )
 }
