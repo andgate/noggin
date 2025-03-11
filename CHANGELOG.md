@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Improved long text handling with truncation and ellipsis for file paths and quiz titles
 - Added tooltips with delay to show full text on hover for truncated content
+- Fixed module explorer tree nodes to keep icons and text on the same line with proper text truncation and hover tooltips
 - Improved module page layout with proper vertical space distribution using custom flex containers
 - Fixed LibraryPage tests by mocking AppHeader to simplify test setup
 
