@@ -1,8 +1,8 @@
 import { AppShell, Box, Divider, Modal } from '@mantine/core'
 import { useUiStore } from '@renderer/app/stores/ui-store'
-import { ModuleExplorer } from '@renderer/components/ModuleExplorer'
 import { UserSettingsPanel } from '@renderer/components/UserSettingsPanel'
 import React, { type ReactNode } from 'react'
+import { LeftSidepane } from './LeftSidepane'
 
 export function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
     const { explorerCollapsed, settingsOpen, toggleSettings } = useUiStore()
@@ -18,7 +18,7 @@ export function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
             padding={0}
         >
             <AppShell.Navbar p={0}>
-                <ModuleExplorer />
+                <LeftSidepane />
             </AppShell.Navbar>
 
             <AppShell.Main>

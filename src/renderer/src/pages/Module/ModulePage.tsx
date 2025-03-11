@@ -1,4 +1,4 @@
-import { Button, Grid, Group, Menu, Modal, Title } from '@mantine/core'
+import { Button, Grid, Group, Menu, Modal, Text, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { Mod } from '@noggin/types/module-types'
 import { Quiz } from '@noggin/types/quiz-types'
@@ -9,7 +9,6 @@ import { QuizGenerationWizard } from '@renderer/components/QuizGenerationWizard'
 import { UserSettingsPanel } from '@renderer/components/UserSettingsPanel'
 import { IconEdit, IconPlus } from '@tabler/icons-react'
 import { useState } from 'react'
-import { ModuleInfoPanel } from './components/ModuleInfoPanel'
 import { QuizCard } from './components/QuizCard'
 
 type ModulePageProps = {
@@ -61,7 +60,7 @@ export function ModulePage({ module }: ModulePageProps) {
             }}
         >
             <AppHeader
-                title={module.metadata.title}
+                title="Module"
                 actions={headerActions}
                 backLink={{
                     to: '/',
@@ -77,110 +76,90 @@ export function ModulePage({ module }: ModulePageProps) {
                     padding: '16px',
                     width: '100%',
                     maxWidth: '100%',
-                    display: 'flex',
                 }}
             >
                 <div
                     style={{
-                        flex: '0 0 66.66%',
+                        display: 'flex',
+                        flexDirection: 'column',
                         height: '100%',
-                        paddingRight: '8px',
                     }}
                 >
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            height: '100%',
-                        }}
-                    >
-                        <Group justify="space-between">
-                            <Group gap="xs">
-                                {!editMode && (
-                                    <Menu shadow="md" width={150} position="bottom-start">
-                                        <Menu.Target>
-                                            <IconPlus
-                                                size={24}
-                                                color="var(--mantine-color-green-6)"
-                                                style={{ cursor: 'pointer' }}
-                                            />
-                                        </Menu.Target>
-                                        <Menu.Dropdown>
-                                            <Menu.Item
-                                                leftSection={<IconPlus size={14} />}
-                                                onClick={() => setIsGenerating(true)}
-                                            >
-                                                Create Quiz
-                                            </Menu.Item>
-                                            <Menu.Item
-                                                leftSection={<IconEdit size={14} />}
-                                                onClick={toggleEditMode}
-                                            >
-                                                Edit Quizzes
-                                            </Menu.Item>
-                                        </Menu.Dropdown>
-                                    </Menu>
-                                )}
-                                <Title order={2}>
-                                    {editMode ? 'Quizzes (editing)' : 'Quizzes'}
-                                </Title>
-                            </Group>
-                            {editMode && (
-                                <Button variant="light" size="sm" onClick={toggleEditMode}>
-                                    Done
-                                </Button>
-                            )}
-                        </Group>
-
-                        <div
-                            id="quizzes-list-container"
-                            style={{
-                                overflow: 'auto',
-                                flex: 1,
-                                maxWidth: '100%',
-                                overflowX: 'hidden',
-                                marginTop: '16px',
-                            }}
-                        >
-                            <Grid style={{ width: '100%', margin: 0 }}>
-                                {module.quizzes?.map((quiz) => (
-                                    <Grid.Col span={{ base: 12, sm: 6 }} key={quiz.id}>
-                                        <QuizCard
-                                            libraryId={module.metadata.libraryId}
-                                            moduleId={module.metadata.id}
-                                            quizId={quiz.id}
-                                            title={quiz.title}
-                                            questionCount={quiz.questions.length}
-                                            createdAt={quiz.createdAt}
-                                            onDelete={() => handleDeleteQuiz(quiz.id)}
-                                            editMode={editMode}
+                    <Group justify="space-between">
+                        <Group gap="xs">
+                            {!editMode && (
+                                <Menu shadow="md" width={150} position="bottom-start">
+                                    <Menu.Target>
+                                        <IconPlus
+                                            size={24}
+                                            color="var(--mantine-color-green-6)"
+                                            style={{ cursor: 'pointer' }}
                                         />
-                                    </Grid.Col>
-                                ))}
-                            </Grid>
-                        </div>
-                    </div>
-                </div>
+                                    </Menu.Target>
+                                    <Menu.Dropdown>
+                                        <Menu.Item
+                                            leftSection={<IconPlus size={14} />}
+                                            onClick={() => setIsGenerating(true)}
+                                        >
+                                            Create Quiz
+                                        </Menu.Item>
+                                        <Menu.Item
+                                            leftSection={<IconEdit size={14} />}
+                                            onClick={toggleEditMode}
+                                        >
+                                            Edit Quizzes
+                                        </Menu.Item>
+                                    </Menu.Dropdown>
+                                </Menu>
+                            )}
+                            <Title order={2}>
+                                {editMode
+                                    ? `${module.metadata.title} (editing)`
+                                    : module.metadata.title}
+                            </Title>
+                        </Group>
+                        {editMode && (
+                            <Button variant="light" size="sm" onClick={toggleEditMode}>
+                                Done
+                            </Button>
+                        )}
+                    </Group>
 
-                <div
-                    id="module-info-section"
-                    style={{
-                        flex: '0 0 33.33%',
-                        height: '100%',
-                        paddingLeft: '8px',
-                        maxWidth: '33.33%',
-                        overflow: 'hidden',
-                    }}
-                >
                     <div
+                        id="module-overview"
                         style={{
-                            height: '100%',
-                            overflow: 'auto',
-                            width: '100%',
-                            maxWidth: '100%',
+                            marginTop: '8px',
+                            marginBottom: '16px',
                         }}
                     >
-                        <ModuleInfoPanel module={module} />
+                        <Text>{module.metadata.overview}</Text>
+                    </div>
+
+                    <div
+                        id="quizzes-list-container"
+                        style={{
+                            overflow: 'auto',
+                            flex: 1,
+                            maxWidth: '100%',
+                            overflowX: 'hidden',
+                        }}
+                    >
+                        <Grid style={{ width: '100%', margin: 0 }}>
+                            {module.quizzes?.map((quiz) => (
+                                <Grid.Col span={{ base: 12, sm: 6, md: 4 }} key={quiz.id}>
+                                    <QuizCard
+                                        libraryId={module.metadata.libraryId}
+                                        moduleId={module.metadata.id}
+                                        quizId={quiz.id}
+                                        title={quiz.title}
+                                        questionCount={quiz.questions.length}
+                                        createdAt={quiz.createdAt}
+                                        onDelete={() => handleDeleteQuiz(quiz.id)}
+                                        editMode={editMode}
+                                    />
+                                </Grid.Col>
+                            ))}
+                        </Grid>
                     </div>
                 </div>
             </div>

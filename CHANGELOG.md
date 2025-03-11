@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced module submissions display with attempt numbers, table format, and clickable navigation to submission details
 - Extracted ModuleSubmissionsTable component for better separation of concerns
 - Enhanced ModuleInfoPanel with additional module information (title, overview text, quiz count, and spaced repetition statistics)
+- Created ModuleDetails component for displaying module metadata in the left sidebar
+- Implemented accordion-based sidebar with collapsible sections for MODULE EXPLORER and MODULE DETAILS
+- Added module selection tracking in UI store to maintain context between page views
 
 ### Changed
 
@@ -28,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [SPECS ONLY] Added AppLayout and AppHeader component descriptions to DESIGN.md
 - Improved UI consistency with expandable options for quiz management
 - Improved QuizCard button layout with right-aligned, appropriately sized buttons
+- Refactored application information architecture to match design specifications
+- Relocated module information from right sidebar to left sidebar
+- Renamed and moved ModuleInfoPanel functionality to ModuleDetails in left sidebar
+- Moved create actions (new library, new module) into dropdown menu in MODULE EXPLORER header
+- Modified ModuleViewRoot to set selected module in UI store when viewing
+- Removed right sidebar from module page to allow content to use full width
+- Updated ModulePage title to show "Module" in header and module title in content area
 
 ### Fixed
 

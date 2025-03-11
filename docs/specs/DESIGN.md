@@ -19,16 +19,16 @@ The AppLayout serves as the foundational container for the entire application, p
 
 **Wireframe Description:**
 
-- **Layout:** Full-screen container with a split-panel design
+- **Layout:** Full-screen container with a split-pane design
 - **Structure:**
-  - Left panel: Left Sidepanel containing Module Explorer (fixed on all pages)
-  - Main panel: Main Content Area (dynamic based on current route)
-  - Top: AppHeader (persistent across all routes)
+    - Left pane: Left Sidepane containing Module Explorer (fixed on all pages)
+    - Main pane: Main Content Area (dynamic based on current route)
+    - Top: AppHeader (persistent across all routes)
 - **Behavior:**
-  - Present on all pages and routes
-  - Manages global state for sidebar visibility
-  - Provides context for page-specific layouts
-  - Fully hidden during Quiz Session pages to create a distraction-free environment
+    - Present on all pages and routes
+    - Manages global state for sidebar visibility
+    - Provides context for page-specific layouts
+    - Fully hidden during Quiz Session pages to create a distraction-free environment
 
 ### AppHeader
 
@@ -38,21 +38,21 @@ The AppHeader provides consistent navigation and context across all pages in the
 
 - **Layout:** Full-width bar at the top of the application
 - **Left Section:**
-  - BackLink (when applicable, based on current page context)
-  - Page title
+    - BackLink (when applicable, based on current page context)
+    - Page title
 - **Right Section:**
-  - Toggle left sidebar button (collapses/expands the Left Sidepanel)
-  - Settings button (opens Settings Panel)
-  - Help button (opens Help documentation)
+    - Toggle left sidebar button (collapses/expands the Left Sidepane)
+    - Settings button (opens Settings Panel)
+    - Help button (opens Help documentation)
 - **BackLink System:**
-  - Contextual "Back to..." links that change based on the current page
-  - Shows different destinations depending on navigation history and current page
-  - May include confirmation dialogs for potentially disruptive actions (e.g., leaving a form with unsaved changes)
-  - Examples:
-    - "Back to Dashboard" when viewing a module
-    - "Back to Module" when viewing a quiz or submission
-    - "Back to Library" when viewing a learning path
-  - Some BackLinks include dynamic parameters to maintain context when navigating
+    - Contextual "Back to..." links that change based on the current page
+    - Shows different destinations depending on navigation history and current page
+    - May include confirmation dialogs for potentially disruptive actions (e.g., leaving a form with unsaved changes)
+    - Examples:
+        - "Back to Dashboard" when viewing a module
+        - "Back to Module" when viewing a quiz or submission
+        - "Back to Library" when viewing a learning path
+    - Some BackLinks include dynamic parameters to maintain context when navigating
 
 ---
 
@@ -68,7 +68,7 @@ The Main Content Area is the primary content container that displays the current
 
 **Wireframe Description:**
 
-- **Layout:** Full-width container with flexible content area, positioned adjacent to the Left Sidepanel
+- **Layout:** Full-width container with flexible content area, positioned adjacent to the Left Sidepane
 - **Content:** Displays one of:
     - Practice Feed (default view)
     - Module View
@@ -76,15 +76,15 @@ The Main Content Area is the primary content container that displays the current
     - Quiz Session
     - Other full-page views
 
-#### 1.1 Left Sidepanel
+#### 1.1 Left Sidepane
 
-The Left Sidepanel is a container component that houses both the Module Explorer and the Module Details sections, providing a unified navigation and reference interface.
+The Left Sidepane is a container component that houses both the Module Explorer and the Module Details sections, providing a unified navigation and reference interface.
 
 **Wireframe Description:**
 
-- **Layout:** A narrow, vertically oriented panel on the left side of the Main Content Area
-- **Collapsible:** A toggle button in the main header allows users to expand or collapse the entire sidepanel
-    - When collapsed, the sidepanel is completely hidden
+- **Layout:** A narrow, vertically oriented pane on the left side of the Main Content Area
+- **Collapsible:** A toggle button in the main header allows users to expand or collapse the entire sidepane
+    - When collapsed, the sidepane is completely hidden
 - **Structure:** Contains two primary accordion sections:
     - MODULE EXPLORER (always present)
     - MODULE DETAILS (only visible when viewing a module's page)
@@ -102,7 +102,7 @@ The Left Sidepanel is a container component that houses both the Module Explorer
     - Both sections can be independently expanded or collapsed
     - When navigating to a module's page, the MODULE DETAILS section automatically appears
     - When navigating away from a module's page, the MODULE DETAILS section is hidden
-    - Panel remembers expansion state across application sessions
+    - Pane remembers expansion state across application sessions
 
 #### 1.2 Practice Feed
 
@@ -129,11 +129,11 @@ The Practice Feed displays Module Cards that represent available learning module
 
 #### 1.3 Module Explorer
 
-The Module Explorer is a collapsible section within the Left Sidepanel that provides quick access to all modules, their contents, and settings.
+The Module Explorer is a collapsible section within the Left Sidepane that provides quick access to all modules, their contents, and settings.
 
 **Wireframe Description:**
 
-- **Layout:** Nested within the Left Sidepanel as an accordion section
+- **Layout:** Nested within the Left Sidepane as an accordion section
 - **Visibility:** Available on all pages except during Quiz Sessions
 - **Header:** "MODULE EXPLORER" title with collapsible accordion control
     - `+` Button on the right side of the header to create new modules
@@ -174,11 +174,11 @@ The Module Explorer is a collapsible section within the Left Sidepanel that prov
 
 #### 1.4 Module Details
 
-The Module Details is an additional section within the Left Sidepanel that appears when viewing a module's page, providing essential reference information about the current module.
+The Module Details is an additional section within the Left Sidepane that appears when viewing a module's page, providing essential reference information about the current module.
 
 **Wireframe Description:**
 
-- **Layout:** Positioned below the Module Explorer in the Left Sidepanel as an accordion section
+- **Layout:** Positioned below the Module Explorer in the Left Sidepane as an accordion section
 - **Visibility:** Only appears when viewing a specific module's page
 - **Header:** "MODULE DETAILS" title with collapsible accordion control
 - **Content Sections:**
@@ -208,7 +208,7 @@ The Module Page provides a dedicated interface for viewing and managing a single
 
 **Wireframe Description:**
 
-- **Layout:** Full-page view that replaces the Dashboard, with the Left Sidepanel containing Module Explorer and Module Details on the left side.
+- **Layout:** Full-page view that replaces the Dashboard, with the Left Sidepane containing Module Explorer and Module Details on the left side.
 - **Header:**
     - Module title
     - "Back to Dashboard" button
@@ -461,7 +461,7 @@ Quiz Session provides a focused, full-screen environment for taking quizzes.
 **Wireframe Description:**
 
 - **Layout:** Full-screen, minimal, and distraction-free.
-    - The Left Sidepanel is completely hidden during quiz sessions
+    - The Left Sidepane is completely hidden during quiz sessions
     - No navigation elements except exit button
     - Focuses entirely on quiz content
 - **Header:**
@@ -536,7 +536,7 @@ The Quiz Grading Interface provides a dedicated full-screen view for reviewing q
         - AI-generated feedback explaining the evaluation
         - Score/points awarded
     - Clear visual separation between questions
-- **Side Panel:**
+- **Side Pane:**
     - Quick-jump navigation to specific questions
     - Question status indicators (correct/incorrect)
     - Progress summary
