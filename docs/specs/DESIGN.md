@@ -11,6 +11,51 @@ This document outlines the User Interface (UI) and User Experience (UX) design s
 
 ---
 
+## Application Structure
+
+### AppLayout
+
+The AppLayout serves as the foundational container for the entire application, providing consistent structure across all pages.
+
+**Wireframe Description:**
+
+- **Layout:** Full-screen container with a split-panel design
+- **Structure:**
+  - Left panel: Left Sidepanel containing Module Explorer (fixed on all pages)
+  - Main panel: Main Content Area (dynamic based on current route)
+  - Top: AppHeader (persistent across all routes)
+- **Behavior:**
+  - Present on all pages and routes
+  - Manages global state for sidebar visibility
+  - Provides context for page-specific layouts
+  - Fully hidden during Quiz Session pages to create a distraction-free environment
+
+### AppHeader
+
+The AppHeader provides consistent navigation and context across all pages in the application.
+
+**Wireframe Description:**
+
+- **Layout:** Full-width bar at the top of the application
+- **Left Section:**
+  - BackLink (when applicable, based on current page context)
+  - Page title
+- **Right Section:**
+  - Toggle left sidebar button (collapses/expands the Left Sidepanel)
+  - Settings button (opens Settings Panel)
+  - Help button (opens Help documentation)
+- **BackLink System:**
+  - Contextual "Back to..." links that change based on the current page
+  - Shows different destinations depending on navigation history and current page
+  - May include confirmation dialogs for potentially disruptive actions (e.g., leaving a form with unsaved changes)
+  - Examples:
+    - "Back to Dashboard" when viewing a module
+    - "Back to Module" when viewing a quiz or submission
+    - "Back to Library" when viewing a learning path
+  - Some BackLinks include dynamic parameters to maintain context when navigating
+
+---
+
 ## Main Components
 
 ### Dashboard
@@ -23,11 +68,7 @@ The Main Content Area is the primary content container that displays the current
 
 **Wireframe Description:**
 
-- **Layout:** Full-width container with flexible content area, positioned adjacent to the Module Explorer sidebar
-- **Header:** Application-wide header containing:
-    - Noggin logo/name on the left
-    - Toggle sidebar button
-    - Global actions (settings, help, etc.) on the right
+- **Layout:** Full-width container with flexible content area, positioned adjacent to the Left Sidepanel
 - **Content:** Displays one of:
     - Practice Feed (default view)
     - Module View
@@ -35,7 +76,35 @@ The Main Content Area is the primary content container that displays the current
     - Quiz Session
     - Other full-page views
 
-#### 1.1 Practice Feed
+#### 1.1 Left Sidepanel
+
+The Left Sidepanel is a container component that houses both the Module Explorer and the Module Details sections, providing a unified navigation and reference interface.
+
+**Wireframe Description:**
+
+- **Layout:** A narrow, vertically oriented panel on the left side of the Main Content Area
+- **Collapsible:** A toggle button in the main header allows users to expand or collapse the entire sidepanel
+    - When collapsed, the sidepanel is completely hidden
+- **Structure:** Contains two primary accordion sections:
+    - MODULE EXPLORER (always present)
+    - MODULE DETAILS (only visible when viewing a module's page)
+- **Visibility Rules:**
+    - Present on all pages except during an active Quiz Session
+    - Completely hidden during Quiz Sessions to provide a distraction-free testing environment
+    - MODULE EXPLORER section is always available on all pages (except Quiz Sessions)
+    - MODULE DETAILS section only appears when viewing a specific module's page
+- **Visual Style:**
+    - Unified styling across both sections
+    - Clear visual separation between sections
+    - Consistent typography and color scheme
+    - Accordion headers with distinct styling to indicate expandable sections
+- **Behavior:**
+    - Both sections can be independently expanded or collapsed
+    - When navigating to a module's page, the MODULE DETAILS section automatically appears
+    - When navigating away from a module's page, the MODULE DETAILS section is hidden
+    - Panel remembers expansion state across application sessions
+
+#### 1.2 Practice Feed
 
 The Practice Feed displays Module Cards that represent available learning modules.
 
@@ -58,16 +127,15 @@ The Practice Feed displays Module Cards that represent available learning module
     - Modules due for review are subtly highlighted using color or slight elevation
     - Past-due modules receive additional visual emphasis
 
-#### 1.2 Module Explorer (Sidebar)
+#### 1.3 Module Explorer
 
-The Module Explorer is a collapsible sidebar that provides quick access to all modules, their contents, and settings.
+The Module Explorer is a collapsible section within the Left Sidepanel that provides quick access to all modules, their contents, and settings.
 
 **Wireframe Description:**
 
-- **Layout:** A narrow, vertically oriented panel on the left side of the Main Content Area
-- **Collapsible:** A toggle button in the main header allows users to expand or collapse the sidebar
-    - When collapsed, the sidebar is completely hidden
-- **Header:** "Module Explorer" title when expanded.
+- **Layout:** Nested within the Left Sidepanel as an accordion section
+- **Visibility:** Available on all pages except during Quiz Sessions
+- **Header:** "MODULE EXPLORER" title with collapsible accordion control
     - `+` Button on the right side of the header to create new modules
 - **Library Organization:**
     - Libraries are listed as top-level items
@@ -96,7 +164,7 @@ The Module Explorer is a collapsible sidebar that provides quick access to all m
     - Each module is represented by its name.
     - Standalone modules are directly under libraries
     - Path modules are indented under their learning path
-    - Clicking a module name opens the module's page.
+    - Clicking a module name navigates to that module's page
     - When right-clicking a module name, a context menu appears with the following options:
         - "View Module" (navigate to the module's page).
         - "Copy Module Id" (copy the module's ID to the clipboard).
@@ -104,19 +172,56 @@ The Module Explorer is a collapsible sidebar that provides quick access to all m
         - "Open Folder" (opens the module's directory in the file explorer).
         - "Delete Module" (prompts user to delete the module).
 
+#### 1.4 Module Details
+
+The Module Details is an additional section within the Left Sidepanel that appears when viewing a module's page, providing essential reference information about the current module.
+
+**Wireframe Description:**
+
+- **Layout:** Positioned below the Module Explorer in the Left Sidepanel as an accordion section
+- **Visibility:** Only appears when viewing a specific module's page
+- **Header:** "MODULE DETAILS" title with collapsible accordion control
+- **Content Sections:**
+    - **Mastery Information:**
+        - Natural language mastery level (e.g., "Beginner" instead of "Box 1/5")
+        - Small visual indicator of current mastery level
+        - Last reviewed date
+        - Next review due date
+    - **Module Information:**
+        - Created date
+        - Last updated date
+        - Quiz count
+        - Submission count
+    - **Source Files:**
+        - Simple list of source files with appropriate icons
+        - Each file is clickable to open with the system default application
+        - File names are truncated if too long with full path shown on hover
+- **Visual Style:**
+    - Compact, information-dense layout suitable for a sidebar
+    - Clear visual hierarchy with section headings
+    - Subtle dividers between content sections
+    - Consistent with the Module Explorer styling for visual coherence
+
 ### Module Page
 
 The Module Page provides a dedicated interface for viewing and managing a single module's content and quizzes.
 
 **Wireframe Description:**
 
-- **Layout:** Full-page view that replaces the Dashboard, with the Module Info Panel on the right side.
+- **Layout:** Full-page view that replaces the Dashboard, with the Left Sidepanel containing Module Explorer and Module Details on the left side.
 - **Header:**
     - Module title
     - "Back to Dashboard" button
     - "Generate Quiz" button (opens Quiz Generation Modal)
     - "Generate Lesson" button (opens Lesson Generation Modal)
 - **Content Sections:**
+    - **Module Overview:**
+        - Descriptive text summarizing the module content
+        - Displayed prominently above the quiz content
+    - **Learning Progress Indicator:**
+        - Compact visual indicator showing current mastery level
+        - Next review date
+        - Provides immediate context without requiring users to look at the sidebar
     - **Active Lesson Card** (if exists):
         - Lesson progress indicator
         - "Continue Lesson" button
@@ -127,34 +232,10 @@ The Module Page provides a dedicated interface for viewing and managing a single
             - Question count
             - Date created
             - "Start Quiz" button
-
-### Module Info Panel
-
-The Module Info Panel consolidates the overview and submissions information into a single, comprehensive view.
-
-**Wireframe Description:**
-
-- **Layout:** Integrated panel within the Module Page
-- **Header:**
-    - Module title
-    - "Back to Dashboard" button
-    - "Generate Quiz" button (opens Quiz Generation Modal)
-    - "Generate Lesson" button (opens Lesson Generation Modal)
-- **Content Sections:**
-    - **Module Overview:**
-        - Module description
-        - Associated library name
-        - Learning path name (if part of a path)
-        - Last reviewed date
-        - Total quizzes available
-        - Source files list with links to open in system
-    - **Submissions Timeline:**
-        - Timeline of quiz submissions showing:
-            - Date/time taken
-            - Score
-            - Quiz name/number
-            - "View Details" button
-- **Visual Integration:** - Clear visual separation between overview and submissions - Use of tabs or collapsible sections to toggle between overview and submissions if space is limited
+    - **Recent Submissions:**
+        - Table showing recent quiz attempts
+        - Columns for quiz name, attempt number, date, and score
+        - "View All" link to access full submission history
 
 ### Lesson Interface
 
@@ -380,6 +461,9 @@ Quiz Session provides a focused, full-screen environment for taking quizzes.
 **Wireframe Description:**
 
 - **Layout:** Full-screen, minimal, and distraction-free.
+    - The Left Sidepanel is completely hidden during quiz sessions
+    - No navigation elements except exit button
+    - Focuses entirely on quiz content
 - **Header:**
     - Module Name displayed at the top.
     - Quiz Name (or number) displayed below the module name.
@@ -624,16 +708,28 @@ The Lesson Summary View provides a completion overview when a user finishes all 
     - User clicks "Submit".
     - The submission is saved, and the user is returned to the previous view.
 
-4. **Reviewing Submissions:**
+4. **Reviewing Module Details:**
+
+    - User navigates to a module from the Module Explorer.
+    - Module Details section appears in the Left Sidepanel below the Module Explorer.
+    - User can view:
+        - Current mastery level and review schedule
+        - Module metadata (creation date, etc.)
+        - List of source files
+        - Quiz and submission counts
+    - User can click on source files to open them with the system's default application.
+
+5. **Reviewing Submissions:**
 
     - User navigates to the Module Page.
-    - User views submissions in the Submissions Panel.
+    - User views recent submissions in the Recent Submissions section.
+    - User can click "View All" to see all submissions for the module.
     - User can click "View Details" on any submission to see:
         - Individual questions and answers
         - Feedback and scoring
         - Overall performance
 
-5. **Adjusting Settings:**
+6. **Adjusting Settings:**
     - User clicks the "Settings" button in the Module Explorer.
     - Settings Panel opens.
     - User navigates through tabs to adjust preferences or configure AI providers.

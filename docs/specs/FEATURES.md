@@ -7,7 +7,7 @@ Noggin is a modular, self-directed learning desktop app built with Electron, Rea
 
 ## Core Principles
 
-- **Local-First**: All modules, quizzes, and submissions are stored locally on the user’s machine for complete transparency and control.
+- **Local-First**: All modules, quizzes, and submissions are stored locally on the user's machine for complete transparency and control.
 - **Modular Design**: Each module stands alone, containing sources, quizzes, and submissions. Users choose what to learn without being constrained by any hierarchy.
 - **User-Driven Practice**: A feed-driven interface helps surface modules due for review. Users decide when and what to study based on their own goals and comfort.
 
@@ -57,6 +57,17 @@ The Practice Feed guides users through their study sessions by surfacing modules
     - Determine module priority in the practice feed based on nextDueDate
     - Move modules between boxes based on quiz performance
 
+- **Mastery Levels**:
+  To improve user understanding, the Leitner box numbers are presented to users as mastery levels:
+
+    - Box 1: "Beginner" - Just starting to learn the material
+    - Box 2: "Learning" - Making progress but needs frequent review
+    - Box 3: "Familiar" - Good understanding with occasional review
+    - Box 4: "Confident" - Strong grasp with infrequent review
+    - Box 5: "Mastered" - Excellent retention with minimal review
+
+    These descriptive labels help users understand their progress while the underlying Leitner system handles the review scheduling.
+
 - **Prioritization Logic**:
 
     - Modules are surfaced based on their current Leitner box and review schedule
@@ -82,8 +93,11 @@ Modules represent individual subjects or topics. Each module's data is stored lo
     - Associated library
     - Learning path membership (if part of a path)
     - Creation date
-    - Current review status
+    - Current review status and mastery level
     - Last accessed date
+    - Source files list
+    - Quiz count
+    - Submission count
 
 - **Module Source Inputs**:
   Noggin accepts learning content through three simple input methods:
@@ -326,6 +340,23 @@ Noggin provides two distinct interfaces for quiz interaction:
 
 ---
 
+### Module Reference Information
+
+The application provides easy access to module reference information to help users understand and manage their learning content:
+
+- **Module Details**:
+  Users can access comprehensive module details including:
+
+  - Basic module metadata (creation date, update date)
+  - Current mastery level with natural language labels
+  - Review schedule information (last reviewed, next due)
+  - Complete list of source files with direct access
+  - Quiz and submission counts
+
+  This reference information is accessible alongside the main module content, allowing users to quickly check key details while working with quizzes and other module elements.
+
+---
+
 ### Module Explorer
 
 The Module Explorer provides a hierarchical view of all learning content:
@@ -432,7 +463,7 @@ Automated assessment of quiz submissions using AI:
 
 4. **Managing Modules**:
 
-    - Use the Module Explorer to view all materials
+    - Access module details to view reference information
     - Review past quiz submissions
     - Access source materials and quizzes directly
 

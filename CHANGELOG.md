@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+- [SPECS ONLY] Added documentation for LeftSidepanel component in design specifications
+- [SPECS ONLY] Added natural language mastery level descriptions to design documentation
 - Create CHANGELOG.md to document project changes following the Keep a Changelog format and Semantic Versioning
 - Safe-guarded quiz deletion through edit mode, requiring users to explicitly enter edit mode before deletion is possible
 - Replace 'Generate Quiz' button with menu icon and dropdown menu featuring 'Create Quiz' and 'Edit Quizzes' options
@@ -16,10 +19,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced ModuleInfoPanel with additional module information (title, overview text, quiz count, and spaced repetition statistics)
 
 ### Changed
+
+- [SPECS ONLY] Updated DESIGN.md to relocate module information from right panel to left sidebar
+- [SPECS ONLY] Modified DESIGN.md to reserve right panel space for future AI agent integration
+- [SPECS ONLY] Revised Module Explorer documentation in DESIGN.md as a section within LeftSidepanel
+- [SPECS ONLY] Renamed ModuleInfoPanel to ModuleDetails in design specifications only
+- [SPECS ONLY] Updated Module Page layout documentation in DESIGN.md
+- [SPECS ONLY] Added AppLayout and AppHeader component descriptions to DESIGN.md
 - Improved UI consistency with expandable options for quiz management
 - Improved QuizCard button layout with right-aligned, appropriately sized buttons
 
 ### Fixed
+
 - Improved long text handling with truncation and ellipsis for file paths and quiz titles
 - Added tooltips with delay to show full text on hover for truncated content
 - Fixed module explorer tree nodes to keep icons and text on the same line with proper text truncation and hover tooltips
@@ -27,13 +38,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed LibraryPage tests by mocking AppHeader to simplify test setup
 
 ### Deprecated
+
 - Features that will be removed in upcoming releases
 
 ### Removed
+
 - Features that have been removed
 
 ### Fixed
+
 - Bug fixes
 
 ### Security
+
 - Security fixes
