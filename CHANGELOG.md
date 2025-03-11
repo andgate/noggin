@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace 'Generate Quiz' button with menu icon and dropdown menu featuring 'Create Quiz' and 'Edit Quizzes' options
 - Enhanced module submissions display with attempt numbers, table format, and clickable navigation to submission details
 - Extracted ModuleSubmissionsTable component for better separation of concerns
+- Enhanced ModuleInfoPanel with additional module information (title, overview text, quiz count, and spaced repetition statistics)
 
 ### Changed
 - Improved UI consistency with expandable options for quiz management

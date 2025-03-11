@@ -21,12 +21,19 @@ export function ModuleInfoPanel({ module }: ModuleInfoPanelProps) {
             gap="md"
             style={{ height: '100%', width: '100%', maxWidth: '100%' }}
         >
-            <Title order={3}>Module Overview</Title>
+            <Title order={3}>{module.metadata.title}</Title>
+
             <Tooltip label={module.metadata.path} openDelay={800} position="bottom" withinPortal>
                 <Text id="module-path" style={truncatedTextStyle}>
                     {module.metadata.path}
                 </Text>
             </Tooltip>
+
+            {/* Module Overview */}
+            <Stack id="module-overview" gap="xs">
+                <Text fw={500}>Overview:</Text>
+                <Text>{module.metadata.overview}</Text>
+            </Stack>
 
             {/* Module Stats */}
             <div id="module-stats">
@@ -38,7 +45,30 @@ export function ModuleInfoPanel({ module }: ModuleInfoPanelProps) {
                     <Text c="dimmed">Last Updated:</Text>
                     <Text>{formatDate(`${module.metadata.updatedAt}`)}</Text>
                 </Group>
+                <Group>
+                    <Text c="dimmed">Quiz Count:</Text>
+                    <Text>{module.quizzes.length}</Text>
+                </Group>
             </div>
+
+            {/* Spaced Repetition Stats */}
+            {module.stats && (
+                <Stack id="spaced-repetition-stats" gap="xs">
+                    <Text fw={500}>Learning Progress:</Text>
+                    <Group>
+                        <Text c="dimmed">Current Box:</Text>
+                        <Text>{module.stats.currentBox}/5</Text>
+                    </Group>
+                    <Group>
+                        <Text c="dimmed">Last Reviewed:</Text>
+                        <Text>{formatDate(module.stats.lastReviewDate)}</Text>
+                    </Group>
+                    <Group>
+                        <Text c="dimmed">Next Review Due:</Text>
+                        <Text>{formatDate(module.stats.nextDueDate)}</Text>
+                    </Group>
+                </Stack>
+            )}
 
             {/* Source Files */}
             <Stack id="source-files-section" gap="xs" style={{ width: '100%' }}>
