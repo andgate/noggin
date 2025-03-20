@@ -9,35 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- [SPECS ONLY] Added documentation for LeftSidepanel component in design specifications
+- [SPECS ONLY] Added documentation for LeftSidepane component in design specifications
 - [SPECS ONLY] Added natural language mastery level descriptions to design documentation
+- [SPECS ONLY] Added Module Details Modal component to design specifications
 - Create CHANGELOG.md to document project changes following the Keep a Changelog format and Semantic Versioning
 - Safe-guarded quiz deletion through edit mode, requiring users to explicitly enter edit mode before deletion is possible
-- Replace 'Generate Quiz' button with menu icon and dropdown menu featuring 'Create Quiz' and 'Edit Quizzes' options
+- Replace 'Generate Quiz' button with menu icon and dropdown menu featuring 'Create Quiz', 'Edit Quizzes', and 'View Details' options
 - Enhanced module submissions display with attempt numbers, table format, and clickable navigation to submission details
 - Extracted ModuleSubmissionsTable component for better separation of concerns
-- Enhanced ModuleInfoPanel with additional module information (title, overview text, quiz count, and spaced repetition statistics)
-- Created ModuleDetails component for displaying module metadata in the left sidebar
-- Implemented accordion-based sidebar with collapsible sections for MODULE EXPLORER and MODULE DETAILS
-- Added module selection tracking in UI store to maintain context between page views
+- Enhanced ModuleDetails with module information (title, overview text, quiz count, and spaced repetition statistics)
+- Added modal dialog for displaying module details
+- Added View Details option to module page menu
 
 ### Changed
 
-- [SPECS ONLY] Updated DESIGN.md to relocate module information from right panel to left sidebar
 - [SPECS ONLY] Modified DESIGN.md to reserve right panel space for future AI agent integration
-- [SPECS ONLY] Revised Module Explorer documentation in DESIGN.md as a section within LeftSidepanel
-- [SPECS ONLY] Renamed ModuleInfoPanel to ModuleDetails in design specifications only
+- [SPECS ONLY] Updated Module Explorer documentation in DESIGN.md to reflect simplified structure
 - [SPECS ONLY] Updated Module Page layout documentation in DESIGN.md
 - [SPECS ONLY] Added AppLayout and AppHeader component descriptions to DESIGN.md
 - Improved UI consistency with expandable options for quiz management
 - Improved QuizCard button layout with right-aligned, appropriately sized buttons
-- Refactored application information architecture to match design specifications
-- Relocated module information from right sidebar to left sidebar
-- Renamed and moved ModuleInfoPanel functionality to ModuleDetails in left sidebar
-- Moved create actions (new library, new module) into dropdown menu in MODULE EXPLORER header
-- Modified ModuleViewRoot to set selected module in UI store when viewing
-- Removed right sidebar from module page to allow content to use full width
-- Updated ModulePage title to show "Module" in header and module title in content area
+- Simplified LeftSidepane by removing accordion structure
+- Moved module creation controls to ModuleExplorer header
+- Removed selectedModule state from UI store for reduced complexity
 
 ### Fixed
 

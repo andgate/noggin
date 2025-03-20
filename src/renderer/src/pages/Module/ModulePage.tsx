@@ -5,9 +5,10 @@ import { Quiz } from '@noggin/types/quiz-types'
 import { useModule } from '@renderer/app/hooks/use-module'
 import { useUiStore } from '@renderer/app/stores/ui-store'
 import { AppHeader, HeaderAction } from '@renderer/components/layout/AppHeader'
+import { ModuleDetails } from '@renderer/components/ModuleDetails'
 import { QuizGenerationWizard } from '@renderer/components/QuizGenerationWizard'
 import { UserSettingsPanel } from '@renderer/components/UserSettingsPanel'
-import { IconEdit, IconPlus } from '@tabler/icons-react'
+import { IconEdit, IconInfoCircle, IconPlus } from '@tabler/icons-react'
 import { useState } from 'react'
 import { QuizCard } from './components/QuizCard'
 
@@ -19,6 +20,7 @@ export function ModulePage({ module }: ModulePageProps) {
     const { settingsOpen, toggleSettings } = useUiStore()
     const [isGenerating, setIsGenerating] = useState(false)
     const [editMode, setEditMode] = useState(false)
+    const [detailsModalOpen, setDetailsModalOpen] = useState(false)
     const { deleteModuleQuiz } = useModule()
 
     // Define which header actions to enable
@@ -47,6 +49,10 @@ export function ModulePage({ module }: ModulePageProps) {
 
     const toggleEditMode = () => {
         setEditMode((prev) => !prev)
+    }
+
+    const openDetailsModal = () => {
+        setDetailsModalOpen(true)
     }
 
     return (
@@ -108,6 +114,12 @@ export function ModulePage({ module }: ModulePageProps) {
                                             onClick={toggleEditMode}
                                         >
                                             Edit Quizzes
+                                        </Menu.Item>
+                                        <Menu.Item
+                                            leftSection={<IconInfoCircle size={14} />}
+                                            onClick={openDetailsModal}
+                                        >
+                                            View Details
                                         </Menu.Item>
                                     </Menu.Dropdown>
                                 </Menu>
@@ -178,6 +190,17 @@ export function ModulePage({ module }: ModulePageProps) {
                     onComplete={handleQuizGenerated}
                     onCancel={() => setIsGenerating(false)}
                 />
+            </Modal>
+
+            {/* Module details modal */}
+            <Modal
+                id="module-details-modal"
+                opened={detailsModalOpen}
+                onClose={() => setDetailsModalOpen(false)}
+                title="Module Details"
+                size="md"
+            >
+                <ModuleDetails module={module} />
             </Modal>
 
             {/* Settings panel */}

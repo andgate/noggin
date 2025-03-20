@@ -3,6 +3,12 @@
 **Author**: Gabriel Anderson
 **Date**: December 27, 2024
 
+## Document Purpose and Scope
+
+This document outlines the functional requirements and capabilities of the Noggin desktop application. It focuses on high-level functional specifications, not on UI/UX implementation details, which are covered in DESIGN.md.
+
+---
+
 Noggin is a modular, self-directed learning desktop app built with Electron, React, and Mantine. It is designed to provide a streamlined and intuitive experience for learners, encouraging them to study topics through locally stored modules and quizzes. This document outlines the functional requirements and capabilities of the application.
 
 ## Core Principles
@@ -58,7 +64,7 @@ The Practice Feed guides users through their study sessions by surfacing modules
     - Move modules between boxes based on quiz performance
 
 - **Mastery Levels**:
-  To improve user understanding, the Leitner box numbers are presented to users as mastery levels:
+  The Leitner box numbers are presented to users as mastery levels:
 
     - Box 1: "Beginner" - Just starting to learn the material
     - Box 2: "Learning" - Making progress but needs frequent review
@@ -347,13 +353,13 @@ The application provides easy access to module reference information to help use
 - **Module Details**:
   Users can access comprehensive module details including:
 
-  - Basic module metadata (creation date, update date)
-  - Current mastery level with natural language labels
-  - Review schedule information (last reviewed, next due)
-  - Complete list of source files with direct access
-  - Quiz and submission counts
+    - Basic module metadata (creation date, update date)
+    - Current mastery level with natural language labels
+    - Review schedule information (last reviewed, next due)
+    - Complete list of source files with direct access
+    - Quiz and submission counts
 
-  This reference information is accessible alongside the main module content, allowing users to quickly check key details while working with quizzes and other module elements.
+    This reference information is accessible alongside the main module content, allowing users to quickly check key details while working with quizzes and other module elements.
 
 ---
 

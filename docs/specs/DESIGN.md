@@ -78,31 +78,18 @@ The Main Content Area is the primary content container that displays the current
 
 #### 1.1 Left Sidepane
 
-The Left Sidepane is a container component that houses both the Module Explorer and the Module Details sections, providing a unified navigation and reference interface.
+The Left Sidepane is a container component that houses the Module Explorer, providing a unified navigation interface.
 
 **Wireframe Description:**
 
 - **Layout:** A narrow, vertically oriented pane on the left side of the Main Content Area
 - **Collapsible:** A toggle button in the main header allows users to expand or collapse the entire sidepane
     - When collapsed, the sidepane is completely hidden
-- **Structure:** Contains two primary accordion sections:
-    - MODULE EXPLORER (always present)
-    - MODULE DETAILS (only visible when viewing a module's page)
 - **Visibility Rules:**
     - Present on all pages except during an active Quiz Session
     - Completely hidden during Quiz Sessions to provide a distraction-free testing environment
-    - MODULE EXPLORER section is always available on all pages (except Quiz Sessions)
-    - MODULE DETAILS section only appears when viewing a specific module's page
 - **Visual Style:**
-    - Unified styling across both sections
-    - Clear visual separation between sections
-    - Consistent typography and color scheme
-    - Accordion headers with distinct styling to indicate expandable sections
-- **Behavior:**
-    - Both sections can be independently expanded or collapsed
-    - When navigating to a module's page, the MODULE DETAILS section automatically appears
-    - When navigating away from a module's page, the MODULE DETAILS section is hidden
-    - Pane remembers expansion state across application sessions
+    - Compact, minimal design
 
 #### 1.2 Practice Feed
 
@@ -129,14 +116,16 @@ The Practice Feed displays Module Cards that represent available learning module
 
 #### 1.3 Module Explorer
 
-The Module Explorer is a collapsible section within the Left Sidepane that provides quick access to all modules, their contents, and settings.
+The Module Explorer provides quick access to all modules, their contents, and settings.
 
 **Wireframe Description:**
 
-- **Layout:** Nested within the Left Sidepane as an accordion section
+- **Layout:** Fills the Left Sidepane
 - **Visibility:** Available on all pages except during Quiz Sessions
-- **Header:** "MODULE EXPLORER" title with collapsible accordion control
-    - `+` Button on the right side of the header to create new modules
+- **Header:** "MODULE EXPLORER" title
+    - Menu button with options:
+        - "Create Library"
+        - "Create Module"
 - **Library Organization:**
     - Libraries are listed as top-level items
     - Each library is collapsible
@@ -172,48 +161,23 @@ The Module Explorer is a collapsible section within the Left Sidepane that provi
         - "Open Folder" (opens the module's directory in the file explorer).
         - "Delete Module" (prompts user to delete the module).
 
-#### 1.4 Module Details
-
-The Module Details is an additional section within the Left Sidepane that appears when viewing a module's page, providing essential reference information about the current module.
-
-**Wireframe Description:**
-
-- **Layout:** Positioned below the Module Explorer in the Left Sidepane as an accordion section
-- **Visibility:** Only appears when viewing a specific module's page
-- **Header:** "MODULE DETAILS" title with collapsible accordion control
-- **Content Sections:**
-    - **Mastery Information:**
-        - Natural language mastery level (e.g., "Beginner" instead of "Box 1/5")
-        - Small visual indicator of current mastery level
-        - Last reviewed date
-        - Next review due date
-    - **Module Information:**
-        - Created date
-        - Last updated date
-        - Quiz count
-        - Submission count
-    - **Source Files:**
-        - Simple list of source files with appropriate icons
-        - Each file is clickable to open with the system default application
-        - File names are truncated if too long with full path shown on hover
-- **Visual Style:**
-    - Compact, information-dense layout suitable for a sidebar
-    - Clear visual hierarchy with section headings
-    - Subtle dividers between content sections
-    - Consistent with the Module Explorer styling for visual coherence
-
 ### Module Page
 
 The Module Page provides a dedicated interface for viewing and managing a single module's content and quizzes.
 
 **Wireframe Description:**
 
-- **Layout:** Full-page view that replaces the Dashboard, with the Left Sidepane containing Module Explorer and Module Details on the left side.
+- **Layout:** Full-page view that replaces the Dashboard, with the Left Sidepane containing Module Explorer on the left side.
 - **Header:**
     - Module title
     - "Back to Dashboard" button
     - "Generate Quiz" button (opens Quiz Generation Modal)
     - "Generate Lesson" button (opens Lesson Generation Modal)
+- **Module Controls:**
+    - Menu with options:
+        - "Create Quiz"
+        - "Edit Quizzes"
+        - "View Details" (opens Module Details Modal)
 - **Content Sections:**
     - **Module Overview:**
         - Descriptive text summarizing the module content
@@ -236,6 +200,35 @@ The Module Page provides a dedicated interface for viewing and managing a single
         - Table showing recent quiz attempts
         - Columns for quiz name, attempt number, date, and score
         - "View All" link to access full submission history
+
+#### Module Details Modal
+
+The Module Details Modal provides a detailed view of module information and statistics.
+
+**Wireframe Description:**
+
+- **Layout:** Modal dialog that overlays the current view
+- **Visibility:** Appears when "View Details" option is selected from the module menu
+- **Header:** "MODULE DETAILS" title
+- **Content Sections:**
+    - **Mastery Information:**
+        - Natural language mastery level (e.g., "Beginner" instead of "Box 1/5")
+        - Small visual indicator of current mastery level
+        - Last reviewed date
+        - Next review due date
+    - **Module Information:**
+        - Created date
+        - Last updated date
+        - Quiz count
+        - Submission count
+    - **Source Files:**
+        - Simple list of source files with appropriate icons
+        - Each file is clickable to open with the system default application
+        - File names are truncated if too long with full path shown on hover
+- **Visual Style:**
+    - Compact, information-dense layout
+    - Clear visual hierarchy with section headings
+    - Subtle dividers between content sections
 
 ### Lesson Interface
 
