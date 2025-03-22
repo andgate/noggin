@@ -43,19 +43,21 @@ export function AppHeader({ title, backLink, actions = ['explorer', 'settings'] 
     }
 
     return (
-        <Group h={50} px="md" py="xs" justify="space-between" bg="var(--mantine-color-dark-6)">
+        <Group h={40} px="md" py={5} justify="space-between" bg="var(--mantine-color-dark-6)">
             <Group gap="md">
                 {backLink && (
                     <Button
                         variant="subtle"
-                        leftSection={<IconArrowLeft size={16} />}
+                        leftSection={<IconArrowLeft size={14} />}
                         onClick={handleBackNavigation}
                         size="xs"
                     >
                         {backLink.label}
                     </Button>
                 )}
-                <Title order={4}>{title}</Title>
+                <Title order={4} style={{ lineHeight: 1 }}>
+                    {title}
+                </Title>
             </Group>
 
             <Group gap="xs">
@@ -67,11 +69,11 @@ export function AppHeader({ title, backLink, actions = ['explorer', 'settings'] 
                                 : 'Collapse module explorer'
                         }
                     >
-                        <ActionIcon variant="subtle" onClick={toggleExplorer}>
+                        <ActionIcon variant="subtle" onClick={toggleExplorer} size="sm">
                             {explorerCollapsed ? (
-                                <IconLayoutSidebar size={24} />
+                                <IconLayoutSidebar size={20} />
                             ) : (
-                                <IconLayoutSidebarFilled size={24} />
+                                <IconLayoutSidebarFilled size={20} />
                             )}
                         </ActionIcon>
                     </Tooltip>
@@ -79,8 +81,8 @@ export function AppHeader({ title, backLink, actions = ['explorer', 'settings'] 
 
                 {actions.includes('settings') && (
                     <Tooltip label="Settings">
-                        <ActionIcon variant="subtle" onClick={toggleSettings}>
-                            <IconSettings size={24} />
+                        <ActionIcon variant="subtle" onClick={toggleSettings} size="sm">
+                            <IconSettings size={20} />
                         </ActionIcon>
                     </Tooltip>
                 )}

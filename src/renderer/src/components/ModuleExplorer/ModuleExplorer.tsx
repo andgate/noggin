@@ -32,7 +32,7 @@ export function ModuleExplorer() {
 
     return (
         <Stack style={{ height: '100%' }} gap="xs">
-            <Group justify="space-between" px="md" py="xs" bg="var(--mantine-color-dark-6)">
+            <Group justify="space-between" px="md" py={5} bg="var(--mantine-color-dark-6)">
                 <Title
                     order={6}
                     style={{
@@ -40,14 +40,15 @@ export function ModuleExplorer() {
                         fontSize: '0.9rem',
                         letterSpacing: '0.03em',
                         fontWeight: 600,
+                        lineHeight: 1,
                     }}
                 >
                     MODULE EXPLORER
                 </Title>
-                <Menu shadow="md" width={200} position="bottom-end">
+                <Menu shadow="md" width={200} position="bottom-start">
                     <Menu.Target>
-                        <ActionIcon size="sm" variant="subtle" color="gray">
-                            <IconDots size={16} />
+                        <ActionIcon size="xs" variant="subtle" color="gray">
+                            <IconDots size={14} />
                         </ActionIcon>
                     </Menu.Target>
                     <Menu.Dropdown>
