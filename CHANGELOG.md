@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simplified LeftSidepane by removing accordion structure
 - Moved module creation controls to ModuleExplorer header
 - Removed selectedModule state from UI store for reduced complexity
+- Reduced header heights in ModuleExplorer and AppHeader components for a more compact UI layout
 
 ### Fixed
 
