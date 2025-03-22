@@ -98,7 +98,7 @@ export function ModulePage({ module }: ModulePageProps) {
                                     <Menu.Target>
                                         <IconPlus
                                             size={24}
-                                            color="var(--mantine-color-green-6)"
+                                            color="var(--mantine-color-purple-6)"
                                             style={{ cursor: 'pointer' }}
                                         />
                                     </Menu.Target>

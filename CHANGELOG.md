@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced ModuleDetails with module information (title, overview text, quiz count, and spaced repetition statistics)
 - Added modal dialog for displaying module details
 - Added View Details option to module page menu
+- Created dedicated AttemptsHistory component to better encapsulate quiz attempt display logic
+- Implemented modal for quiz attempts accessible via menu for cleaner interface
 
 ### Changed
 
@@ -33,6 +35,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved module creation controls to ModuleExplorer header
 - Removed selectedModule state from UI store for reduced complexity
 - Reduced header heights in ModuleExplorer and AppHeader components for a more compact UI layout
+- Modernized quiz interface with Card components for better visual hierarchy and layering
+- Implemented custom purple color palette as the primary theme color
+- Enhanced shadow effects for better depth perception across the interface
+- Updated theme to use Inter font for improved typography
+- Consolidated use of Mantine's built-in theming system instead of manual styling
 
 ### Fixed
 
@@ -44,6 +51,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved QuizPage layout with quiz questions on the left and attempts on the right side
 - Enhanced QuizPage scrolling behavior with independently scrollable sections
 - Removed horizontal scrollbar from attempts list for cleaner presentation
+- Fixed visual inconsistency between card headers and card bodies
+- Ensured consistent color theme across all UI elements (buttons, icons, headers)
+- Implemented sharper corners for card components as requested
 
 ### Deprecated
 

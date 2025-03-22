@@ -1,7 +1,10 @@
-import { Button, Grid, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { ActionIcon, Button, Card, Grid, Group, Menu, Modal, Stack, Title } from '@mantine/core'
 import { Quiz, Submission } from '@noggin/types/quiz-types'
 import { AppHeader, HeaderAction } from '@renderer/components/layout/AppHeader'
+import { IconClipboardList, IconEye, IconMenu2 } from '@tabler/icons-react'
 import { useNavigate } from '@tanstack/react-router'
+import { useState } from 'react'
+import { AttemptsHistory } from './components/AttemptsHistory'
 import { QuestionList } from './components/QuestionList'
 
 export type QuizPageProps = {
@@ -13,6 +16,7 @@ export type QuizPageProps = {
 
 export function QuizPage({ libraryId, moduleId, quiz, submissions }: QuizPageProps) {
     const navigate = useNavigate()
+    const [attemptsModalOpen, setAttemptsModalOpen] = useState(false)
 
     // Define which header actions to enable
     const headerActions: HeaderAction[] = ['explorer', 'settings']
@@ -34,81 +38,76 @@ export function QuizPage({ libraryId, moduleId, quiz, submissions }: QuizPagePro
             />
 
             <Grid p="md" style={{ flex: 1 }}>
-                {/* Left side: Quiz Questions */}
-                <Grid.Col span={8}>
-                    <Paper
-                        p="md"
+                {/* Main content: Quiz */}
+                <Grid.Col span={12}>
+                    <Card
+                        shadow="md"
+                        radius="sm"
                         withBorder
                         style={{ height: 'calc(100vh - 140px)', overflow: 'auto' }}
+                        bg="dark.7"
                     >
-                        <Stack gap="md">
-                            <Title order={3}>Quiz Questions</Title>
+                        <Card.Section withBorder inheritPadding py="xs" bg="dark.8">
+                            <Group justify="space-between">
+                                <Title order={3}>{quiz.title}</Title>
+
+                                <Group gap="xs">
+                                    <Button
+                                        variant="filled"
+                                        color="purple"
+                                        leftSection={<IconClipboardList size={16} />}
+                                        onClick={() =>
+                                            navigate({
+                                                to: '/quiz/session/$libraryId/$moduleId/$quizId',
+                                                params: { libraryId, moduleId, quizId: quiz.id },
+                                            })
+                                        }
+                                    >
+                                        Start Quiz
+                                    </Button>
+
+                                    <Menu position="bottom-end" shadow="md">
+                                        <Menu.Target>
+                                            <ActionIcon variant="filled" size="md" color="purple">
+                                                <IconMenu2 size={20} />
+                                            </ActionIcon>
+                                        </Menu.Target>
+
+                                        <Menu.Dropdown>
+                                            <Menu.Item
+                                                leftSection={<IconEye size={16} />}
+                                                onClick={() => setAttemptsModalOpen(true)}
+                                            >
+                                                View Attempts History
+                                            </Menu.Item>
+                                        </Menu.Dropdown>
+                                    </Menu>
+                                </Group>
+                            </Group>
+                        </Card.Section>
+
+                        <Stack gap="md" p="md">
                             <QuestionList questions={quiz.questions} />
                         </Stack>
-                    </Paper>
-                </Grid.Col>
-
-                {/* Right side: Submissions Grid */}
-                <Grid.Col span={4}>
-                    <Stack gap="xl" style={{ height: 'calc(100vh - 140px)' }}>
-                        <Group justify="space-between" align="center">
-                            <Title order={3}>Attempts</Title>
-                            <Button
-                                variant="light"
-                                onClick={() =>
-                                    navigate({
-                                        to: '/quiz/session/$libraryId/$moduleId/$quizId',
-                                        params: { libraryId, moduleId, quizId: quiz.id },
-                                    })
-                                }
-                            >
-                                Start Quiz
-                            </Button>
-                        </Group>
-
-                        <div style={{ overflow: 'auto', overflowX: 'hidden', flex: 1 }}>
-                            <Grid style={{ width: '100%' }}>
-                                {submissions.map((submission) => (
-                                    <Grid.Col key={submission.attemptNumber} span={12}>
-                                        <Paper p="md" withBorder>
-                                            <Stack gap="xs">
-                                                <Text fw={500}>
-                                                    Attempt {submission.attemptNumber}
-                                                </Text>
-                                                <Text size="sm" c="dimmed">
-                                                    {new Date(
-                                                        submission.completedAt
-                                                    ).toLocaleDateString()}
-                                                </Text>
-                                                {submission.grade && (
-                                                    <Text>Score: {submission.grade}%</Text>
-                                                )}
-                                                <Button
-                                                    variant="light"
-                                                    size="xs"
-                                                    onClick={() =>
-                                                        navigate({
-                                                            to: '/submission/$libraryId/$moduleId/$quizId/$attempt',
-                                                            params: {
-                                                                libraryId,
-                                                                moduleId,
-                                                                quizId: quiz.id,
-                                                                attempt: `${submission.attemptNumber}`,
-                                                            },
-                                                        })
-                                                    }
-                                                >
-                                                    View Details
-                                                </Button>
-                                            </Stack>
-                                        </Paper>
-                                    </Grid.Col>
-                                ))}
-                            </Grid>
-                        </div>
-                    </Stack>
+                    </Card>
                 </Grid.Col>
             </Grid>
+
+            {/* Attempts Modal */}
+            <Modal
+                opened={attemptsModalOpen}
+                onClose={() => setAttemptsModalOpen(false)}
+                title="Quiz Attempts"
+                size="lg"
+            >
+                <AttemptsHistory
+                    submissions={submissions}
+                    libraryId={libraryId}
+                    moduleId={moduleId}
+                    quizId={quiz.id}
+                    onClose={() => setAttemptsModalOpen(false)}
+                />
+            </Modal>
         </Stack>
     )
 }

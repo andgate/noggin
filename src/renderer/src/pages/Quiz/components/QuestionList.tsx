@@ -1,4 +1,4 @@
-import { List, Paper, Stack, Text } from '@mantine/core'
+import { Card, List, Stack, Text } from '@mantine/core'
 import { Question } from '@noggin/types/quiz-types'
 
 type QuestionListProps = {
@@ -9,9 +9,12 @@ export function QuestionList({ questions }: QuestionListProps) {
     return (
         <Stack gap="md">
             {questions.map((question, index) => (
-                <Paper key={index} p="md" withBorder>
-                    <Stack gap="sm">
-                        <Text fw={500}>Question {index + 1}</Text>
+                <Card key={index} shadow="sm" radius="sm" withBorder>
+                    <Card.Section withBorder inheritPadding py="xs" bg="dark.5">
+                        <Text fw={600}>Question {index + 1}</Text>
+                    </Card.Section>
+
+                    <Stack gap="md" p="md">
                         <Text>{question.question}</Text>
 
                         {question.questionType === 'multiple_choice' && (
@@ -22,7 +25,7 @@ export function QuestionList({ questions }: QuestionListProps) {
                             </List>
                         )}
                     </Stack>
-                </Paper>
+                </Card>
             ))}
         </Stack>
     )
