@@ -41,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed module explorer tree nodes to keep icons and text on the same line with proper text truncation and hover tooltips
 - Improved module page layout with proper vertical space distribution using custom flex containers
 - Fixed LibraryPage tests by mocking AppHeader to simplify test setup
+- Improved QuizPage layout with quiz questions on the left and attempts on the right side
+- Enhanced QuizPage scrolling behavior with independently scrollable sections
+- Removed horizontal scrollbar from attempts list for cleaner presentation
 
 ### Deprecated
 

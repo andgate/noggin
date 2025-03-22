@@ -33,10 +33,24 @@ export function QuizPage({ libraryId, moduleId, quiz, submissions }: QuizPagePro
                 actions={headerActions}
             />
 
-            <Grid p="md" style={{ flex: 1, overflow: 'auto' }}>
-                {/* Left side: Submissions Grid */}
+            <Grid p="md" style={{ flex: 1 }}>
+                {/* Left side: Quiz Questions */}
                 <Grid.Col span={8}>
-                    <Stack gap="xl">
+                    <Paper
+                        p="md"
+                        withBorder
+                        style={{ height: 'calc(100vh - 140px)', overflow: 'auto' }}
+                    >
+                        <Stack gap="md">
+                            <Title order={3}>Quiz Questions</Title>
+                            <QuestionList questions={quiz.questions} />
+                        </Stack>
+                    </Paper>
+                </Grid.Col>
+
+                {/* Right side: Submissions Grid */}
+                <Grid.Col span={4}>
+                    <Stack gap="xl" style={{ height: 'calc(100vh - 140px)' }}>
                         <Group justify="space-between" align="center">
                             <Title order={3}>Attempts</Title>
                             <Button
@@ -52,53 +66,47 @@ export function QuizPage({ libraryId, moduleId, quiz, submissions }: QuizPagePro
                             </Button>
                         </Group>
 
-                        <Grid>
-                            {submissions.map((submission) => (
-                                <Grid.Col key={submission.attemptNumber} span={4}>
-                                    <Paper p="md" withBorder>
-                                        <Stack gap="xs">
-                                            <Text fw={500}>Attempt {submission.attemptNumber}</Text>
-                                            <Text size="sm" c="dimmed">
-                                                {new Date(
-                                                    submission.completedAt
-                                                ).toLocaleDateString()}
-                                            </Text>
-                                            {submission.grade && (
-                                                <Text>Score: {submission.grade}%</Text>
-                                            )}
-                                            <Button
-                                                variant="light"
-                                                size="xs"
-                                                onClick={() =>
-                                                    navigate({
-                                                        to: '/submission/$libraryId/$moduleId/$quizId/$attempt',
-                                                        params: {
-                                                            libraryId,
-                                                            moduleId,
-                                                            quizId: quiz.id,
-                                                            attempt: `${submission.attemptNumber}`,
-                                                        },
-                                                    })
-                                                }
-                                            >
-                                                View Details
-                                            </Button>
-                                        </Stack>
-                                    </Paper>
-                                </Grid.Col>
-                            ))}
-                        </Grid>
+                        <div style={{ overflow: 'auto', overflowX: 'hidden', flex: 1 }}>
+                            <Grid style={{ width: '100%' }}>
+                                {submissions.map((submission) => (
+                                    <Grid.Col key={submission.attemptNumber} span={12}>
+                                        <Paper p="md" withBorder>
+                                            <Stack gap="xs">
+                                                <Text fw={500}>
+                                                    Attempt {submission.attemptNumber}
+                                                </Text>
+                                                <Text size="sm" c="dimmed">
+                                                    {new Date(
+                                                        submission.completedAt
+                                                    ).toLocaleDateString()}
+                                                </Text>
+                                                {submission.grade && (
+                                                    <Text>Score: {submission.grade}%</Text>
+                                                )}
+                                                <Button
+                                                    variant="light"
+                                                    size="xs"
+                                                    onClick={() =>
+                                                        navigate({
+                                                            to: '/submission/$libraryId/$moduleId/$quizId/$attempt',
+                                                            params: {
+                                                                libraryId,
+                                                                moduleId,
+                                                                quizId: quiz.id,
+                                                                attempt: `${submission.attemptNumber}`,
+                                                            },
+                                                        })
+                                                    }
+                                                >
+                                                    View Details
+                                                </Button>
+                                            </Stack>
+                                        </Paper>
+                                    </Grid.Col>
+                                ))}
+                            </Grid>
+                        </div>
                     </Stack>
-                </Grid.Col>
-
-                {/* Right side: Questions List */}
-                <Grid.Col span={4}>
-                    <Paper p="md" withBorder>
-                        <Stack gap="md">
-                            <Title order={3}>Quiz Questions</Title>
-                            <QuestionList questions={quiz.questions} />
-                        </Stack>
-                    </Paper>
                 </Grid.Col>
             </Grid>
         </Stack>
