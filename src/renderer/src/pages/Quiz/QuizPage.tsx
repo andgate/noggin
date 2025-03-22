@@ -27,15 +27,7 @@ export function QuizPage({ libraryId, moduleId, quiz, submissions }: QuizPagePro
 
     return (
         <Stack h="100vh" style={{ display: 'flex', flexDirection: 'column' }}>
-            <AppHeader
-                title={quiz.title}
-                backLink={{
-                    to: '/module/view/$libraryId/$moduleId',
-                    params: { libraryId, moduleId },
-                    label: 'Back to Module',
-                }}
-                actions={headerActions}
-            />
+            <AppHeader title={quiz.title} actions={headerActions} />
 
             <Grid p="md" style={{ flex: 1 }}>
                 {/* Main content: Quiz */}

@@ -2,9 +2,9 @@ import { Box, Button, Card, Group, Radio, Stack, Textarea, Title } from '@mantin
 import { useForm } from '@mantine/form'
 import { Question, Quiz, submissionSchema } from '@noggin/types/quiz-types'
 import { useModule } from '@renderer/app/hooks/use-module'
-import { AppHeader, HeaderAction } from '@renderer/components/layout/AppHeader'
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useEffect, useState } from 'react'
+import { QuizSessionHeader } from './components/QuizSessionHeader'
 
 interface QuizSessionPageProps {
     libraryId: string
@@ -71,9 +71,6 @@ export function QuizSessionPage({ libraryId, moduleId, quiz }: QuizSessionPagePr
     const module = useModule()
     const [startTime] = useState(() => new Date())
 
-    // No settings or explorer during quiz
-    const headerActions: HeaderAction[] = []
-
     if (!libraryId) {
         throw new Error('Library ID is required')
     }
@@ -139,17 +136,19 @@ export function QuizSessionPage({ libraryId, moduleId, quiz }: QuizSessionPagePr
 
     return (
         <Stack h="100vh" style={{ display: 'flex', flexDirection: 'column' }}>
-            <AppHeader
+            <QuizSessionHeader
                 title={`Quiz: ${quiz.title}`}
-                backLink={{
-                    to: '/quiz/view/$libraryId/$moduleId/$quizId',
-                    params: { libraryId, moduleId, quizId: quiz.id },
-                    label: 'Exit Quiz',
-                    requireConfirmation: true,
-                    confirmationMessage:
-                        'Are you sure you want to exit? Your progress will be lost.',
+                onExit={() => {
+                    const confirmed = window.confirm(
+                        'Are you sure you want to exit this quiz? Your progress will be lost.'
+                    )
+                    if (confirmed) {
+                        navigate({
+                            to: '/quiz/view/$libraryId/$moduleId/$quizId',
+                            params: { libraryId, moduleId, quizId: quiz.id },
+                        })
+                    }
                 }}
-                actions={headerActions}
             />
 
             <Box p="xl" style={{ flex: 1, overflow: 'auto' }}>

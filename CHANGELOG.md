@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added View Details option to module page menu
 - Created dedicated AttemptsHistory component to better encapsulate quiz attempt display logic
 - Implemented modal for quiz attempts accessible via menu for cleaner interface
+- Added breadcrumb navigation showing the hierarchy path throughout the application
+- Implemented dedicated QuizSessionHeader with exit confirmation dialog for quiz sessions
+- Created distraction-free mode for quiz sessions by hiding module explorer
 
 ### Changed
 
@@ -40,6 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced shadow effects for better depth perception across the interface
 - Updated theme to use Inter font for improved typography
 - Consolidated use of Mantine's built-in theming system instead of manual styling
+- Replaced back button links with breadcrumbs for more intuitive navigation throughout the app
+- Refactored AppHeader component to simplify props and support breadcrumb navigation
+- Modified AppLayout to conditionally render module explorer based on current route
 
 ### Fixed
 
@@ -54,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed visual inconsistency between card headers and card bodies
 - Ensured consistent color theme across all UI elements (buttons, icons, headers)
 - Implemented sharper corners for card components as requested
+- Fixed navigation consistency issues by making current page breadcrumb non-clickable
+- Eliminated breadcrumb visual glitches during page transitions by simplifying component state management
+- Improved quiz session UX by removing distractions and adding clear exit path with confirmation
 
 ### Deprecated
 
@@ -61,7 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Features that have been removed
+- Removed back button links in favor of breadcrumb navigation
+- Removed complex DOM mutation observers in favor of declarative component rendering
 
 ### Fixed
 

@@ -38,19 +38,7 @@ export function SubmissionPage({ libraryId, moduleId, submission }: SubmissionPa
 
     return (
         <Stack h="100vh" style={{ display: 'flex', flexDirection: 'column' }}>
-            <AppHeader
-                title={pageTitle}
-                backLink={{
-                    to: '/quiz/view/$libraryId/$moduleId/$quizId',
-                    params: {
-                        libraryId,
-                        moduleId,
-                        quizId: submission.quizId,
-                    },
-                    label: 'Back to Quiz',
-                }}
-                actions={headerActions}
-            />
+            <AppHeader title={pageTitle} actions={headerActions} />
 
             <Container size="md" style={{ flex: 1, overflow: 'auto', padding: '1rem' }}>
                 <Stack gap="md">

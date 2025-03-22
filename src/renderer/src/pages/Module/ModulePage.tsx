@@ -65,14 +65,7 @@ export function ModulePage({ module }: ModulePageProps) {
                 overflow: 'hidden',
             }}
         >
-            <AppHeader
-                title="Module"
-                actions={headerActions}
-                backLink={{
-                    to: '/',
-                    label: 'Back to Dashboard',
-                }}
-            />
+            <AppHeader title={module.metadata.title} actions={headerActions} />
 
             <div
                 id="module-content-area"

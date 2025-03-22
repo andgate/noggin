@@ -16,14 +16,7 @@ export function LibraryPage({ library, modules }: LibraryPageProps) {
 
     return (
         <>
-            <AppHeader
-                title={library.metadata.name}
-                actions={headerActions}
-                backLink={{
-                    to: '/',
-                    label: 'Back to Dashboard',
-                }}
-            />
+            <AppHeader title={library.metadata.name} actions={headerActions} />
 
             <Stack p="md">
                 <Text c="dimmed">{library.metadata.description}</Text>
