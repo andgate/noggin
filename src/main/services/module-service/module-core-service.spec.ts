@@ -14,7 +14,6 @@ import {
 import {
     createModuleStats,
     getModuleMetadataPath,
-    getModuleStatsPath,
     getQuizPath,
     getSubmissionPath,
 } from '../../common/module-utils'
@@ -44,12 +43,11 @@ vi.mocked(getModuleMetadataPath).mockImplementation((modPath) => {
 })
 
 // Add mock implementation for createModuleStats
-vi.mocked(createModuleStats).mockImplementation(async (modPath) => {
+vi.mocked(createModuleStats).mockImplementation(async (_modPath) => {
     return {
-        moduleId: path.basename(modPath),
+        moduleId: 'test-module-20240101T000000Z',
         currentBox: 1,
-        lastReviewDate: new Date().toISOString(),
-        nextDueDate: new Date().toISOString(),
+        nextReviewDate: new Date().toISOString(),
     }
 })
 
@@ -73,8 +71,7 @@ describe('ModuleCoreService', () => {
     const mockStats = {
         moduleId: mockModuleId,
         currentBox: 1,
-        lastReviewDate: '2024-01-01T00:00:00Z',
-        nextDueDate: '2024-01-02T00:00:00Z',
+        nextReviewDate: '2024-01-02T00:00:00Z',
     }
 
     beforeEach(() => {
@@ -109,6 +106,7 @@ describe('ModuleCoreService', () => {
                     libraryId: 'test-library',
                     path: fullModPath,
                 },
+                stats: mockStats,
                 sources: [],
                 quizzes: [],
                 submissions: [],
@@ -409,6 +407,7 @@ describe('ModuleCoreService', () => {
             // Arrange
             const mod = {
                 metadata: mockModuleMetadata,
+                stats: mockStats,
                 quizzes: [
                     {
                         id: 'quiz1',

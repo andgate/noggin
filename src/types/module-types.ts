@@ -15,8 +15,7 @@ export const moduleMetadataSchema = z.object({
 export const moduleStatsSchema = z.object({
     moduleId: z.string(),
     currentBox: z.number().min(1).max(5),
-    lastReviewDate: z.string(), // ISO date string
-    nextDueDate: z.string(), // ISO date string
+    nextReviewDate: z.string(), // ISO date string - The date on/after which the module should be reviewed
 })
 
 export const modSchema = z.object({

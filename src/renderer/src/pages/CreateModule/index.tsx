@@ -139,7 +139,12 @@ export function CreateModulePage() {
                 // Create the initial module structure
                 const mod: Mod = {
                     metadata,
-                    sources: [], // Start with empty sources
+                    stats: {
+                        moduleId: `${moduleData.slug}-${timestamp}`,
+                        currentBox: 1,
+                        nextReviewDate: new Date().toISOString(),
+                    },
+                    sources: [],
                     quizzes: [],
                     submissions: [],
                 }

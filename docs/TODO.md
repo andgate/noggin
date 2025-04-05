@@ -18,6 +18,21 @@
 - Ensure modules detect changes to their source files and update accordingly (e.g the ui should notify the user and the module should be marked for review and show up in the practice feed)
 - Update the README
 
+- clicking on a filepath should open it. Right clicking on the file path should allow us to copy
+- On the module page, plus botton next to quizzes title
+    - plus button opens a dropdown menu with options like "create new quiz", "open last quiz", "edit quizzes"
+    - Delete should be more difficult to access, so it should be accessible in an "edit mode" for the list of quizzes
+    - How do you exit the edit mode?
+- Should be able to change quiz or module titles
+- Different view modes for quizzes (cards or list)
+
+    - Is card grid actually good UX for the human brain?
+
+- Bug when deleting a quiz
+    - When clicking delete, after deletion, the list of quiz doesn't update.
+    - After deleting a quiz, it's submissions are still accessible.
+        - But the quiz tied to them no longer exists! This breaks the "back to quiz" backlink on the submission page.
+
 # v1.0.x release
 
 - Implement learning paths

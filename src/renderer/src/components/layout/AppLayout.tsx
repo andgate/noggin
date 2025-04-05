@@ -2,7 +2,7 @@ import { AppShell, Box, Divider, Modal } from '@mantine/core'
 import { useUiStore } from '@renderer/app/stores/ui-store'
 import { UserSettingsPanel } from '@renderer/components/UserSettingsPanel'
 import { useRouterState } from '@tanstack/react-router'
-import React, { type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { LeftSidepane } from './LeftSidepane'
 
 export function AppLayout({ children }: Readonly<{ children: ReactNode }>) {

@@ -15,6 +15,20 @@ export function ModuleInfoPanel({ module }: ModuleInfoPanelProps) {
         maxWidth: '100%',
     }
 
+    // Get the most recent submission date
+    const getLastReviewedDate = () => {
+        if (module.submissions.length === 0) {
+            return 'Never'
+        }
+
+        // Sort submissions by completedAt in descending order and get the first one
+        const mostRecentSubmission = [...module.submissions].sort(
+            (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+        )[0]
+
+        return formatDate(mostRecentSubmission.completedAt)
+    }
+
     return (
         <Stack
             id="module-info-panel"
@@ -60,12 +74,12 @@ export function ModuleInfoPanel({ module }: ModuleInfoPanelProps) {
                         <Text>{module.stats.currentBox}/5</Text>
                     </Group>
                     <Group>
-                        <Text c="dimmed">Last Reviewed:</Text>
-                        <Text>{formatDate(module.stats.lastReviewDate)}</Text>
+                        <Text fw="bold">Last Reviewed:</Text>
+                        <Text>{getLastReviewedDate()}</Text>
                     </Group>
                     <Group>
-                        <Text c="dimmed">Next Review Due:</Text>
-                        <Text>{formatDate(module.stats.nextDueDate)}</Text>
+                        <Text fw="bold">Next Review:</Text>
+                        <Text>{formatDate(module.stats.nextReviewDate)}</Text>
                     </Group>
                 </Stack>
             )}

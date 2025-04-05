@@ -15,16 +15,19 @@ export async function getModuleStats(libraryId: string, moduleId: string): Promi
 
     const statsPath = getModuleStatsPath(modulePath)
     try {
+        // Attempt to read existing stats, validating against the updated schema
         return await readJsonFile(statsPath, moduleStatsSchema)
     } catch (error) {
         // Only create and save default stats if file doesn't exist
         if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+            console.log(`Stats file not found for ${moduleId}, creating default stats.`)
+            // createModuleStats now creates stats without lastReviewDate and with nextReviewDate
             const defaultStats = await createModuleStats(modulePath)
             await writeJsonFile(statsPath, defaultStats)
             return defaultStats
         }
-
-        // Rethrow other errors
+        // Rethrow other errors (e.g., validation errors against the new schema)
+        console.error(`Error reading or validating stats for ${moduleId}:`, error)
         throw error
     }
 }
@@ -55,8 +58,6 @@ export async function saveModuleStats(
  */
 export async function getAllModuleStats(): Promise<ModuleStats[]> {
     const libraries = await getAllLibraries()
-
-    // First, collect all promises for module stats
     const statsPromises: Promise<ModuleStats | null>[] = []
 
     for (const library of libraries) {
@@ -65,9 +66,10 @@ export async function getAllModuleStats(): Promise<ModuleStats[]> {
 
         for (const overview of overviews) {
             statsPromises.push(
-                getModuleStats(libraryId, overview.slug).catch((error) => {
+                getModuleStats(libraryId, overview.id).catch((error) => {
+                    // Use overview.id
                     console.error(
-                        `Failed to get stats for module ${overview.slug} in library ${libraryId}:`,
+                        `Failed to get stats for module ${overview.id} in library ${libraryId}:`,
                         error
                     )
                     return null
@@ -76,7 +78,6 @@ export async function getAllModuleStats(): Promise<ModuleStats[]> {
         }
     }
 
-    // Resolve all promises and filter out nulls
     const stats = await Promise.all(statsPromises)
     return stats.filter((stat): stat is ModuleStats => stat !== null)
 }

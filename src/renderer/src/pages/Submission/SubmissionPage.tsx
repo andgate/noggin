@@ -1,8 +1,8 @@
-import { Button, Container, Group, Stack, Title } from '@mantine/core'
+import { Button, Container, Group, Stack } from '@mantine/core'
 import { Submission } from '@noggin/types/quiz-types'
 import { useGradesGenerator } from '@renderer/app/hooks/use-grades-generator'
 import { AppHeader, HeaderAction } from '@renderer/components/layout/AppHeader'
-import { useNavigate, useRouter } from '@tanstack/react-router'
+import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { SubmissionGradeInfo } from './components/SubmissionGradeInfo'
 import { SubmissionResponseCard } from './components/SubmissionResponseCard'
@@ -16,7 +16,6 @@ interface SubmissionPageProps {
 export function SubmissionPage({ libraryId, moduleId, submission }: SubmissionPageProps) {
     const { gradeSubmission } = useGradesGenerator(libraryId, moduleId)
     const router = useRouter()
-    const navigate = useNavigate()
     const [isGrading, setIsGrading] = useState(false)
 
     // Define which header actions to enable

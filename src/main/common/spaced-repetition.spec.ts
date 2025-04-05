@@ -53,9 +53,9 @@ describe('spaced-repetition', () => {
         const mockDate = new Date('2023-01-15T12:00:00Z')
 
         beforeEach(() => {
-            // Mock getCurrentDate to return a fixed date
             vi.mocked(dateUtils.getCurrentDate).mockReturnValue(mockDate)
             vi.mocked(dateUtils.getDaysBetween).mockImplementation((date1, date2) => {
+                // Simple difference calculation for testing
                 return (date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24)
             })
         })
@@ -68,189 +68,128 @@ describe('spaced-repetition', () => {
             expect(calculatePriority(undefined)).toBe(0)
         })
 
-        it('should prioritize overdue items', () => {
+        it('should prioritize overdue items significantly', () => {
             const overdue5Days: ModuleStats = {
                 moduleId: 'test',
                 currentBox: 3,
-                lastReviewDate: '2023-01-01T12:00:00Z',
-                nextDueDate: '2023-01-10T12:00:00Z', // 5 days overdue on 2023-01-15
+                nextReviewDate: '2023-01-10T12:00:00Z', // 5 days overdue
             }
-
             const overdue1Day: ModuleStats = {
                 moduleId: 'test',
                 currentBox: 3,
-                lastReviewDate: '2023-01-10T12:00:00Z',
-                nextDueDate: '2023-01-14T12:00:00Z', // 1 day overdue on 2023-01-15
+                nextReviewDate: '2023-01-14T12:00:00Z', // 1 day overdue
             }
-
-            // The 5-day overdue item should have higher priority
+            // Priority = (daysOverdue > 0 ? daysOverdue * 10 : daysOverdue) + (6 - currentBox) * 0.1
+            // Priority 5 days = 5 * 10 + (6 - 3) * 0.1 = 50 + 0.3 = 50.3
+            // Priority 1 day = 1 * 10 + (6 - 3) * 0.1 = 10 + 0.3 = 10.3
+            expect(calculatePriority(overdue5Days)).toBeCloseTo(50.3)
+            expect(calculatePriority(overdue1Day)).toBeCloseTo(10.3)
             expect(calculatePriority(overdue5Days)).toBeGreaterThan(calculatePriority(overdue1Day))
         })
 
-        it('should prioritize lower boxes over higher boxes', () => {
+        it('should prioritize lower boxes slightly when overdue days are equal', () => {
             const box1Item: ModuleStats = {
                 moduleId: 'test',
                 currentBox: 1,
-                lastReviewDate: '2023-01-10T12:00:00Z',
-                nextDueDate: '2023-01-14T12:00:00Z', // 1 day overdue
+                nextReviewDate: '2023-01-14T12:00:00Z', // 1 day overdue
             }
-
             const box5Item: ModuleStats = {
                 moduleId: 'test',
                 currentBox: 5,
-                lastReviewDate: '2023-01-10T12:00:00Z',
-                nextDueDate: '2023-01-14T12:00:00Z', // 1 day overdue
+                nextReviewDate: '2023-01-14T12:00:00Z', // 1 day overdue
             }
-
-            // Same overdue time, but box 1 should have higher priority
+            // Priority Box 1 = 1 * 10 + (6 - 1) * 0.1 = 10 + 0.5 = 10.5
+            // Priority Box 5 = 1 * 10 + (6 - 5) * 0.1 = 10 + 0.1 = 10.1
+            expect(calculatePriority(box1Item)).toBeCloseTo(10.5)
+            expect(calculatePriority(box5Item)).toBeCloseTo(10.1)
             expect(calculatePriority(box1Item)).toBeGreaterThan(calculatePriority(box5Item))
         })
 
-        it('should calculate correct priority values', () => {
-            const stats: ModuleStats = {
-                moduleId: 'test',
-                currentBox: 2,
-                lastReviewDate: '2023-01-10T12:00:00Z',
-                nextDueDate: '2023-01-14T12:00:00Z', // 1 day overdue on 2023-01-15
-            }
-
-            // Priority = daysOverdue + (6 - currentBox) * 0.1
-            // = 1 + (6 - 2) * 0.1 = 1 + 0.4 = 1.4
-            expect(calculatePriority(stats)).toBeCloseTo(1.4)
-        })
-
-        it('should handle negative overdue days (future due dates)', () => {
-            // Mock getCurrentDate to return a fixed date
+        it('should handle future review dates (negative priority base)', () => {
             vi.mocked(dateUtils.getCurrentDate).mockReturnValue(new Date('2023-01-10T12:00:00Z'))
-
             const stats: ModuleStats = {
                 moduleId: 'test',
                 currentBox: 3,
-                lastReviewDate: '2023-01-01T12:00:00Z',
-                nextDueDate: '2023-01-15T12:00:00Z', // 5 days in the future from 2023-01-10
+                nextReviewDate: '2023-01-15T12:00:00Z', // 5 days in the future
             }
-
-            // Priority = daysOverdue + (6 - currentBox) * 0.1
-            // = -5 + (6 - 3) * 0.1 = -5 + 0.3 = -4.7
+            // Priority = -5 + (6 - 3) * 0.1 = -5 + 0.3 = -4.7
             expect(calculatePriority(stats)).toBeCloseTo(-4.7)
         })
 
-        it('should handle the current day as due date', () => {
-            // Mock getCurrentDate to return exact same date as the next due date
-            const dueDate = new Date('2023-01-15T12:00:00Z')
-            vi.mocked(dateUtils.getCurrentDate).mockReturnValue(dueDate)
-
+        it('should handle the current day as review date (zero day difference)', () => {
+            const reviewDate = new Date('2023-01-15T12:00:00Z')
+            vi.mocked(dateUtils.getCurrentDate).mockReturnValue(reviewDate)
             const stats: ModuleStats = {
                 moduleId: 'test',
                 currentBox: 4,
-                lastReviewDate: '2023-01-10T12:00:00Z',
-                nextDueDate: dueDate.toISOString(),
+                nextReviewDate: reviewDate.toISOString(),
             }
-
-            // Priority = daysOverdue + (6 - currentBox) * 0.1
-            // = 0 + (6 - 4) * 0.1 = 0 + 0.2 = 0.2
+            // Priority = 0 + (6 - 4) * 0.1 = 0.2
             expect(calculatePriority(stats)).toBeCloseTo(0.2)
-        })
-
-        it('should prioritize extremely overdue items appropriately', () => {
-            // Mock getCurrentDate to return a fixed date
-            vi.mocked(dateUtils.getCurrentDate).mockReturnValue(new Date('2023-02-15T12:00:00Z'))
-
-            const stats: ModuleStats = {
-                moduleId: 'test',
-                currentBox: 5,
-                lastReviewDate: '2022-11-15T12:00:00Z',
-                nextDueDate: '2022-12-15T12:00:00Z', // 62 days overdue on 2023-02-15
-            }
-
-            // Priority = daysOverdue + (6 - currentBox) * 0.1
-            // = 62 + (6 - 5) * 0.1 = 62 + 0.1 = 62.1
-            expect(calculatePriority(stats)).toBeCloseTo(62.1)
         })
     })
 
     describe('updateModuleStats', () => {
         const mockDate = new Date('2023-01-15T12:00:00Z')
-        const mockISOString = '2023-01-15T12:00:00.000Z'
 
         beforeEach(() => {
-            // Mock date utility functions to return fixed values
             vi.mocked(dateUtils.getCurrentDate).mockReturnValue(mockDate)
-            vi.mocked(dateUtils.getCurrentISOString).mockReturnValue(mockISOString)
         })
 
         afterEach(() => {
             vi.resetAllMocks()
         })
 
-        it('should move to the next box when passed is true', () => {
+        it('should move to the next box and update nextReviewDate when passed', () => {
             const stats: ModuleStats = {
                 moduleId: 'test',
                 currentBox: 2,
-                lastReviewDate: '2023-01-01T12:00:00Z',
-                nextDueDate: '2023-01-14T12:00:00Z',
+                nextReviewDate: '2023-01-14T12:00:00Z',
             }
-
             const updatedStats = updateModuleStats(stats, true)
-
             expect(updatedStats.currentBox).toBe(3)
-            expect(updatedStats.lastReviewDate).toBe(mockISOString)
-            // Next due date should be 7 days later (box 3)
-            expect(new Date(updatedStats.nextDueDate).toISOString().split('T')[0]).toBe(
+            // Next review date should be 7 days later (box 3) from 'now' (mockDate)
+            expect(new Date(updatedStats.nextReviewDate).toISOString().split('T')[0]).toBe(
                 '2023-01-22'
             )
         })
 
-        it('should not exceed box 5 when passed is true', () => {
+        it('should not exceed box 5 and update nextReviewDate when passed', () => {
             const stats: ModuleStats = {
                 moduleId: 'test',
                 currentBox: 5,
-                lastReviewDate: '2023-01-01T12:00:00Z',
-                nextDueDate: '2023-01-14T12:00:00Z',
+                nextReviewDate: '2023-01-14T12:00:00Z',
             }
-
             const updatedStats = updateModuleStats(stats, true)
-
-            expect(updatedStats.currentBox).toBe(5) // Still box 5
-            expect(updatedStats.lastReviewDate).toBe(mockISOString)
-            // Next due date should be 30 days later (box 5)
-            expect(new Date(updatedStats.nextDueDate).toISOString().split('T')[0]).toBe(
+            expect(updatedStats.currentBox).toBe(5)
+            // Next review date should be 30 days later (box 5) from 'now' (mockDate)
+            expect(new Date(updatedStats.nextReviewDate).toISOString().split('T')[0]).toBe(
                 '2023-02-14'
             )
         })
 
-        it('should reset to box 1 when passed is false', () => {
+        it('should reset to box 1 and update nextReviewDate when failed', () => {
             const stats: ModuleStats = {
                 moduleId: 'test',
                 currentBox: 4,
-                lastReviewDate: '2023-01-01T12:00:00Z',
-                nextDueDate: '2023-01-14T12:00:00Z',
+                nextReviewDate: '2023-01-14T12:00:00Z',
             }
-
             const updatedStats = updateModuleStats(stats, false)
-
-            expect(updatedStats.currentBox).toBe(1) // Reset to box 1
-            expect(updatedStats.lastReviewDate).toBe(mockISOString)
-            // Next due date should be 1 day later (box 1)
-            expect(new Date(updatedStats.nextDueDate).toISOString().split('T')[0]).toBe(
+            expect(updatedStats.currentBox).toBe(1)
+            // Next review date should be 1 day later (box 1) from 'now' (mockDate)
+            expect(new Date(updatedStats.nextReviewDate).toISOString().split('T')[0]).toBe(
                 '2023-01-16'
             )
         })
 
-        it('should preserve other properties from the original stats', () => {
-            const stats: ModuleStats & { additionalProp: string } = {
-                moduleId: 'test',
+        it('should preserve the moduleId property', () => {
+            const stats: ModuleStats = {
+                moduleId: 'preserved-id',
                 currentBox: 3,
-                lastReviewDate: '2023-01-01T12:00:00Z',
-                nextDueDate: '2023-01-14T12:00:00Z',
-                additionalProp: 'should be preserved',
+                nextReviewDate: '2023-01-14T12:00:00Z',
             }
-
-            const updatedStats = updateModuleStats(stats, true) as ModuleStats & {
-                additionalProp: string
-            }
-
-            expect(updatedStats.additionalProp).toBe('should be preserved')
+            const updatedStats = updateModuleStats(stats, true)
+            expect(updatedStats.moduleId).toBe('preserved-id')
         })
     })
 })

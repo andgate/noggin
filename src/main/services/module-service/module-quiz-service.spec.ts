@@ -170,8 +170,7 @@ describe('ModuleQuizService', () => {
                 stats: {
                     moduleId: mockModuleId,
                     currentBox: 1,
-                    lastReviewDate: '2024-01-01T00:00:00Z',
-                    nextDueDate: '2024-01-02T00:00:00Z',
+                    nextReviewDate: '2024-01-02T00:00:00Z',
                 },
             })
 
@@ -202,8 +201,7 @@ describe('ModuleQuizService', () => {
                 stats: {
                     moduleId: mockModuleId,
                     currentBox: 1,
-                    lastReviewDate: '2024-01-01T00:00:00Z',
-                    nextDueDate: '2024-01-02T00:00:00Z',
+                    nextReviewDate: '2024-01-02T00:00:00Z',
                 },
             })
 

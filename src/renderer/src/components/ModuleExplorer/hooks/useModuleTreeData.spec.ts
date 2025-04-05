@@ -1,5 +1,4 @@
 import { Library } from '@noggin/types/library-types'
-import { ModuleOverview } from '@noggin/types/module-types'
 import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useModuleTreeData } from './useModuleTreeData'
@@ -34,30 +33,10 @@ const mockLibraries: Library[] = [
     },
 ]
 
-const mockModules: Record<string, ModuleOverview[]> = {
-    'test-library-1': [
-        {
-            id: 'module1',
-            slug: 'module-1',
-            displayName: 'Module 1',
-            librarySlug: 'test-library-1',
-        },
-        {
-            id: 'module2',
-            slug: 'module-2',
-            displayName: 'Module 2',
-            librarySlug: 'test-library-1',
-        },
-    ],
-    'test-library-2': [
-        {
-            id: 'module3',
-            slug: 'module-3',
-            displayName: 'Module 3',
-            librarySlug: 'test-library-2',
-        },
-    ],
-}
+// Commented out unused mock data - keeping for reference in future tests
+// const mockModules: Record<string, ModuleOverview[]> = {
+//     'test-library': [mockModuleOverview1, mockModuleOverview2],
+// }
 
 // Create expected tree data structure
 const expectedTreeData = [

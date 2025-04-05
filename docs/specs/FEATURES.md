@@ -35,14 +35,14 @@ The Practice Feed guides users through their study sessions by surfacing modules
   Noggin implements the Leitner system as its spaced repetition algorithm, chosen for its simplicity and proven effectiveness in memory retention:
 
     - Modules are organized into 5 review boxes (1-5)
-    - Box 1 modules reviewed daily
+    - Box 1 modules reviewed daily (or sooner if just created)
     - Box 2 modules reviewed every 2 days
     - Box 3 modules reviewed weekly
     - Box 4 modules reviewed bi-weekly
     - Box 5 modules reviewed monthly
     - Successful reviews move module up one box
     - Failed reviews return module to Box 1
-    - New modules start in Box 1
+    - New modules start in Box 1 and are immediately available for review.
 
     This systematic approach ensures regular review intervals that expand as users demonstrate mastery, while quickly identifying and reinforcing challenging content.
 
@@ -52,15 +52,14 @@ The Practice Feed guides users through their study sessions by surfacing modules
     {
         "moduleId": "example-module-20241212103000",
         "currentBox": 2,
-        "lastReviewDate": "2024-03-15T10:30:00Z",
-        "nextDueDate": "2024-03-17T10:30:00Z"
+        "nextReviewDate": "2024-03-17T10:30:00Z"
     }
     ```
 
     The algorithm processes these stats to:
 
     - Calculate review schedules based on the current box
-    - Determine module priority in the practice feed based on nextDueDate
+    - Determine module priority in the practice feed based on nextReviewDate
     - Move modules between boxes based on quiz performance
 
 - **Mastery Levels**:
@@ -76,9 +75,10 @@ The Practice Feed guides users through their study sessions by surfacing modules
 
 - **Prioritization Logic**:
 
-    - Modules are surfaced based on their current Leitner box and review schedule
-    - Overdue modules are highlighted for immediate review
-    - Review dates are calculated from last successful completion
+    - Modules are surfaced based on their current Leitner box and `nextReviewDate`.
+    - Modules with `nextReviewDate <= current time` are eligible for review.
+    - Overdue modules (current time significantly past `nextReviewDate`) are prioritized higher.
+    - Lower box numbers receive a slight priority boost.
 
 - **Focus and Flexibility**:
   With a single click, users can open a quiz from a chosen module or review their past submissions.
@@ -355,7 +355,7 @@ The application provides easy access to module reference information to help use
 
     - Basic module metadata (creation date, update date)
     - Current mastery level with natural language labels
-    - Review schedule information (last reviewed, next due)
+    - Review schedule information (`nextReviewDate`)
     - Complete list of source files with direct access
     - Quiz and submission counts
 

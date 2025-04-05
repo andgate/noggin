@@ -1,4 +1,4 @@
-import { moduleStatsSchema } from '@noggin/types/module-types'
+import { ModuleStats, moduleStatsSchema } from '@noggin/types/module-types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readJsonFile, writeJsonFile } from '../../common/fs-utils'
 import { createModuleStats, getModuleStatsPath } from '../../common/module-utils'
@@ -16,34 +16,33 @@ vi.mock('./module-discovery-service')
 describe('ModuleStatsService', () => {
     // Mock data
     const mockLibraryId = 'test-library'
-    const mockModuleId = 'test-module-20240101T000000Z'
-    const mockModulePath = '/test/library/test-module'
+    const mockModuleId = 'test-module-123'
+    const mockModulePath = '/path/to/library/test-module-123'
+    const mockStatsPath = '/path/to/library/test-module-123/.mod/stats.json'
 
     const mockLibrary = {
-        path: '/test/library',
+        path: '/path/to/library',
         metadata: {
             name: 'Test Library',
             description: 'Test Library Description',
             createdAt: '2024-01-01T00:00:00Z',
             slug: mockLibraryId,
         },
+        modules: [],
     }
 
-    const mockStats = {
+    const mockStats: ModuleStats = {
         moduleId: mockModuleId,
         currentBox: 1,
-        lastReviewDate: '2024-01-01T00:00:00Z',
-        nextDueDate: '2024-01-02T00:00:00Z',
+        nextReviewDate: '2023-01-01T00:00:00Z',
     }
 
     const mockModuleOverview = {
         id: mockModuleId,
-        slug: mockModuleId,
+        slug: 'test-module-123',
         displayName: 'Test Module',
         librarySlug: mockLibraryId,
     }
-
-    const mockStatsPath = `${mockModulePath}/.mod/stats.json`
 
     beforeEach(() => {
         vi.resetAllMocks()
@@ -51,11 +50,10 @@ describe('ModuleStatsService', () => {
         // Common mocks
         vi.mocked(resolveModulePath).mockResolvedValue(mockModulePath)
         vi.mocked(getModuleStatsPath).mockReturnValue(mockStatsPath)
-        vi.mocked(createModuleStats).mockImplementation(async (modPath) => ({
+        vi.mocked(createModuleStats).mockImplementation(async (_) => ({
             moduleId: mockModuleId,
             currentBox: 1,
-            lastReviewDate: new Date().toISOString(),
-            nextDueDate: new Date().toISOString(),
+            nextReviewDate: new Date().toISOString(),
         }))
     })
 
@@ -94,8 +92,7 @@ describe('ModuleStatsService', () => {
             expect(result).toEqual({
                 moduleId: mockModuleId,
                 currentBox: 1,
-                lastReviewDate: expect.any(String),
-                nextDueDate: expect.any(String),
+                nextReviewDate: expect.any(String),
             })
         })
 
@@ -216,8 +213,7 @@ describe('ModuleStatsService', () => {
             const mockStats1 = {
                 moduleId: mockModuleId1,
                 currentBox: 1,
-                lastReviewDate: '2024-01-01T00:00:00Z',
-                nextDueDate: '2024-01-02T00:00:00Z',
+                nextReviewDate: '2024-01-01T00:00:00Z',
             }
 
             const mockStatsPath1 = `${mockModulePath1}/.mod/stats.json`

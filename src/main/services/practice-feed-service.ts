@@ -38,17 +38,17 @@ export async function updateReviewSchedule(
     console.log(`Submission passed: ${isPassing} (grade: ${submission.grade})`)
 
     try {
-        // Get current module stats
+        // Get current module stats (now without lastReviewDate)
         const currentStats = await getModuleStats(libraryId, moduleId)
         console.log(`Current module stats:`, currentStats)
 
-        // Update the stats based on whether the student passed
+        // Update the stats (updateModuleStats now handles the new structure)
         const updatedStats = updateModuleStats(currentStats, isPassing)
         console.log(`Updated module stats:`, updatedStats)
 
         await saveModuleStats(libraryId, moduleId, updatedStats)
         console.log(
-            `Successfully saved updated review schedule for module ${moduleId}. New box: ${updatedStats.currentBox}, Next due: ${updatedStats.nextDueDate}, Passed: ${isPassing}`
+            `Successfully saved updated review schedule for module ${moduleId}. New box: ${updatedStats.currentBox}, Next review: ${updatedStats.nextReviewDate}, Passed: ${isPassing}`
         )
         return true
     } catch (error) {
@@ -76,13 +76,14 @@ export async function getDueModules(): Promise<Mod[]> {
         for (const overview of overviews) {
             try {
                 const mod = await readModuleById(libraryId, overview.id)
+                // Get stats (now without lastReviewDate)
                 const stats = await getModuleStats(libraryId, overview.id)
                 console.log(
-                    `Module ${overview.id}: nextDueDate = ${stats.nextDueDate}, currentBox = ${stats.currentBox}`
+                    `Module ${overview.id}: nextReviewDate = ${stats.nextReviewDate}, currentBox = ${stats.currentBox}`
                 )
                 allModules.push({
                     ...mod,
-                    stats,
+                    stats, // stats object now has the updated structure
                 })
             } catch (error) {
                 console.error(
@@ -93,16 +94,21 @@ export async function getDueModules(): Promise<Mod[]> {
         }
     }
 
-    // Filter and sort due modules
+    // Filter and sort due modules based on nextReviewDate
     const now = getCurrentDate()
     console.log(`Current date for due date comparison: ${now.toISOString()}`)
 
     const dueModules = allModules
         .filter((mod) => {
-            const nextDue = new Date(mod.stats?.nextDueDate || '')
-            const isDue = nextDue <= now
+            // Ensure stats exist before accessing nextReviewDate
+            if (!mod.stats) {
+                console.warn(`Module ${mod.metadata.id} is missing stats. Skipping filter.`)
+                return false
+            }
+            const nextReview = new Date(mod.stats.nextReviewDate)
+            const isDue = nextReview <= now
             console.log(
-                `Module ${mod.metadata.id}: nextDue = ${nextDue.toISOString()}, isDue = ${isDue}`
+                `Module ${mod.metadata.id}: nextReview = ${nextReview.toISOString()}, isDue = ${isDue}`
             )
             return isDue
         })

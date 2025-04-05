@@ -1,4 +1,4 @@
-import { ActionIcon, Group, Title, Tooltip } from '@mantine/core'
+import { ActionIcon, Group, Tooltip } from '@mantine/core'
 import { useUiStore } from '@renderer/app/stores/ui-store'
 import { IconLayoutSidebar, IconLayoutSidebarFilled, IconSettings } from '@tabler/icons-react'
 import { AppBreadcrumbs } from './AppBreadcrumbs'

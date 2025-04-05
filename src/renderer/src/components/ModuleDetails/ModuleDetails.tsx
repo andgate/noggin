@@ -27,6 +27,20 @@ export function ModuleDetails({ module }: ModuleDetailsProps) {
         return levels[boxNumber as keyof typeof levels] || 'Unknown'
     }
 
+    // Get the most recent submission date
+    const getLastReviewedDate = () => {
+        if (module.submissions.length === 0) {
+            return 'Never'
+        }
+
+        // Sort submissions by completedAt in descending order and get the first one
+        const mostRecentSubmission = [...module.submissions].sort(
+            (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+        )[0]
+
+        return formatDate(mostRecentSubmission.completedAt)
+    }
+
     return (
         <Stack
             id="module-details"
@@ -79,13 +93,13 @@ export function ModuleDetails({ module }: ModuleDetailsProps) {
                         <Text size="sm" c="dimmed">
                             Last Reviewed:
                         </Text>
-                        <Text size="sm">{formatDate(module.stats.lastReviewDate)}</Text>
+                        <Text size="sm">{getLastReviewedDate()}</Text>
                     </Group>
                     <Group gap="xs">
                         <Text size="sm" c="dimmed">
                             Next Review:
                         </Text>
-                        <Text size="sm">{formatDate(module.stats.nextDueDate)}</Text>
+                        <Text size="sm">{formatDate(module.stats.nextReviewDate)}</Text>
                     </Group>
                 </Stack>
             )}

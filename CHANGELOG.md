@@ -67,7 +67,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed practice feed scheduling so modules correctly disappear after quiz completion until their next review date
 - Fixed createModuleStats to properly set nextDueDate for new modules based on Leitner box rules
 - Added proper error handling for file not found conditions in module stats service
-- Upgraded Gemini model from 2.0 to gemini-2.5-pro-preview-03-25 for improved AI responses
+- Upgraded Gemini model from 2.0 to gemini-2.5-pro-exp-03-25 for improved AI responses
+- Simplified ModuleStats structure by removing redundant lastReviewDate field and renaming nextDueDate to nextReviewDate for clarity
+- Updated UI components to show last review date by using the most recent submission completedAt timestamp
+- Fixed practice feed behavior to ensure new modules appear immediately for review
 
 ### Deprecated
 
