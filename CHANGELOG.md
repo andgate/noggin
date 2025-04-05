@@ -63,6 +63,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed navigation consistency issues by making current page breadcrumb non-clickable
 - Eliminated breadcrumb visual glitches during page transitions by simplifying component state management
 - Improved quiz session UX by removing distractions and adding clear exit path with confirmation
+- Fixed critical bug in practice feed where module stats weren't saved when first created
+- Added proper error handling for file not found conditions in module stats service
+- Upgraded Gemini model from 2.0 to gemini-2.5-pro-preview-03-25 for improved AI responses
 
 ### Deprecated
 

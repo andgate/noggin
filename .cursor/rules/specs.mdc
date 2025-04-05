@@ -3,6 +3,7 @@ description: Noggin Product Specifications
 globs: docs/specs/*.md
 alwaysApply: true
 ---
+[PROTOCOL.md](mdc:docs/specs/PROTOCOL.md) [FEATURES.md](mdc:docs/specs/FEATURES.md) [DESIGN.md](mdc:docs/specs/DESIGN.md)
 Follow the project specification files when working on code or tests. The project must follow the project specification files.
 
 DO NOT MODIFY the specification files unless given express permission by the user.

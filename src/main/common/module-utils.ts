@@ -56,3 +56,15 @@ export function getSubmissionPath(
 ): string {
     return path.join(modulePath, '.mod/submissions', `${quizId}-${attemptNumber}.json`)
 }
+
+/**
+ * Create default module stats
+ */
+export async function createModuleStats(modulePath: string) {
+    return {
+        moduleId: path.basename(modulePath),
+        currentBox: 1,
+        lastReviewDate: new Date().toISOString(),
+        nextDueDate: new Date().toISOString(),
+    }
+}

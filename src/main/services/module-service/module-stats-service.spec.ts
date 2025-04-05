@@ -1,7 +1,7 @@
 import { moduleStatsSchema } from '@noggin/types/module-types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readJsonFile, writeJsonFile } from '../../common/fs-utils'
-import { getModuleStatsPath } from '../../common/module-utils'
+import { createModuleStats, getModuleStatsPath } from '../../common/module-utils'
 import { getAllLibraries } from '../library-service'
 import { getModuleOverviews, resolveModulePath } from './module-discovery-service'
 import { getAllModuleStats, getModuleStats, saveModuleStats } from './module-stats-service'
@@ -51,6 +51,12 @@ describe('ModuleStatsService', () => {
         // Common mocks
         vi.mocked(resolveModulePath).mockResolvedValue(mockModulePath)
         vi.mocked(getModuleStatsPath).mockReturnValue(mockStatsPath)
+        vi.mocked(createModuleStats).mockImplementation(async (modPath) => ({
+            moduleId: mockModuleId,
+            currentBox: 1,
+            lastReviewDate: new Date().toISOString(),
+            nextDueDate: new Date().toISOString(),
+        }))
     })
 
     afterEach(() => {
@@ -74,18 +80,34 @@ describe('ModuleStatsService', () => {
 
         it('should return default stats if no stats file exists', async () => {
             // Arrange
-            vi.mocked(readJsonFile).mockRejectedValueOnce(new Error('File not found'))
+            const enoentError = new Error('File not found')
+            // @ts-expect-error: Adding code property to Error
+            enoentError.code = 'ENOENT'
+            vi.mocked(readJsonFile).mockRejectedValueOnce(enoentError)
 
             // Act
             const result = await getModuleStats(mockLibraryId, mockModuleId)
 
             // Assert
+            expect(createModuleStats).toHaveBeenCalledWith(mockModulePath)
+            expect(writeJsonFile).toHaveBeenCalledWith(mockStatsPath, expect.any(Object))
             expect(result).toEqual({
                 moduleId: mockModuleId,
                 currentBox: 1,
                 lastReviewDate: expect.any(String),
                 nextDueDate: expect.any(String),
             })
+        })
+
+        it('should throw error for non-ENOENT errors', async () => {
+            // Arrange
+            const nonEnoentError = new Error('Some other error')
+            vi.mocked(readJsonFile).mockRejectedValueOnce(nonEnoentError)
+
+            // Act & Assert
+            await expect(getModuleStats(mockLibraryId, mockModuleId)).rejects.toThrow(
+                nonEnoentError
+            )
         })
 
         it('should throw error if module is not found', async () => {

@@ -84,7 +84,7 @@ export async function generateGeminiContent<T>({
 
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash-exp',
+            model: 'gemini-2.5-pro-preview-03-25',
             generationConfig: {
                 responseMimeType: 'application/json',
                 responseSchema: toGeminiSchema(schema),

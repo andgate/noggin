@@ -1,6 +1,6 @@
 import { ModuleStats, moduleStatsSchema } from '@noggin/types/module-types'
 import { readJsonFile, writeJsonFile } from '../../common/fs-utils'
-import { getModuleStatsPath } from '../../common/module-utils'
+import { createModuleStats, getModuleStatsPath } from '../../common/module-utils'
 import { getAllLibraries } from '../library-service'
 import { getModuleOverviews, resolveModulePath } from './module-discovery-service'
 
@@ -17,13 +17,15 @@ export async function getModuleStats(libraryId: string, moduleId: string): Promi
     try {
         return await readJsonFile(statsPath, moduleStatsSchema)
     } catch (error) {
-        // Return default stats if none exist
-        return {
-            moduleId: moduleId,
-            currentBox: 1,
-            lastReviewDate: new Date().toISOString(),
-            nextDueDate: new Date().toISOString(),
+        // Only create and save default stats if file doesn't exist
+        if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+            const defaultStats = await createModuleStats(modulePath)
+            await writeJsonFile(statsPath, defaultStats)
+            return defaultStats
         }
+
+        // Rethrow other errors
+        throw error
     }
 }
 

@@ -12,6 +12,7 @@ import {
 } from '../../common/fs-utils'
 import { getModuleMetadataPath, getQuizPath, getSubmissionPath } from '../../common/module-utils'
 import { resolveModulePath } from './module-discovery-service'
+import { getModuleStats } from './module-stats-service'
 
 /**
  * Read a module's metadata
@@ -97,19 +98,6 @@ export async function ensureModuleDirectories(modPath: string) {
 }
 
 /**
- * Get module stats (isolated implementation to avoid circular dependencies)
- */
-async function getModuleStatsLocal(modPath: string) {
-    // Simple default implementation to avoid circular dependencies
-    return {
-        moduleId: path.basename(modPath),
-        currentBox: 1,
-        lastReviewDate: new Date().toISOString(),
-        nextDueDate: new Date().toISOString(),
-    }
-}
-
-/**
  * Read all data for a module
  */
 export async function readModuleData(modPath: string): Promise<Mod> {
@@ -122,7 +110,7 @@ export async function readModuleData(modPath: string): Promise<Mod> {
         readQuizzes(modPath),
         readSubmissions(modPath),
         readSources(modPath),
-        getModuleStatsLocal(modPath),
+        getModuleStats(metadata.libraryId, metadata.id),
     ])
 
     return {

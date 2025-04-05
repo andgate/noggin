@@ -3,7 +3,7 @@ import { useForm } from '@mantine/form'
 import { Question, Quiz, submissionSchema } from '@noggin/types/quiz-types'
 import { useModule } from '@renderer/app/hooks/use-module'
 import { useNavigate } from '@tanstack/react-router'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { QuizSessionHeader } from './components/QuizSessionHeader'
 
 interface QuizSessionPageProps {
@@ -81,16 +81,6 @@ export function QuizSessionPage({ libraryId, moduleId, quiz }: QuizSessionPagePr
             {} as Record<string, string>
         ),
     })
-
-    // Save responses periodically
-    useEffect(() => {
-        const saveInterval = setInterval(() => {
-            // TODO: Implement autosave logic
-            console.log('Autosaving responses:', form.values)
-        }, 30000) // Every 30 seconds
-
-        return () => clearInterval(saveInterval)
-    }, [form.values])
 
     const handleSubmit = useCallback(
         async (values: Record<string, string>) => {

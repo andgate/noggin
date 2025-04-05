@@ -11,7 +11,13 @@ import {
     removeDirectoryRecursively,
     writeJsonFile,
 } from '../../common/fs-utils'
-import { getModuleMetadataPath, getQuizPath, getSubmissionPath } from '../../common/module-utils'
+import {
+    createModuleStats,
+    getModuleMetadataPath,
+    getModuleStatsPath,
+    getQuizPath,
+    getSubmissionPath,
+} from '../../common/module-utils'
 import {
     deleteModuleSource,
     ensureModuleDirectories,
@@ -24,15 +30,27 @@ import {
     writeModuleSource,
 } from './module-core-service'
 import { resolveModulePath } from './module-discovery-service'
+import { getModuleStats } from './module-stats-service'
 
 // Mock dependencies - only mock application modules, not system modules that are globally mocked
 vi.mock('../../common/fs-utils')
 vi.mock('../../common/module-utils')
 vi.mock('./module-discovery-service')
+vi.mock('./module-stats-service')
 
 // Add mock implementation for module utils functions
 vi.mocked(getModuleMetadataPath).mockImplementation((modPath) => {
     return path.join(modPath, '.mod', 'meta.json')
+})
+
+// Add mock implementation for createModuleStats
+vi.mocked(createModuleStats).mockImplementation(async (modPath) => {
+    return {
+        moduleId: path.basename(modPath),
+        currentBox: 1,
+        lastReviewDate: new Date().toISOString(),
+        nextDueDate: new Date().toISOString(),
+    }
 })
 
 describe('ModuleCoreService', () => {
@@ -52,11 +70,21 @@ describe('ModuleCoreService', () => {
         libraryId: mockLibraryId,
     }
 
+    const mockStats = {
+        moduleId: mockModuleId,
+        currentBox: 1,
+        lastReviewDate: '2024-01-01T00:00:00Z',
+        nextDueDate: '2024-01-02T00:00:00Z',
+    }
+
     beforeEach(() => {
         vi.resetAllMocks()
 
         // Setup common mocks
         vi.mocked(path.join).mockImplementation((...args) => args.join('/'))
+
+        // Mock getModuleStats to avoid errors
+        vi.mocked(getModuleStats).mockResolvedValue(mockStats)
     })
 
     afterEach(() => {
@@ -261,9 +289,13 @@ describe('ModuleCoreService', () => {
             // We shouldn't expect readModuleMetadata to be called as a mock
             // since it's an internal function in the same file
             expect(findFiles).toHaveBeenCalledTimes(3)
+            expect(getModuleStats).toHaveBeenCalledWith(
+                mockModuleMetadata.libraryId,
+                mockModuleMetadata.id
+            )
             expect(result).toEqual({
                 metadata: mockModuleMetadata,
-                stats: expect.any(Object),
+                stats: mockStats,
                 sources: [`${mockModulePath}/source1.txt`, `${mockModulePath}/source2.pdf`],
                 quizzes: [
                     {
@@ -349,8 +381,13 @@ describe('ModuleCoreService', () => {
 
             // Assert
             expect(resolveModulePath).toHaveBeenCalledWith(mockLibraryId, mockModuleId)
+            expect(getModuleStats).toHaveBeenCalledWith(
+                mockModuleMetadata.libraryId,
+                mockModuleMetadata.id
+            )
             // We can't expect readModuleData to be called directly since it's in the same file
             expect(result.metadata).toEqual(mockModuleMetadata)
+            expect(result.stats).toEqual(mockStats)
             expect(result.sources).toEqual([`${mockModulePath}/source1.txt`])
             expect(result.quizzes).toEqual([])
             expect(result.submissions).toEqual([])

@@ -168,7 +168,6 @@ export function CreateModulePage() {
     )
 
     const handleGenerate = async () => {
-        alert('Generate button clicked!') // This will show a popup when the button is clicked
         try {
             console.log(
                 '📋 handleGenerate called with files:',
