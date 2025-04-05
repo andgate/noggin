@@ -276,7 +276,7 @@ describe('PracticeFeedService', () => {
             )
         })
 
-        it('should not update review schedule if submission is older than lastReviewDate', async () => {
+        it('should update review schedule even if submission is older than lastReviewDate', async () => {
             // Mock a fixed date for testing
             const mockDate = new Date('2023-01-15T12:00:00Z')
             vi.mocked(dateUtils.getCurrentDate).mockReturnValue(mockDate)
@@ -289,6 +289,15 @@ describe('PracticeFeedService', () => {
                 lastReviewDate: '2023-01-20T12:00:00Z', // More recent than the submission
                 nextDueDate: '2023-01-22T12:00:00Z',
             }
+
+            // Setup the mock for updateModuleStats to return specific expected values
+            const updatedStats: ModuleStats = {
+                moduleId: mockModuleId,
+                currentBox: 3, // Expected to move up from box 2
+                lastReviewDate: '2023-01-15T12:00:00Z',
+                nextDueDate: '2023-01-22T12:00:00Z',
+            }
+            vi.mocked(spacedRepetition.updateModuleStats).mockReturnValue(updatedStats)
 
             // Mock getModuleStats to return our test stats
             vi.mocked(moduleStatsService.getModuleStats).mockResolvedValue(currentStats)
@@ -309,16 +318,25 @@ describe('PracticeFeedService', () => {
                 letterGrade: 'C',
             }
 
+            // Test our new behavior where we always update stats for graded submissions
             const result = await updateReviewSchedule(mockLibraryId, mockModuleId, submission)
 
-            // Verify stats were not updated and function returned false
-            expect(result).toBe(false)
+            // In our updated implementation, we should update stats regardless of submission date
+            expect(result).toBe(true)
             expect(moduleStatsService.getModuleStats).toHaveBeenCalledWith(
                 mockLibraryId,
                 mockModuleId
             )
-            expect(spacedRepetition.updateModuleStats).not.toHaveBeenCalled()
-            expect(moduleStatsService.saveModuleStats).not.toHaveBeenCalled()
+
+            // Verify that updateModuleStats was called with the right parameters
+            expect(spacedRepetition.updateModuleStats).toHaveBeenCalledWith(currentStats, true)
+
+            // Verify that saveModuleStats was called with the updated stats
+            expect(moduleStatsService.saveModuleStats).toHaveBeenCalledWith(
+                mockLibraryId,
+                mockModuleId,
+                updatedStats
+            )
         })
     })
 
@@ -514,6 +532,9 @@ describe('PracticeFeedService', () => {
 
         it('should handle errors when reading modules', async () => {
             // Arrange
+            const mockCurrentDate = new Date('2024-01-05T00:00:00Z')
+            vi.mocked(dateUtils.getCurrentDate).mockReturnValue(mockCurrentDate)
+
             vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary])
             vi.mocked(getModuleOverviews).mockResolvedValueOnce([mockModuleOverview])
             vi.mocked(readModuleById).mockRejectedValueOnce(new Error('Failed to read module'))

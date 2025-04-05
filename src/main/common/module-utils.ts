@@ -61,10 +61,15 @@ export function getSubmissionPath(
  * Create default module stats
  */
 export async function createModuleStats(modulePath: string) {
+    const now = new Date()
+    // For Box 1, set nextDueDate to 1 day after lastReviewDate
+    const nextDue = new Date(now)
+    nextDue.setDate(nextDue.getDate() + 1)
+
     return {
         moduleId: path.basename(modulePath),
         currentBox: 1,
-        lastReviewDate: new Date().toISOString(),
-        nextDueDate: new Date().toISOString(),
+        lastReviewDate: now.toISOString(),
+        nextDueDate: nextDue.toISOString(),
     }
 }

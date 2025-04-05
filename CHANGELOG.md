@@ -64,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Eliminated breadcrumb visual glitches during page transitions by simplifying component state management
 - Improved quiz session UX by removing distractions and adding clear exit path with confirmation
 - Fixed critical bug in practice feed where module stats weren't saved when first created
+- Fixed practice feed scheduling so modules correctly disappear after quiz completion until their next review date
+- Fixed createModuleStats to properly set nextDueDate for new modules based on Leitner box rules
 - Added proper error handling for file not found conditions in module stats service
 - Upgraded Gemini model from 2.0 to gemini-2.5-pro-preview-03-25 for improved AI responses
 

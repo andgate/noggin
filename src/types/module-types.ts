@@ -21,7 +21,7 @@ export const moduleStatsSchema = z.object({
 
 export const modSchema = z.object({
     metadata: moduleMetadataSchema,
-    stats: moduleStatsSchema.optional(),
+    stats: moduleStatsSchema,
     sources: z.array(z.string()),
     quizzes: z.array(quizSchema),
     submissions: z.array(submissionSchema),
