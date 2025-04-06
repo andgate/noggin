@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced back button links with breadcrumbs for more intuitive navigation throughout the app
 - Refactored AppHeader component to simplify props and support breadcrumb navigation
 - Modified AppLayout to conditionally render module explorer based on current route
+- Refined module explorer tree node click behavior: icon clicks now toggle (library) or navigate (module), while text clicks navigate for both.
 
 ### Fixed
 
