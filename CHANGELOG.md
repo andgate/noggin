@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored AppHeader component to simplify props and support breadcrumb navigation
 - Modified AppLayout to conditionally render module explorer based on current route
 - Refined module explorer tree node click behavior: icon clicks now toggle (library) or navigate (module), while text clicks navigate for both.
+- Improved LibraryPage UI by adding the library title and replacing the module list with clickable, styled cards that navigate to the module view.
 
 ### Fixed
 
