@@ -10,7 +10,7 @@ interface LibraryPageProps {
 }
 
 export function LibraryPage({ library, modules }: LibraryPageProps) {
-    const libraryModules = modules.filter((module) => module.librarySlug === library.slug)
+    const libraryModules = modules.filter((module) => module.libraryId === library.id)
     const navigate = useNavigate()
 
     // Define which header actions to enable
@@ -45,7 +45,7 @@ export function LibraryPage({ library, modules }: LibraryPageProps) {
                                 radius="md"
                                 withBorder
                                 style={{ cursor: 'pointer' }}
-                                onClick={() => handleModuleClick(module.id, module.librarySlug)}
+                                onClick={() => handleModuleClick(module.id, module.libraryId)}
                             >
                                 <Group justify="space-between" mb="xs">
                                     <Text fw={500} size="sm" truncate>

@@ -2,7 +2,7 @@ import { Library } from '@noggin/types/library-types'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import {
-    getLibraryPathBySlug,
+    getLibraryPathById,
     getRegisteredLibraries,
     libraryExists,
     registerLibrary,
@@ -18,15 +18,15 @@ export async function saveLibrary(library: Library) {
     // Register the library if it doesn't exist
     const doesLibraryExist = await libraryExists(library.path)
     if (!doesLibraryExist) {
-        await registerLibrary(library.path)
+        await registerLibrary(library.path, library.id)
     }
 }
 
-export async function readLibrary(librarySlug: string): Promise<Library> {
-    const libraryPath = await getLibraryPathBySlug(librarySlug)
+export async function readLibrary(libraryId: string): Promise<Library> {
+    const libraryPath = await getLibraryPathById(libraryId)
 
     if (!libraryPath) {
-        throw new Error(`Library with slug "${librarySlug}" not found`)
+        throw new Error(`Library with ID "${libraryId}" not found`)
     }
 
     const metadata = await readLibraryMetadataFile(libraryPath)
@@ -50,18 +50,17 @@ export async function readAllLibraries(): Promise<Library[]> {
     return libraries
 }
 
-export async function deleteLibrary(librarySlug: string): Promise<void> {
-    const libraryPath = await getLibraryPathBySlug(librarySlug)
+export async function deleteLibrary(libraryId: string): Promise<void> {
+    const libraryPath = await getLibraryPathById(libraryId)
 
     if (!libraryPath) {
-        throw new Error(`Library with slug "${librarySlug}" not found`)
+        throw new Error(`Library with ID "${libraryId}" not found`)
     }
 
-    const normalizedPath = path.normalize(libraryPath).replace(/\\/g, '/')
-
     // Unregister the library
-    await unregisterLibrary(normalizedPath)
+    await unregisterLibrary(libraryId)
 
-    // Delete the library directory
+    // Finally, delete the library directory using the path obtained
+    const normalizedPath = path.normalize(libraryPath).replace(/\\/g, '/')
     await fs.rm(normalizedPath, { recursive: true, force: true })
 }

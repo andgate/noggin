@@ -68,7 +68,7 @@ export async function getDueModules(): Promise<Mod[]> {
     const allModules: Mod[] = []
 
     for (const library of libraries) {
-        const libraryId = library.slug
+        const libraryId = library.id
         console.log(`Processing library: ${libraryId}`)
         const overviews = await getModuleOverviews(libraryId)
         console.log(`Found ${overviews.length} modules in library ${libraryId}`)

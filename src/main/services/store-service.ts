@@ -7,7 +7,7 @@ const store = new Store<NogginStoreSchema>({
         userSettings: {
             libraryPaths: [],
         },
-        librarySlugIndex: {},
+        libraryIndex: {},
     },
 })
 

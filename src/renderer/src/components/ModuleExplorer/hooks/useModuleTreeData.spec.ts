@@ -17,15 +17,15 @@ const mockLibraries: Library[] = [
         path: '/path/to/library1',
         name: 'Test Library 1',
         description: 'Test Description 1',
+        id: 'test-library-1',
         createdAt: 1234567890,
-        slug: 'test-library-1',
     },
     {
         path: '/path/to/library2',
         name: 'Test Library 2',
         description: 'Test Description 2',
+        id: 'test-library-2',
         createdAt: 1234567890,
-        slug: 'test-library-2',
     },
 ]
 

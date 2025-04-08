@@ -61,7 +61,7 @@ export async function getAllModuleStats(): Promise<ModuleStats[]> {
     const statsPromises: Promise<ModuleStats | null>[] = []
 
     for (const library of libraries) {
-        const libraryId = library.slug
+        const libraryId = library.id
         const overviews = await getModuleOverviews(libraryId)
 
         for (const overview of overviews) {

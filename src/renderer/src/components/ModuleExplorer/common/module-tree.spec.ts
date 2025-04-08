@@ -11,20 +11,23 @@ import {
 
 describe('module-tree utilities', () => {
     // Test data
+    // Note: The actual Library type has more fields (path, createdAt, description),
+    // but for these tests, only id and name are relevant. We cast to Library[]
+    // to satisfy the type checker for the functions being tested.
     const mockModules: ModuleOverview[] = [
-        { id: 'mod1', slug: 'mod1', displayName: 'Module 1', librarySlug: 'lib1' },
-        { id: 'mod2', slug: 'mod2', displayName: 'Module 2', librarySlug: 'lib1' },
-        { id: 'mod3', slug: 'mod3', displayName: 'Module 3', librarySlug: 'lib2' },
+        { id: 'mod1', slug: 'mod1', displayName: 'Module 1', libraryId: 'lib1' },
+        { id: 'mod2', slug: 'mod2', displayName: 'Module 2', libraryId: 'lib1' },
+        { id: 'mod3', slug: 'mod3', displayName: 'Module 3', libraryId: 'lib2' },
         { id: 'mod4', slug: 'mod4', displayName: 'Module 4' }, // No library assigned
     ] as ModuleOverview[]
 
     const mockLibraries: Library[] = [
-        { slug: 'lib1', name: 'Library 1' },
-        { slug: 'lib2', name: 'Library 2' },
+        { id: 'lib1', name: 'Library 1' },
+        { id: 'lib2', name: 'Library 2' },
     ] as Library[]
 
     describe('groupModulesByLibrary', () => {
-        it('groups modules by library slug', () => {
+        it('groups modules by library id', () => {
             const result = groupModulesByLibrary(mockModules)
             expect(result).toEqual({
                 lib1: [mockModules[0], mockModules[1]],

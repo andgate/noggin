@@ -121,14 +121,14 @@ interface GenerateAPI {
 
 interface ModuleExplorerAPI {
     showModuleContextMenu: (libraryId: string, moduleId: string) => Promise<void>
-    showLibraryContextMenu: (librarySlug: string) => Promise<void>
+    showLibraryContextMenu: (libraryId: string) => Promise<void>
 }
 
 interface LibraryAPI {
     saveLibrary: (library: Library) => Promise<void>
-    readLibrary: (librarySlug: string) => Promise<Library>
+    readLibrary: (libraryId: string) => Promise<Library>
     readAllLibraries: () => Promise<Library[]>
-    deleteLibrary: (librarySlug: string) => Promise<void>
+    deleteLibrary: (libraryId: string) => Promise<void>
 }
 
 interface PathAPI {

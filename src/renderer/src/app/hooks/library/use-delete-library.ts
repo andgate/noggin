@@ -5,17 +5,17 @@ export function useDeleteLibrary() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async (librarySlug: string) => window.api.library.deleteLibrary(librarySlug),
+        mutationFn: async (libraryId: string) => window.api.library.deleteLibrary(libraryId),
         onError: (error) => {
             // An error occured while deleting the library
             console.error('Error deleting library:', error)
         },
-        onSuccess: (_, librarySlug) => {
+        onSuccess: (_, libraryId) => {
             // Invalidate list of all libraries and the library detail
             queryClient.invalidateQueries({ queryKey: libraryKeys.all })
 
-            // Set the detail cache immediately
-            queryClient.removeQueries({ queryKey: libraryKeys.detail(librarySlug), exact: true })
+            // Remove the detail cache immediately
+            queryClient.removeQueries({ queryKey: libraryKeys.detail(libraryId), exact: true })
         },
         onSettled: () => {
             // Error or success... doesn't matter!

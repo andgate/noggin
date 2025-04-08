@@ -4,21 +4,21 @@ import { useReadAllLibraries } from '@renderer/app/hooks/library/use-read-all-li
 import { CreateLibraryModal } from '@renderer/components/CreateLibraryModal'
 
 interface LibrarySelectorProps {
-    onSelect: (librarySlug: string | null) => void
-    selectedSlug?: string
+    onSelect: (libraryId: string | null) => void
+    selectedId?: string
 }
 
-export function LibrarySelector({ onSelect, selectedSlug }: LibrarySelectorProps) {
+export function LibrarySelector({ onSelect, selectedId }: LibrarySelectorProps) {
     const { data: libraries = [], isLoading } = useReadAllLibraries()
     const [opened, { open, close }] = useDisclosure(false)
 
     // Handle the case when a library is created
-    const handleLibraryCreated = (librarySlug: string) => {
-        onSelect(librarySlug)
+    const handleLibraryCreated = (libraryId: string) => {
+        onSelect(libraryId)
     }
 
     const data = libraries.map((lib) => ({
-        value: lib.slug, // Use slug as value
+        value: lib.id,
         label: lib.name,
     }))
 
@@ -32,7 +32,7 @@ export function LibrarySelector({ onSelect, selectedSlug }: LibrarySelectorProps
                 <Select
                     placeholder="Choose a library"
                     data={data}
-                    value={selectedSlug}
+                    value={selectedId}
                     onChange={onSelect}
                     style={{ flex: 1 }}
                     disabled={isLoading}

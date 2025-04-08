@@ -13,11 +13,11 @@ import { DirectoryPicker } from './DirectoryPicker'
 interface CreateLibraryModalProps {
     opened: boolean
     onClose: () => void
-    onCreated: (librarySlug: string) => void // Pass slug instead of path
+    onCreated: (libraryId: string) => void
 }
 
 export function CreateLibraryModal({ opened, onClose, onCreated }: CreateLibraryModalProps) {
-    const saveLibraryMutation = useSaveLibrary() // Use the mutation hook
+    const saveLibraryMutation = useSaveLibrary()
 
     const form = useForm<LibraryForm>({
         initialValues: {
@@ -43,9 +43,9 @@ export function CreateLibraryModal({ opened, onClose, onCreated }: CreateLibrary
                     message: `Library "${values.name}" has been created successfully`,
                     color: 'green',
                 })
-                onCreated(newLibrary.slug) // Pass the slug
+                onCreated(newLibrary.id)
                 onClose()
-                form.reset() // Reset form on success
+                form.reset()
             },
             onError: (error: any) => {
                 notifications.show({

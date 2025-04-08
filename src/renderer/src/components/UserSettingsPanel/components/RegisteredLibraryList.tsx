@@ -59,8 +59,8 @@ export function RegisteredLibraryList() {
         })
     }
 
-    const handleRemoveLibrary = (librarySlug: string) => {
-        deleteLibraryMutation.mutate(librarySlug, {
+    const handleRemoveLibrary = (libraryId: string) => {
+        deleteLibraryMutation.mutate(libraryId, {
             onSuccess: () => {
                 notifications.show({ title: 'Library Removed', color: 'blue', message: 'Library removed successfully' })
             },
@@ -93,7 +93,7 @@ export function RegisteredLibraryList() {
                 </Text>
             ) : (
                 libraries.map((library) => (
-                    <Paper key={library.slug} withBorder p="xs">
+                    <Paper key={library.id} withBorder p="xs">
                         <Group justify="space-between">
                             <Stack gap={2}>
                                 <Text size="sm" fw={500}>
@@ -107,8 +107,8 @@ export function RegisteredLibraryList() {
                                 variant="subtle"
                                 color="red"
                                 size="xs"
-                                onClick={() => handleRemoveLibrary(library.slug)}
-                                loading={deleteLibraryMutation.isPending && deleteLibraryMutation.variables === library.slug} // Show loading on specific button
+                                onClick={() => handleRemoveLibrary(library.id)}
+                                loading={deleteLibraryMutation.isPending && deleteLibraryMutation.variables === library.id}
                                 leftSection={<IconTrash size={16} />}
                             >
                                 Remove

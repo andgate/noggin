@@ -91,16 +91,15 @@ const api: NogginElectronAPI = {
     moduleExplorer: {
         showModuleContextMenu: (libraryId: string, moduleId: string) =>
             ipcRenderer.invoke('moduleExplorer:showModuleContextMenu', libraryId, moduleId),
-        showLibraryContextMenu: (librarySlug: string) =>
-            ipcRenderer.invoke('moduleExplorer:showLibraryContextMenu', librarySlug),
+        showLibraryContextMenu: (libraryId: string) =>
+            ipcRenderer.invoke('moduleExplorer:showLibraryContextMenu', libraryId),
     },
     library: {
         saveLibrary: (library: Library) => ipcRenderer.invoke('library:saveLibrary', library),
-        readLibrary: (libraryPath: string) =>
-            ipcRenderer.invoke('library:readLibrary', libraryPath),
+        readLibrary: (libraryId: string) => ipcRenderer.invoke('library:readLibrary', libraryId),
         readAllLibraries: () => ipcRenderer.invoke('library:readAllLibraries'),
-        deleteLibrary: (libraryPath: string) =>
-            ipcRenderer.invoke('library:deleteLibrary', libraryPath),
+        deleteLibrary: (libraryId: string) =>
+            ipcRenderer.invoke('library:deleteLibrary', libraryId),
     },
     path: {
         join: (...args: string[]) => ipcRenderer.invoke('path:join', ...args),

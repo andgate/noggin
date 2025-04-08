@@ -43,7 +43,7 @@ async function readModuleMetadataLocal(modPath: string) {
 export async function getModuleOverviews(libraryId: string): Promise<ModuleOverview[]> {
     console.log(`getModuleOverviews called for library: ${libraryId}`)
     const libraries = await readAllLibraries()
-    const library = libraries.find((lib) => lib.slug === libraryId)
+    const library = libraries.find((lib) => lib.id === libraryId)
     if (!library) {
         console.error(`Library not found: ${libraryId}`)
         throw new Error(`Library not found: ${libraryId}`)
@@ -60,7 +60,7 @@ export async function getModuleOverviews(libraryId: string): Promise<ModuleOverv
                 id: metadata.id,
                 slug: metadata.slug,
                 displayName: metadata.title,
-                librarySlug: libraryId,
+                libraryId: libraryId,
             }
         })
     )
@@ -78,7 +78,7 @@ export async function resolveModulePath(
 ): Promise<string | null> {
     console.log(`resolveModulePath called with: libraryId=${libraryId}, moduleId=${moduleId}`)
     const libraries = await readAllLibraries()
-    const library = libraries.find((lib) => lib.slug === libraryId)
+    const library = libraries.find((lib) => lib.id === libraryId)
     if (!library) {
         console.error(`Library not found: ${libraryId}`)
         throw new Error(`Library not found: ${libraryId}`)

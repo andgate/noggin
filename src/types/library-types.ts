@@ -1,12 +1,12 @@
-import { slugify } from '@noggin/shared/slug'
+import { v6 as uuidv6 } from 'uuid' // Changed import to v6
 import { z } from 'zod'
 
 export const librarySchema = z.object({
     path: z.string(),
     name: z.string(),
     description: z.string(),
+    id: z.string(),
     createdAt: z.number(),
-    slug: z.string(),
 })
 
 export type Library = z.infer<typeof librarySchema>
@@ -25,7 +25,7 @@ export function createLibrary(path: string, name: string, description: string): 
         path,
         name,
         description,
+        id: uuidv6(),
         createdAt: Date.now(),
-        slug: slugify(name),
     })
 }

@@ -40,7 +40,7 @@ describe('ModuleDiscoveryService', () => {
             name: 'Test Library',
             description: 'Test Library Description',
             createdAt: new Date('2024-01-01T00:00:00Z').getTime(),
-            slug: mockLibraryId,
+            id: mockLibraryId,
         },
     ]
 
@@ -186,13 +186,13 @@ describe('ModuleDiscoveryService', () => {
                 id: 'module1-id',
                 slug: 'module1',
                 displayName: 'Test Module',
-                librarySlug: mockLibraryId,
+                libraryId: mockLibraryId,
             })
             expect(result[1]).toEqual({
                 id: 'module2-id',
                 slug: 'module2',
                 displayName: 'Test Module',
-                librarySlug: mockLibraryId,
+                libraryId: mockLibraryId,
             })
         })
 
@@ -222,7 +222,7 @@ describe('ModuleDiscoveryService', () => {
             vi.mocked(readAllLibraries).mockResolvedValueOnce([
                 {
                     path: libraryPath,
-                    slug: libraryId,
+                    id: libraryId,
                     name: 'Test Library',
                     description: 'Test Description',
                     createdAt: new Date('2024-01-01T00:00:00Z').getTime(),

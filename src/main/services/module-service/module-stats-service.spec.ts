@@ -26,7 +26,7 @@ describe('ModuleStatsService', () => {
         name: 'Test Library',
         description: 'Test Library Description',
         createdAt: new Date('2024-01-01T00:00:00Z').getTime(),
-        slug: mockLibraryId,
+        id: mockLibraryId,
     }
 
     const mockStats: ModuleStats = {
@@ -39,7 +39,7 @@ describe('ModuleStatsService', () => {
         id: mockModuleId,
         slug: 'test-module-123',
         displayName: 'Test Module',
-        librarySlug: mockLibraryId,
+        libraryId: mockLibraryId,
     }
 
     beforeEach(() => {
@@ -155,7 +155,9 @@ describe('ModuleStatsService', () => {
             const mockStatsPath = `${mockModulePath}/.mod/stats.json`
 
             vi.mocked(readAllLibraries).mockResolvedValueOnce([mockLibrary])
-            vi.mocked(getModuleOverviews).mockResolvedValueOnce([mockModuleOverview])
+            vi.mocked(getModuleOverviews).mockResolvedValueOnce([
+                { ...mockModuleOverview, libraryId: mockLibraryId },
+            ])
             vi.mocked(resolveModulePath).mockResolvedValueOnce(mockModulePath)
             vi.mocked(getModuleStatsPath).mockReturnValueOnce(mockStatsPath)
             vi.mocked(readJsonFile).mockResolvedValueOnce(mockStats)
@@ -185,7 +187,7 @@ describe('ModuleStatsService', () => {
                     name: 'Test Library',
                     description: 'Test Library Description',
                     createdAt: new Date('2024-01-01T00:00:00Z').getTime(),
-                    slug: mockLibraryId,
+                    id: mockLibraryId,
                 },
             ]
 
@@ -195,13 +197,13 @@ describe('ModuleStatsService', () => {
                     id: mockModuleId1,
                     slug: mockModuleId1,
                     displayName: 'Test Module 1',
-                    librarySlug: mockLibraryId,
+                    libraryId: mockLibraryId,
                 },
                 {
                     id: mockModuleId2,
                     slug: mockModuleId2,
                     displayName: 'Test Module 2',
-                    librarySlug: mockLibraryId,
+                    libraryId: mockLibraryId,
                 },
             ]
 
@@ -216,7 +218,9 @@ describe('ModuleStatsService', () => {
 
             // Set up mocks for each service call
             vi.mocked(readAllLibraries).mockResolvedValueOnce(mockLibraries)
-            vi.mocked(getModuleOverviews).mockResolvedValueOnce(mockModuleOverviews)
+            vi.mocked(getModuleOverviews).mockResolvedValueOnce(
+                mockModuleOverviews.map((o) => ({ ...o, libraryId: mockLibraryId }))
+            ) // Add libraryId
 
             // Mock resolveModulePath to succeed for module1 and fail for module2
             vi.mocked(resolveModulePath).mockImplementation(async (_libId, modId) => {
@@ -243,16 +247,13 @@ describe('ModuleStatsService', () => {
             const library2 = {
                 ...mockLibrary,
                 path: '/test/library2',
-                metadata: {
-                    ...mockLibrary,
-                    slug: 'test-library2',
-                },
+                id: 'test-library2',
             }
 
             const moduleOverview2 = {
                 ...mockModuleOverview,
                 id: 'module2-id',
-                librarySlug: 'test-library2',
+                libraryId: 'test-library2',
             }
 
             const stats2 = {
@@ -266,8 +267,8 @@ describe('ModuleStatsService', () => {
 
             vi.mocked(readAllLibraries).mockResolvedValueOnce([mockLibrary, library2])
             vi.mocked(getModuleOverviews)
-                .mockResolvedValueOnce([mockModuleOverview])
-                .mockResolvedValueOnce([moduleOverview2])
+                .mockResolvedValueOnce([{ ...mockModuleOverview, libraryId: mockLibraryId }])
+                .mockResolvedValueOnce([{ ...moduleOverview2, libraryId: library2.id }])
 
             // First module mocks
             vi.mocked(resolveModulePath)

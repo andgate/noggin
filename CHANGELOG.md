@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refactored library identification system to use stable UUIDs instead of generated slugs across the application (backend, IPC, frontend hooks, UI components, documentation) to resolve instability issues and errors when library names or paths change.
 - Refactored library state management to use TanStack Query hooks and support slug-based API lookups.
 - [SPECS ONLY] Modified DESIGN.md to reserve right panel space for future AI agent integration
 - [SPECS ONLY] Updated Module Explorer documentation in DESIGN.md to reflect simplified structure

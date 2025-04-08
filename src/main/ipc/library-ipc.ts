@@ -15,13 +15,13 @@ export function registerLibraryIPC(): void {
 
     ipcMain.handle(
         'library:readLibrary',
-        (_, librarySlug: string): Promise<Library> => readLibrary(librarySlug)
+        (_, libraryId: string): Promise<Library> => readLibrary(libraryId)
     )
 
     ipcMain.handle('library:readAllLibraries', (): Promise<Library[]> => readAllLibraries())
 
     ipcMain.handle(
         'library:deleteLibrary',
-        (_, librarySlug: string): Promise<void> => deleteLibrary(librarySlug)
+        (_, libraryId: string): Promise<void> => deleteLibrary(libraryId)
     )
 }

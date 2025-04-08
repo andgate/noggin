@@ -17,10 +17,10 @@ This protocol document serves as a comprehensive specification for implementing 
 
 ### Core Objectives
 
-1. **Modular Design**: Organize learning into self-contained modules, each focused on a specific topic, with clear, accessible metadata.
-2. **Transparent Storage**: Store all data—including library metadata, quizzes, lessons, and submissions—in accessible local folders for easy review and full user autonomy.
-3. **User-Driven Learning**: Provide tools to help users track their learning progress while keeping control over what and when to study.
-4. **Simplicity in Implementation**: Focus on straightforward workflows that reduce complexity and empower users to manage their own learning processes effectively.
+1.  **Modular Design**: Organize learning into self-contained modules, each focused on a specific topic, with clear, accessible metadata.
+2.  **Transparent Storage**: Store all data—including library metadata, quizzes, lessons, and submissions—in accessible local folders for easy review and full user autonomy.
+3.  **User-Driven Learning**: Provide tools to help users track their learning progress while keeping control over what and when to study.
+4.  **Simplicity in Implementation**: Focus on straightforward workflows that reduce complexity and empower users to manage their own learning processes effectively.
 
 ---
 
@@ -46,22 +46,12 @@ Libraries serve as general-purpose containers for organizing learning content. E
 
 #### Library Identification
 
-Each library has a unique slug that serves as its identifier:
+Each library is uniquely identified by a standard Version 4 UUID (Universally Unique Identifier).
 
-- Slugs are derived from the library name using these transformations:
-    - Convert all characters to lowercase
-    - Replace any non-alphanumeric characters with underscores
-    - Remove leading and trailing underscores
-    - Truncate to 255 characters for filesystem compatibility
-- Unlike modules and learning paths, library slugs do not include timestamps
-- Applications should prevent creation of libraries with duplicate slugs
-- Slugs are used for routing, file paths, and cross-referencing
-
-Examples:
-
-- "Computer Science Fundamentals" -> "computer_science_fundamentals"
-- "C++ & Systems Programming!" -> "c_systems_programming"
-- "Web Dev (2024) - Basics" -> "web_dev_2024_basics"
+- This `id` is generated when the library is first created and stored within its `.lib/meta.json` file.
+- The UUID remains constant throughout the library's lifetime, providing a stable reference.
+- This `id` is used for all internal referencing, API calls, and routing (e.g., `/library/view/$libraryId`).
+- Example UUID: `f47ac10b-58cc-4372-a567-0e02b2c3d479`
 
 #### Library Structure
 
@@ -84,7 +74,7 @@ The `.lib/meta.json` file contains essential library information:
     "name": "Computer Science Fundamentals",
     "description": "Core CS concepts and algorithms",
     "createdAt": 1703567451722,
-    "slug": "computer_science_fundamentals"
+    "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 }
 ```
 
@@ -99,8 +89,8 @@ The `.lib/meta.json` file contains essential library information:
 
 Libraries support two types of content organization:
 
-1. **Standalone Modules**: Independent learning units directly under the library root
-2. **Learning Paths**: Structured sequences of modules with defined progression
+1.  **Standalone Modules**: Independent learning units directly under the library root
+2.  **Learning Paths**: Structured sequences of modules with defined progression
 
 This dual approach allows flexibility in content organization while maintaining clear structure when needed.
 
@@ -341,25 +331,25 @@ Users can attempt quizzes multiple times, with each attempt stored as a submissi
 
 Quiz submissions undergo a structured evaluation process that maintains the protocol's commitment to clear feedback and self-directed learning:
 
-1. **Submission Processing**
+1.  **Submission Processing**
 
     - Each submission is evaluated independently
     - Submissions remain in an ungraded state until fully processed
     - All responses receive individualized feedback
 
-2. **Evaluation Criteria**
+2.  **Evaluation Criteria**
 
     - Each question response receives a binary assessment (pass/fail)
     - Assessment includes detailed, constructive feedback
     - Overall quiz performance is calculated as a percentage of passed responses
 
-3. **Feedback Mechanism**
+3.  **Feedback Mechanism**
 
     - Learners receive specific feedback for each response
     - Feedback aims to be instructive rather than merely evaluative
     - Comments highlight areas for improvement and reinforce correct understanding
 
-4. **Grade Representation**
+4.  **Grade Representation**
     - Numerical grades reflect the percentage of successfully answered questions
     - Letter grades may be provided as an additional reference point
     - Grades serve primarily as progress indicators rather than formal assessments
@@ -424,18 +414,18 @@ Users can freely update the contents of a module by modifying its source files. 
 
 The module creation process follows these specific steps:
 
-1. **Source Selection**
+1.  **Source Selection**
 
     - User selects one or more input files (PDFs, text files, etc.)
 
-2. **Module Generation**
+2.  **Module Generation**
 
     - File contents are extracted and provided to the AI model
     - AI generates a descriptive module title based on content analysis
     - AI writes a brief overview summarizing the module contents
     - A URL-friendly slug is created from the module title
 
-3. **Module Storage**
+3.  **Module Storage**
     - User confirms the generated title and overview
     - User selects destination directory for the module
     - System creates a new directory named with the slug in the chosen destination
@@ -448,11 +438,11 @@ The module creation process follows these specific steps:
 
 The Noggin protocol uses consistent naming conventions across all components to ensure uniqueness and clarity:
 
-#### Slug Format
+#### Slug Format (for Modules and Learning Paths)
 
-All slugs in the system follow these rules:
+Slugs for modules and learning paths follow these rules:
 
-1. **Basic Transformation**:
+1.  **Basic Transformation**:
 
     - Trim leading and trailing whitespace
     - Split on whitespace into parts
@@ -463,60 +453,40 @@ All slugs in the system follow these rules:
     - Join parts with underscores
     - Truncate to 255 characters for filesystem compatibility
 
-2. **Timestamp Addition**:
+2.  **Timestamp Addition**:
 
     - Modules and learning paths append creation timestamp: `<slug>_<timestamp>`
-    - Libraries use the basic slug without timestamp
+    - Libraries are identified by a UUID (see Library Identification section) and do not use slugs.
     - Timestamp format: Compact ISO 8601 UTC (e.g., `20250217T021330Z`)
         - Format: `YYYYMMDD'T'HHMMSS'Z'`
         - No separators (dashes, colons)
         - No milliseconds
         - Always UTC timezone (Z suffix)
 
-3. **Usage Rules**:
-    - Applications must prevent creation of duplicate slugs within their scope
-    - Slugs are used for routing (e.g., /library/view/computer_science_fundamentals)
-    - Slugs serve as stable identifiers for cross-referencing
-    - File paths and directory names use these slugs directly
+3.  **Usage Rules**:
+    - Applications must prevent creation of duplicate slugs within their scope (modules/paths within a library).
+    - Slugs are used for routing modules and learning paths (e.g., `/module/view/binary_search_trees_20250217T021330Z`), while library routes use the library ID (e.g., `/library/view/f47ac10b-58cc-4372-a567-0e02b2c3d479`).
+    - Slugs serve as stable identifiers for cross-referencing modules and paths.
+    - File paths and directory names for modules and paths use these slugs directly.
 
-Examples:
+Examples (Modules/Paths):
 
-- "Computer Science Fundamentals" -> `computer_science_fundamentals`
 - "C++ & Systems Programming!" -> `c_systems_programming`
 - "Web Dev (2024) - Basics" -> `web_dev_2024_basics`
-- Library: `computer_science_fundamentals`
 - Module: `binary_search_trees_20250217T021330Z`
 - Learning Path: `introduction_to_python_20250217T021330Z`
 
 #### Usage Throughout the System
 
-- **Library Slugs**: Used for library directory names and references
-    - Example: `computer_science_fundamentals`
-- **Learning Path Slugs**: Used for learning path directory names and references
+- **Library IDs (UUIDs)**: Used for unique identification, API calls, and internal referencing.
+    - Example: `f47ac10b-58cc-4372-a567-0e02b2c3d479`
+- **Learning Path Slugs**: Used for learning path directory names and references.
     - Example: `introduction_to_python_20250217T021330Z`
-- **Module Slugs**: Used for module directory names and references
-    - Example: `python_basics_1703567489123`
-- **Quiz Slugs**: Used in quiz filenames, combining with attempt numbers for submissions
-    - Quiz file: `python_basics_quiz_1703567512456.json`
-    - Submission file: `python_basics_quiz_1703567512456_1.json`
-
-This consistent naming scheme ensures:
-
-- Unique identifiers across the system
-- Creation time tracking built into identifiers
-- Clear relationships between related components
-- Easy sorting and organization of content
-
----
+- **Module Slugs**: Used for module directory names and references.
+    - Example: `python_basics_20250217T021330Z`
+- **Quiz Slugs**: Used in quiz filenames, combining with attempt numbers for submissions.
+    - Quiz file: `python_basics_quiz_20250217T021330Z.json`
 
 ### Conclusion
 
-Noggin provides a streamlined, transparent, and modular framework for self-directed learning. Its focus on simplicity, user control, and locally stored data makes it an accessible and powerful tool for mastering any subject.
-
-Key principles of the protocol include:
-
-- **Flat, Modular Design**: Each module is independent and self-contained.
-- **Simple, Clear Structure**: Organized data storage ensures observability and ease of use.
-- **Practical Learning Tools**: Static quizzes and tracked submissions support effective learning without unnecessary complexity.
-
-The result is a system that adapts to the learner's needs while maintaining clarity and focus.
+This protocol provides a robust yet flexible framework for building modular, self-directed learning applications. By adhering to these specifications, developers can create systems that empower users with transparent data management, customizable content organization, and effective tools for tracking learning progress. The emphasis on local storage and user autonomy ensures that learners remain in full control of their educational journey.

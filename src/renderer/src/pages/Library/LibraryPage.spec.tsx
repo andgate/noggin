@@ -72,7 +72,7 @@ describe('LibraryPage', () => {
         path: '/path/to/library',
         name: 'Test Library',
         description: 'A test library description',
-        slug: 'test-library',
+        id: 'test-library',
         createdAt: 1234567890,
     }
 
@@ -81,13 +81,13 @@ describe('LibraryPage', () => {
             id: 'module-1',
             displayName: 'Module 1',
             slug: 'module-1',
-            librarySlug: 'test-library',
+            libraryId: 'test-library',
         },
         {
             id: 'module-2',
             displayName: 'Module 2',
             slug: 'module-2',
-            librarySlug: 'test-library',
+            libraryId: 'test-library',
         },
     ]
 
@@ -120,7 +120,7 @@ describe('LibraryPage', () => {
                 id: 'other-module',
                 displayName: 'Other Module',
                 slug: 'other-module',
-                librarySlug: 'other-library',
+                libraryId: 'other-library',
             },
         ]
 

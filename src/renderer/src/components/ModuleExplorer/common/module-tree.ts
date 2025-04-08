@@ -6,9 +6,9 @@ import { ModuleOverview } from '@noggin/types/module-types'
 export function groupModulesByLibrary(modules: ModuleOverview[]): Record<string, ModuleOverview[]> {
     return modules.reduce<Record<string, ModuleOverview[]>>((acc, module) => {
         // Only group modules that have a library assigned
-        if (module.librarySlug) {
-            acc[module.librarySlug] = acc[module.librarySlug] || []
-            acc[module.librarySlug].push(module)
+        if (module.libraryId) {
+            acc[module.libraryId] = acc[module.libraryId] || []
+            acc[module.libraryId].push(module)
         }
         return acc
     }, {})
@@ -20,7 +20,7 @@ export function moduleToTreeNode(module: ModuleOverview): TreeNodeData {
         value: `module-${module.id}`,
         label: module.displayName,
         nodeProps: {
-            libraryId: module.librarySlug,
+            libraryId: module.libraryId,
         },
     }
 }
@@ -28,7 +28,7 @@ export function moduleToTreeNode(module: ModuleOverview): TreeNodeData {
 // Convert library to tree node with its modules
 export function libraryToTreeNode(library: Library, modules: ModuleOverview[] = []): TreeNodeData {
     return {
-        value: `library-${library.slug}`,
+        value: `library-${library.id}`,
         label: library.name,
         children: modules.map(moduleToTreeNode),
     }
@@ -42,7 +42,7 @@ export function buildModuleTreeData(
     const modulesByLibrary = groupModulesByLibrary(moduleOverviews)
 
     const libraryNodes = libraries.map((library) =>
-        libraryToTreeNode(library, modulesByLibrary[library.slug])
+        libraryToTreeNode(library, modulesByLibrary[library.id])
     )
 
     return libraryNodes

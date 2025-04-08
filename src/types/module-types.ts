@@ -34,7 +34,7 @@ export const moduleOverviewSchema = z.object({
     id: z.string(),
     slug: z.string(),
     displayName: z.string(),
-    librarySlug: z.string(),
+    libraryId: z.string(),
 })
 
 export type ModuleOverview = z.infer<typeof moduleOverviewSchema>

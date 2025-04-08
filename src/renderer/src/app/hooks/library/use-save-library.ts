@@ -16,7 +16,7 @@ export function useSaveLibrary() {
             queryClient.invalidateQueries({ queryKey: libraryKeys.all })
 
             // Set the detail cache immediately
-            queryClient.setQueryData(libraryKeys.detail(library.slug), library)
+            queryClient.setQueryData(libraryKeys.detail(library.id), library)
         },
         onSettled: () => {
             // Error or success... doesn't matter!
