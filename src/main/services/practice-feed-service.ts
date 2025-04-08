@@ -2,7 +2,7 @@ import { Mod } from '@noggin/types/module-types'
 import { Submission } from '@noggin/types/quiz-types'
 import { getCurrentDate } from '../common/date-utils'
 import { calculatePriority, updateModuleStats } from '../common/spaced-repetition'
-import { getAllLibraries } from './library-service'
+import { readAllLibraries } from './library-service'
 import { readModuleById } from './module-service/module-core-service'
 import { getModuleOverviews } from './module-service/module-discovery-service'
 import { getModuleStats, saveModuleStats } from './module-service/module-stats-service'
@@ -64,11 +64,11 @@ export async function updateReviewSchedule(
  */
 export async function getDueModules(): Promise<Mod[]> {
     console.log(`getDueModules called - retrieving modules due for review`)
-    const libraries = await getAllLibraries()
+    const libraries = await readAllLibraries()
     const allModules: Mod[] = []
 
     for (const library of libraries) {
-        const libraryId = library.metadata.slug
+        const libraryId = library.slug
         console.log(`Processing library: ${libraryId}`)
         const overviews = await getModuleOverviews(libraryId)
         console.log(`Found ${overviews.length} modules in library ${libraryId}`)

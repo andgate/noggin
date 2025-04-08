@@ -2,7 +2,8 @@ import { createModuleId } from '@noggin/shared/slug'
 import { moduleMetadataSchema, ModuleOverview } from '@noggin/types/module-types'
 import { readJsonFile } from '../../common/fs-utils'
 import { getModuleMetadataPath, scanLibraryModulePaths } from '../../common/module-utils'
-import { getAllLibraries, getRegisteredLibraries } from '../library-service'
+import { readAllLibraries } from '../library-service'
+import { getRegisteredLibraries } from '../library-service/library-registry'
 
 /**
  * Get all module paths across all libraries
@@ -41,8 +42,8 @@ async function readModuleMetadataLocal(modPath: string) {
  */
 export async function getModuleOverviews(libraryId: string): Promise<ModuleOverview[]> {
     console.log(`getModuleOverviews called for library: ${libraryId}`)
-    const libraries = await getAllLibraries()
-    const library = libraries.find((lib) => lib.metadata.slug === libraryId)
+    const libraries = await readAllLibraries()
+    const library = libraries.find((lib) => lib.slug === libraryId)
     if (!library) {
         console.error(`Library not found: ${libraryId}`)
         throw new Error(`Library not found: ${libraryId}`)
@@ -76,8 +77,8 @@ export async function resolveModulePath(
     moduleId: string
 ): Promise<string | null> {
     console.log(`resolveModulePath called with: libraryId=${libraryId}, moduleId=${moduleId}`)
-    const libraries = await getAllLibraries()
-    const library = libraries.find((lib) => lib.metadata.slug === libraryId)
+    const libraries = await readAllLibraries()
+    const library = libraries.find((lib) => lib.slug === libraryId)
     if (!library) {
         console.error(`Library not found: ${libraryId}`)
         throw new Error(`Library not found: ${libraryId}`)

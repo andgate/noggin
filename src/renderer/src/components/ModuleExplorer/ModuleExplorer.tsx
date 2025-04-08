@@ -12,7 +12,7 @@ export function ModuleExplorer() {
     const navigate = useNavigate()
 
     // Get tree data using our custom hook
-    const { treeData, initialExpanded, refetchLibraries } = useModuleTreeData()
+    const { treeData, initialExpanded } = useModuleTreeData()
 
     // Get tree controller using our custom hook
     const tree = useModuleTree(treeData, initialExpanded)
@@ -27,7 +27,6 @@ export function ModuleExplorer() {
 
     const handleLibraryCreated = () => {
         setCreateLibraryOpen(false)
-        refetchLibraries()
     }
 
     return (

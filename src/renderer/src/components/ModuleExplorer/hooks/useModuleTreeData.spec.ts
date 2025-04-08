@@ -15,21 +15,17 @@ vi.mock('./useModuleTreeData', async () => {
 const mockLibraries: Library[] = [
     {
         path: '/path/to/library1',
-        metadata: {
-            name: 'Test Library 1',
-            description: 'Test Description 1',
-            createdAt: '2023-01-01',
-            slug: 'test-library-1',
-        },
+        name: 'Test Library 1',
+        description: 'Test Description 1',
+        createdAt: 1234567890,
+        slug: 'test-library-1',
     },
     {
         path: '/path/to/library2',
-        metadata: {
-            name: 'Test Library 2',
-            description: 'Test Description 2',
-            createdAt: '2023-01-02',
-            slug: 'test-library-2',
-        },
+        name: 'Test Library 2',
+        description: 'Test Description 2',
+        createdAt: 1234567890,
+        slug: 'test-library-2',
     },
 ]
 

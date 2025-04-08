@@ -1,19 +1,23 @@
 import { Button, Group, Modal, Stack, Text, TextInput, Textarea } from '@mantine/core'
 import { useForm, zodResolver } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
-import { slugify } from '@noggin/shared/slug'
-import { LibraryForm, libraryFormSchema } from '@noggin/types/library-types'
-import { useLibrary } from '@renderer/app/hooks/use-library'
+import {
+    Library,
+    LibraryForm,
+    createLibrary,
+    libraryFormSchema,
+} from '@noggin/types/library-types'
+import { useSaveLibrary } from '@renderer/app/hooks/library/use-save-library' // Import the new hook
 import { DirectoryPicker } from './DirectoryPicker'
 
 interface CreateLibraryModalProps {
     opened: boolean
     onClose: () => void
-    onCreated: (libraryPath: string) => void
+    onCreated: (librarySlug: string) => void // Pass slug instead of path
 }
 
 export function CreateLibraryModal({ opened, onClose, onCreated }: CreateLibraryModalProps) {
-    const { createLibrary } = useLibrary()
+    const saveLibraryMutation = useSaveLibrary() // Use the mutation hook
 
     const form = useForm<LibraryForm>({
         initialValues: {
@@ -25,27 +29,32 @@ export function CreateLibraryModal({ opened, onClose, onCreated }: CreateLibrary
     })
 
     const handleSubmit = async (values: LibraryForm) => {
-        try {
-            await createLibrary(values.path, {
-                name: values.name,
-                description: values.description,
-                createdAt: Date.now().toLocaleString(),
-                slug: slugify(values.name),
-            })
-            notifications.show({
-                title: 'Library Created',
-                message: `Library "${values.name}" has been created successfully`,
-                color: 'green',
-            })
-            onCreated(values.path)
-            onClose()
-        } catch (error: any) {
-            notifications.show({
-                title: 'Creation Failed',
-                message: error.message || 'Failed to create library',
-                color: 'red',
-            })
-        }
+        // Create the library object using the utility function
+        const newLibrary: Library = createLibrary(
+            values.path,
+            values.name,
+            values.description
+        )
+
+        saveLibraryMutation.mutate(newLibrary, {
+            onSuccess: () => {
+                notifications.show({
+                    title: 'Library Created',
+                    message: `Library "${values.name}" has been created successfully`,
+                    color: 'green',
+                })
+                onCreated(newLibrary.slug) // Pass the slug
+                onClose()
+                form.reset() // Reset form on success
+            },
+            onError: (error: any) => {
+                notifications.show({
+                    title: 'Creation Failed',
+                    message: error.message || 'Failed to create library',
+                    color: 'red',
+                })
+            },
+        })
     }
 
     return (
@@ -81,7 +90,11 @@ export function CreateLibraryModal({ opened, onClose, onCreated }: CreateLibrary
                         <Button variant="subtle" onClick={onClose}>
                             Cancel
                         </Button>
-                        <Button type="submit">Create Library</Button>
+                        <Button type="submit" loading={saveLibraryMutation.isPending}>
+                            {' '}
+                            {/* Add loading state */}
+                            Create Library
+                        </Button>
                     </Group>
                 </Stack>
             </form>

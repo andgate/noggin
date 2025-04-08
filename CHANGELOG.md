@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refactored library state management to use TanStack Query hooks and support slug-based API lookups.
 - [SPECS ONLY] Modified DESIGN.md to reserve right panel space for future AI agent integration
 - [SPECS ONLY] Updated Module Explorer documentation in DESIGN.md to reflect simplified structure
 - [SPECS ONLY] Updated Module Page layout documentation in DESIGN.md
@@ -51,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed test failures related to TanStack Router context in `LibraryPage.spec.tsx`.
+- Ensured frontend components and tests correctly handle the flat `Library` type structure.
 - Improved long text handling with truncation and ellipsis for file paths and quiz titles
 - Added tooltips with delay to show full text on hover for truncated content
 - Fixed module explorer tree nodes to keep icons and text on the same line with proper text truncation and hover tooltips
@@ -80,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed legacy `useLibrary` context hook.
 - Removed back button links in favor of breadcrumb navigation
 - Removed complex DOM mutation observers in favor of declarative component rendering
 

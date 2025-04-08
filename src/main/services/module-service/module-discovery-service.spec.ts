@@ -1,9 +1,11 @@
 import { createModuleId } from '@noggin/shared/slug'
+import { Library } from '@noggin/types/library-types'
 import { moduleMetadataSchema } from '@noggin/types/module-types'
 import * as path from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { findFiles, readJsonFile } from '../../common/fs-utils'
-import { getAllLibraries, getRegisteredLibraries } from '../library-service'
+import { readAllLibraries } from '../library-service'
+import { getRegisteredLibraries } from '../library-service/library-registry'
 import {
     getAllModulePaths,
     getModuleOverviews,
@@ -12,6 +14,7 @@ import {
 
 // Mock dependencies - only mock application modules, not system modules that are globally mocked
 vi.mock('../library-service')
+vi.mock('../library-service/library-registry')
 vi.mock('../../common/fs-utils')
 vi.mock('../../common/module-utils', async () => {
     const actual = await vi.importActual('../../common/module-utils')
@@ -31,15 +34,13 @@ describe('ModuleDiscoveryService', () => {
     const mockModuleId = 'test-module-20240101T000000Z'
     const mockModulePath = `${mockLibraryPath}/test-module`
 
-    const mockLibraries = [
+    const mockLibraries: Library[] = [
         {
             path: mockLibraryPath,
-            metadata: {
-                name: 'Test Library',
-                description: 'Test Library Description',
-                createdAt: '2024-01-01T00:00:00Z',
-                slug: mockLibraryId,
-            },
+            name: 'Test Library',
+            description: 'Test Library Description',
+            createdAt: new Date('2024-01-01T00:00:00Z').getTime(),
+            slug: mockLibraryId,
         },
     ]
 
@@ -57,7 +58,7 @@ describe('ModuleDiscoveryService', () => {
     beforeEach(() => {
         vi.resetAllMocks()
         vi.mocked(getRegisteredLibraries).mockResolvedValue([mockLibraryPath])
-        vi.mocked(getAllLibraries).mockResolvedValue(mockLibraries)
+        vi.mocked(readAllLibraries).mockResolvedValue(mockLibraries)
 
         // Set up path.dirname to convert .mod paths to module paths
         vi.mocked(path.dirname).mockImplementation((p) => {
@@ -175,7 +176,7 @@ describe('ModuleDiscoveryService', () => {
             const result = await getModuleOverviews(mockLibraryId)
 
             // Assert
-            expect(getAllLibraries).toHaveBeenCalled()
+            expect(readAllLibraries).toHaveBeenCalled()
             expect(findFiles).toHaveBeenCalledWith('*/.mod', {
                 cwd: mockLibraryPath,
                 absolute: true,
@@ -197,7 +198,7 @@ describe('ModuleDiscoveryService', () => {
 
         it('should throw error if library not found', async () => {
             // Arrange
-            vi.mocked(getAllLibraries).mockResolvedValueOnce([])
+            vi.mocked(readAllLibraries).mockResolvedValueOnce([])
 
             // Act & Assert
             await expect(getModuleOverviews('non-existent')).rejects.toThrow(
@@ -218,15 +219,13 @@ describe('ModuleDiscoveryService', () => {
             const modulePath = '/path/to/library/test-module-20240101T123456Z'
 
             // Mock getAllLibraries
-            vi.mocked(getAllLibraries).mockResolvedValueOnce([
+            vi.mocked(readAllLibraries).mockResolvedValueOnce([
                 {
                     path: libraryPath,
-                    metadata: {
-                        slug: libraryId,
-                        name: 'Test Library',
-                        description: 'Test Description',
-                        createdAt: '2024-01-01T00:00:00Z',
-                    },
+                    slug: libraryId,
+                    name: 'Test Library',
+                    description: 'Test Description',
+                    createdAt: new Date('2024-01-01T00:00:00Z').getTime(),
                 },
             ])
 
@@ -259,7 +258,7 @@ describe('ModuleDiscoveryService', () => {
 
         it('should throw error if library not found', async () => {
             // Arrange
-            vi.mocked(getAllLibraries).mockResolvedValueOnce([])
+            vi.mocked(readAllLibraries).mockResolvedValueOnce([])
 
             // Act & Assert
             await expect(resolveModulePath('non-existent', mockModuleId)).rejects.toThrow(

@@ -19,8 +19,8 @@ describe('module-tree utilities', () => {
     ] as ModuleOverview[]
 
     const mockLibraries: Library[] = [
-        { metadata: { slug: 'lib1', name: 'Library 1' } },
-        { metadata: { slug: 'lib2', name: 'Library 2' } },
+        { slug: 'lib1', name: 'Library 1' },
+        { slug: 'lib2', name: 'Library 2' },
     ] as Library[]
 
     describe('groupModulesByLibrary', () => {

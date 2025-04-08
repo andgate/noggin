@@ -10,7 +10,7 @@ interface LibraryPageProps {
 }
 
 export function LibraryPage({ library, modules }: LibraryPageProps) {
-    const libraryModules = modules.filter((module) => module.librarySlug === library.metadata.slug)
+    const libraryModules = modules.filter((module) => module.librarySlug === library.slug)
     const navigate = useNavigate()
 
     // Define which header actions to enable
@@ -25,11 +25,11 @@ export function LibraryPage({ library, modules }: LibraryPageProps) {
 
     return (
         <>
-            <AppHeader title={library.metadata.name} actions={headerActions} />
+            <AppHeader title={library.name} actions={headerActions} />
 
             <Stack p="md">
-                <Title order={2}>{library.metadata.name}</Title>
-                <Text c="dimmed">{library.metadata.description}</Text>
+                <Title order={2}>{library.name}</Title>
+                <Text c="dimmed">{library.description}</Text>
 
                 <Title order={3} mt="xl">
                     Modules

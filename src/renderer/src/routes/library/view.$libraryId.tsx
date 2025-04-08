@@ -1,22 +1,12 @@
 import { LibraryPage } from '@renderer/pages/Library'
+import { useReadLibrary } from '@renderer/app/hooks/library/use-read-library' // Import the hook
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
+import { Loader } from '@mantine/core' // Import Loader for loading state
 
 export const Route = createFileRoute('/library/view/$libraryId')({
     component: LibraryViewRoot,
 })
-
-function libraryQueryOptions(libraryId: string) {
-    return queryOptions({
-        queryKey: ['library', libraryId],
-        queryFn: async () => {
-            const libraries = await window.api.library.getAllLibraries()
-            const library = libraries.find((lib) => lib.metadata.slug === libraryId)
-            if (!library) throw new Error(`Library not found: ${libraryId}`)
-            return library
-        },
-    })
-}
 
 function moduleQueryOptions(libraryId: string) {
     return queryOptions({
@@ -30,19 +20,25 @@ function LibraryViewRoot() {
 
     const {
         data: library,
-        isPending: isLibraryLoading,
+        isLoading: isLibraryLoading,
+        isError: isLibraryError,
         error: libraryError,
-    } = useQuery(libraryQueryOptions(libraryId))
+    } = useReadLibrary(libraryId)
     const { data: modules = [], isPending: isModulesLoading } = useQuery(
         moduleQueryOptions(libraryId)
     )
 
     if (isLibraryLoading || isModulesLoading) {
-        return <div>Loading...</div>
+        return <Loader />
     }
 
-    if (libraryError) {
+    if (isLibraryError) {
         return <div>Error: {libraryError.message}</div>
+    }
+
+    // Handle case where library might be undefined after loading if not found
+    if (!library) {
+        return <div>Library not found.</div>
     }
 
     return <LibraryPage library={library} modules={modules} />

@@ -1,39 +1,24 @@
 import { Button, Group, Loader, Modal, Paper, Stack, Text, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useDisclosure } from '@mantine/hooks'
-import { LibraryForm, libraryFormSchema, LibraryMetadata } from '@noggin/types/library-types'
-import { useLibrary } from '@renderer/app/hooks/use-library'
-import { useUserSettings } from '@renderer/app/hooks/use-user-settings'
+import { notifications } from '@mantine/notifications'
+import {
+    Library,
+    LibraryForm,
+    createLibrary,
+    libraryFormSchema,
+} from '@noggin/types/library-types'
+import { useDeleteLibrary } from '@renderer/app/hooks/library/use-delete-library'
+import { useReadAllLibraries } from '@renderer/app/hooks/library/use-read-all-libraries'
+import { useSaveLibrary } from '@renderer/app/hooks/library/use-save-library'
 import { DirectoryPicker } from '@renderer/components/DirectoryPicker'
 import { IconTrash } from '@tabler/icons-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
 
 export function RegisteredLibraryList() {
-    const { settings, setUserSettings, isLoadingUserSettings } = useUserSettings()
-    const { registerLibrary, unregisterLibrary, createLibrary, readLibraryMetadata } = useLibrary()
-    const [libraryMetadata, setLibraryMetadata] = useState<Record<string, LibraryMetadata>>({})
+    const { data: libraries = [], isLoading } = useReadAllLibraries()
+    const saveLibraryMutation = useSaveLibrary()
+    const deleteLibraryMutation = useDeleteLibrary()
     const [opened, { open, close }] = useDisclosure(false)
-
-    const libraryPaths = useMemo(() => settings?.libraryPaths || [], [settings])
-
-    useEffect(() => {
-        const loadLibraryMetadata = async () => {
-            if (!libraryPaths.length) return
-
-            const metadata: Record<string, LibraryMetadata> = {}
-            for (const path of libraryPaths) {
-                try {
-                    const libMetadata = await readLibraryMetadata(path)
-                    metadata[path] = libMetadata
-                } catch (error) {
-                    console.error(`Failed to load library metadata for ${path}:`, error)
-                }
-            }
-            setLibraryMetadata(metadata)
-        }
-
-        loadLibraryMetadata()
-    }, [libraryPaths, readLibraryMetadata])
 
     const form = useForm<LibraryForm>({
         initialValues: {
@@ -51,49 +36,41 @@ export function RegisteredLibraryList() {
         },
     })
 
-    const handleCreateLibrary = useCallback(
-        async (values: LibraryForm) => {
-            try {
-                await createLibrary(values.path, {
-                    name: values.name,
-                    description: values.description,
-                    createdAt: new Date().toISOString(),
-                    slug: values.name.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
-                })
+    const handleCreateLibrary = (values: LibraryForm) => {
+        const newLibrary: Library = createLibrary(values.path, values.name, values.description)
 
-                const updatedPaths = [...(settings?.libraryPaths || []), values.path]
-                await registerLibrary(values.path)
-                setUserSettings({
-                    libraryPaths: updatedPaths,
+        saveLibraryMutation.mutate(newLibrary, {
+            onSuccess: () => {
+                notifications.show({
+                    title: 'Library Added',
+                    message: `Library "${values.name}" has been added successfully`,
+                    color: 'green',
                 })
-
                 form.reset()
                 close()
-            } catch (error) {
-                console.error('Failed to create library:', error)
-            }
-        },
-        [settings, registerLibrary, setUserSettings, createLibrary, close, form]
-    )
-
-    const handleRemoveLibrary = useCallback(
-        async (libraryPath: string) => {
-            try {
-                await unregisterLibrary(libraryPath)
-                const updatedPaths = (settings?.libraryPaths || []).filter(
-                    (path) => path !== libraryPath
-                )
-                setUserSettings({
-                    libraryPaths: updatedPaths,
+            },
+            onError: (error: any) => {
+                notifications.show({
+                    title: 'Failed to Add Library',
+                    message: error.message || 'An unknown error occurred',
+                    color: 'red',
                 })
-            } catch (error) {
-                console.error('Failed to unregister library:', error)
-            }
-        },
-        [settings, setUserSettings, unregisterLibrary]
-    )
+            },
+        })
+    }
 
-    if (isLoadingUserSettings) {
+    const handleRemoveLibrary = (librarySlug: string) => {
+        deleteLibraryMutation.mutate(librarySlug, {
+            onSuccess: () => {
+                notifications.show({ title: 'Library Removed', color: 'blue', message: 'Library removed successfully' })
+            },
+            onError: (error: any) => {
+                notifications.show({ title: 'Failed to Remove Library', color: 'red', message: error.message || 'An unknown error occurred' })
+            },
+        })
+    }
+
+    if (isLoading) {
         return (
             <Stack align="center" py="md">
                 <Loader size="sm" />
@@ -110,27 +87,28 @@ export function RegisteredLibraryList() {
                 Registered Libraries
             </Text>
 
-            {libraryPaths.length === 0 ? (
+            {libraries.length === 0 ? (
                 <Text size="sm" c="dimmed" ta="center" py="md">
                     No libraries registered yet
                 </Text>
             ) : (
-                libraryPaths.map((path) => (
-                    <Paper key={path} withBorder p="xs">
+                libraries.map((library) => (
+                    <Paper key={library.slug} withBorder p="xs">
                         <Group justify="space-between">
                             <Stack gap={2}>
                                 <Text size="sm" fw={500}>
-                                    {libraryMetadata[path]?.name || 'Loading...'}
+                                    {library.name}
                                 </Text>
                                 <Text size="xs" c="dimmed">
-                                    {path}
+                                    {library.path}
                                 </Text>
                             </Stack>
                             <Button
                                 variant="subtle"
                                 color="red"
                                 size="xs"
-                                onClick={() => handleRemoveLibrary(path)}
+                                onClick={() => handleRemoveLibrary(library.slug)}
+                                loading={deleteLibraryMutation.isPending && deleteLibraryMutation.variables === library.slug} // Show loading on specific button
                                 leftSection={<IconTrash size={16} />}
                             >
                                 Remove
@@ -172,7 +150,7 @@ export function RegisteredLibraryList() {
                             <Button variant="subtle" onClick={close}>
                                 Cancel
                             </Button>
-                            <Button type="submit">Create Library</Button>
+                            <Button type="submit" loading={saveLibraryMutation.isPending}>Create Library</Button>
                         </Group>
                     </Stack>
                 </form>

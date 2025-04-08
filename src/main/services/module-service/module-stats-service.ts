@@ -1,7 +1,7 @@
 import { ModuleStats, moduleStatsSchema } from '@noggin/types/module-types'
 import { readJsonFile, writeJsonFile } from '../../common/fs-utils'
 import { createModuleStats, getModuleStatsPath } from '../../common/module-utils'
-import { getAllLibraries } from '../library-service'
+import { readAllLibraries } from '../library-service'
 import { getModuleOverviews, resolveModulePath } from './module-discovery-service'
 
 /**
@@ -57,11 +57,11 @@ export async function saveModuleStats(
  * Get all module stats from all libraries
  */
 export async function getAllModuleStats(): Promise<ModuleStats[]> {
-    const libraries = await getAllLibraries()
+    const libraries = await readAllLibraries()
     const statsPromises: Promise<ModuleStats | null>[] = []
 
     for (const library of libraries) {
-        const libraryId = library.metadata.slug
+        const libraryId = library.slug
         const overviews = await getModuleOverviews(libraryId)
 
         for (const overview of overviews) {

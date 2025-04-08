@@ -1,18 +1,14 @@
+import { slugify } from '@noggin/shared/slug'
 import { z } from 'zod'
-
-export const libraryMetadataSchema = z.object({
-    name: z.string(),
-    description: z.string(),
-    createdAt: z.string(),
-    slug: z.string(),
-})
 
 export const librarySchema = z.object({
     path: z.string(),
-    metadata: libraryMetadataSchema,
+    name: z.string(),
+    description: z.string(),
+    createdAt: z.number(),
+    slug: z.string(),
 })
 
-export type LibraryMetadata = z.infer<typeof libraryMetadataSchema>
 export type Library = z.infer<typeof librarySchema>
 
 // For the library selection/creation UI
@@ -23,3 +19,13 @@ export const libraryFormSchema = z.object({
 })
 
 export type LibraryForm = z.infer<typeof libraryFormSchema>
+
+export function createLibrary(path: string, name: string, description: string): Library {
+    return librarySchema.parse({
+        path,
+        name,
+        description,
+        createdAt: Date.now(),
+        slug: slugify(name),
+    })
+}

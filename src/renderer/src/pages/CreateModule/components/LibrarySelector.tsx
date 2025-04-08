@@ -1,37 +1,25 @@
-import { Button, Group, Select, Stack, Text } from '@mantine/core'
+import { Button, Group, Loader, Select, Stack, Text } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { Library } from '@noggin/types/library-types'
-import { useLibrary } from '@renderer/app/hooks/use-library'
+import { useReadAllLibraries } from '@renderer/app/hooks/library/use-read-all-libraries'
 import { CreateLibraryModal } from '@renderer/components/CreateLibraryModal'
-import { useEffect, useState } from 'react'
 
 interface LibrarySelectorProps {
-    onSelect: (libraryPath: string | null) => void
-    selectedPath?: string
+    onSelect: (librarySlug: string | null) => void
+    selectedSlug?: string
 }
 
-export function LibrarySelector({ onSelect, selectedPath }: LibrarySelectorProps) {
-    const [libraries, setLibraries] = useState<Library[]>([])
+export function LibrarySelector({ onSelect, selectedSlug }: LibrarySelectorProps) {
+    const { data: libraries = [], isLoading } = useReadAllLibraries()
     const [opened, { open, close }] = useDisclosure(false)
-    const { getAllLibraries } = useLibrary()
 
-    useEffect(() => {
-        loadLibraries()
-    }, [])
-
-    const loadLibraries = async () => {
-        const libs = await getAllLibraries()
-        setLibraries(libs)
-    }
-
-    const handleLibraryCreated = async (libraryPath: string) => {
-        await loadLibraries()
-        onSelect(libraryPath)
+    // Handle the case when a library is created
+    const handleLibraryCreated = (librarySlug: string) => {
+        onSelect(librarySlug)
     }
 
     const data = libraries.map((lib) => ({
-        value: lib.path,
-        label: lib.metadata.name,
+        value: lib.slug, // Use slug as value
+        label: lib.name,
     }))
 
     return (
@@ -40,12 +28,14 @@ export function LibrarySelector({ onSelect, selectedPath }: LibrarySelectorProps
                 Select Library
             </Text>
             <Group>
+                {isLoading && <Loader size="xs" />}
                 <Select
                     placeholder="Choose a library"
                     data={data}
-                    value={selectedPath}
+                    value={selectedSlug}
                     onChange={onSelect}
                     style={{ flex: 1 }}
+                    disabled={isLoading}
                 />
                 <Button variant="light" onClick={open}>
                     Create New

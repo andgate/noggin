@@ -28,8 +28,8 @@ export function moduleToTreeNode(module: ModuleOverview): TreeNodeData {
 // Convert library to tree node with its modules
 export function libraryToTreeNode(library: Library, modules: ModuleOverview[] = []): TreeNodeData {
     return {
-        value: `library-${library.metadata.slug}`,
-        label: library.metadata.name,
+        value: `library-${library.slug}`,
+        label: library.name,
         children: modules.map(moduleToTreeNode),
     }
 }
@@ -42,7 +42,7 @@ export function buildModuleTreeData(
     const modulesByLibrary = groupModulesByLibrary(moduleOverviews)
 
     const libraryNodes = libraries.map((library) =>
-        libraryToTreeNode(library, modulesByLibrary[library.metadata.slug])
+        libraryToTreeNode(library, modulesByLibrary[library.slug])
     )
 
     return libraryNodes

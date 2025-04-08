@@ -1,8 +1,9 @@
+import { Library } from '@noggin/types/library-types'
 import { ModuleStats, moduleStatsSchema } from '@noggin/types/module-types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readJsonFile, writeJsonFile } from '../../common/fs-utils'
 import { createModuleStats, getModuleStatsPath } from '../../common/module-utils'
-import { getAllLibraries } from '../library-service'
+import { readAllLibraries } from '../library-service'
 import { getModuleOverviews, resolveModulePath } from './module-discovery-service'
 import { getAllModuleStats, getModuleStats, saveModuleStats } from './module-stats-service'
 
@@ -20,15 +21,12 @@ describe('ModuleStatsService', () => {
     const mockModulePath = '/path/to/library/test-module-123'
     const mockStatsPath = '/path/to/library/test-module-123/.mod/stats.json'
 
-    const mockLibrary = {
+    const mockLibrary: Library = {
         path: '/path/to/library',
-        metadata: {
-            name: 'Test Library',
-            description: 'Test Library Description',
-            createdAt: '2024-01-01T00:00:00Z',
-            slug: mockLibraryId,
-        },
-        modules: [],
+        name: 'Test Library',
+        description: 'Test Library Description',
+        createdAt: new Date('2024-01-01T00:00:00Z').getTime(),
+        slug: mockLibraryId,
     }
 
     const mockStats: ModuleStats = {
@@ -156,7 +154,7 @@ describe('ModuleStatsService', () => {
             // Arrange
             const mockStatsPath = `${mockModulePath}/.mod/stats.json`
 
-            vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary])
+            vi.mocked(readAllLibraries).mockResolvedValueOnce([mockLibrary])
             vi.mocked(getModuleOverviews).mockResolvedValueOnce([mockModuleOverview])
             vi.mocked(resolveModulePath).mockResolvedValueOnce(mockModulePath)
             vi.mocked(getModuleStatsPath).mockReturnValueOnce(mockStatsPath)
@@ -166,7 +164,7 @@ describe('ModuleStatsService', () => {
             const result = await getAllModuleStats()
 
             // Assert
-            expect(getAllLibraries).toHaveBeenCalled()
+            expect(readAllLibraries).toHaveBeenCalled()
             expect(getModuleOverviews).toHaveBeenCalledWith(mockLibraryId)
             expect(resolveModulePath).toHaveBeenCalledWith(mockLibraryId, mockModuleId)
             expect(getModuleStatsPath).toHaveBeenCalledWith(mockModulePath)
@@ -181,15 +179,13 @@ describe('ModuleStatsService', () => {
             const mockModulePath1 = '/test/library/test-module-1'
 
             // Mock library with correct structure
-            const mockLibraries = [
+            const mockLibraries: Library[] = [
                 {
                     path: '/test/library',
-                    metadata: {
-                        name: 'Test Library',
-                        description: 'Test Library Description',
-                        createdAt: '2024-01-01T00:00:00Z',
-                        slug: mockLibraryId,
-                    },
+                    name: 'Test Library',
+                    description: 'Test Library Description',
+                    createdAt: new Date('2024-01-01T00:00:00Z').getTime(),
+                    slug: mockLibraryId,
                 },
             ]
 
@@ -219,7 +215,7 @@ describe('ModuleStatsService', () => {
             const mockStatsPath1 = `${mockModulePath1}/.mod/stats.json`
 
             // Set up mocks for each service call
-            vi.mocked(getAllLibraries).mockResolvedValueOnce(mockLibraries)
+            vi.mocked(readAllLibraries).mockResolvedValueOnce(mockLibraries)
             vi.mocked(getModuleOverviews).mockResolvedValueOnce(mockModuleOverviews)
 
             // Mock resolveModulePath to succeed for module1 and fail for module2
@@ -248,7 +244,7 @@ describe('ModuleStatsService', () => {
                 ...mockLibrary,
                 path: '/test/library2',
                 metadata: {
-                    ...mockLibrary.metadata,
+                    ...mockLibrary,
                     slug: 'test-library2',
                 },
             }
@@ -268,7 +264,7 @@ describe('ModuleStatsService', () => {
             const mockStatsPath1 = `${mockModulePath}/.mod/stats.json`
             const mockStatsPath2 = `${mockModulePath2}/.mod/stats.json`
 
-            vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary, library2])
+            vi.mocked(readAllLibraries).mockResolvedValueOnce([mockLibrary, library2])
             vi.mocked(getModuleOverviews)
                 .mockResolvedValueOnce([mockModuleOverview])
                 .mockResolvedValueOnce([moduleOverview2])
@@ -290,7 +286,7 @@ describe('ModuleStatsService', () => {
             const result = await getAllModuleStats()
 
             // Assert
-            expect(getAllLibraries).toHaveBeenCalled()
+            expect(readAllLibraries).toHaveBeenCalled()
             expect(getModuleOverviews).toHaveBeenCalledTimes(2)
             expect(resolveModulePath).toHaveBeenCalledTimes(2)
             expect(getModuleStatsPath).toHaveBeenCalledTimes(2)

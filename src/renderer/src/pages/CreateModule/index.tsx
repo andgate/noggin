@@ -13,6 +13,7 @@ import { notifications } from '@mantine/notifications'
 import { SimpleFile } from '@noggin/types/electron-types'
 import { Mod, ModuleMetadata } from '@noggin/types/module-types'
 import { useModule } from '@renderer/app/hooks/use-module'
+import { useReadAllLibraries } from '@renderer/app/hooks/library/use-read-all-libraries'
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useState } from 'react'
 import { LibrarySelector } from './components/LibrarySelector'
@@ -37,7 +38,7 @@ export function ProcessingView() {
 }
 
 export function ReviewView({ data, onDataChange, onBack, onSave }) {
-    const [selectedLibrary, setSelectedLibrary] = useState<string | null>(null)
+    const [selectedLibrarySlug, setSelectedLibrarySlug] = useState<string | null>(null) // Store slug
 
     return (
         <Stack gap="md" style={{ maxWidth: rem(600), margin: '0 auto' }}>
@@ -59,15 +60,15 @@ export function ReviewView({ data, onDataChange, onBack, onSave }) {
             </Text>
 
             <LibrarySelector
-                onSelect={setSelectedLibrary}
-                selectedPath={selectedLibrary || undefined}
+                onSelect={setSelectedLibrarySlug} // Set slug state
+                selectedSlug={selectedLibrarySlug || undefined} // Pass slug prop
             />
 
             <Group justify="flex-end" mt="xl">
                 <Button variant="subtle" onClick={onBack}>
                     Back
                 </Button>
-                <Button onClick={() => onSave(selectedLibrary)} disabled={!selectedLibrary}>
+                <Button onClick={() => onSave(selectedLibrarySlug)} disabled={!selectedLibrarySlug}> {/* Pass slug to handler */}
                     Save Module
                 </Button>
             </Group>
@@ -83,9 +84,10 @@ export function CreateModulePage() {
     const [isLoading, setIsLoading] = useState(false)
     const moduleService = useModule()
     const { analyzeContent } = useModuleGenerator()
+    const { data: allLibraries } = useReadAllLibraries() // Get libraries to find path from slug
 
     const saveModule = useCallback(
-        async (libraryPath: string, moduleData: GeneratedModule) => {
+        async (libraryPath: string, librarySlug: string, moduleData: GeneratedModule) => { // Accept slug
             try {
                 console.log('Starting saveModule with:', { libraryPath, moduleData })
 
@@ -133,7 +135,7 @@ export function CreateModulePage() {
                     overview: moduleData.overview,
                     createdAt: now,
                     updatedAt: now,
-                    libraryId: await getLibraryIdFromPath(libraryPath),
+                    libraryId: librarySlug, // Use the passed slug
                 }
 
                 // Create the initial module structure
@@ -221,16 +223,26 @@ export function CreateModulePage() {
         }
     }
 
-    const handleSave = async (selectedPath: string) => {
-        console.log('📋 handleSave called with path:', selectedPath)
+    const handleSave = async (selectedLibrarySlug: string | null) => {
+        console.log('📋 handleSave called with slug:', selectedLibrarySlug)
         if (!generatedData) {
             console.error('📋 No generatedData available!')
             return
         }
+        if (!selectedLibrarySlug) {
+            notifications.show({ title: 'Library Required', message: 'Please select a library.', color: 'yellow' })
+            return
+        }
+
+        // Find the library details (including path) using the slug
+        const selectedLibrary = allLibraries?.find(lib => lib.slug === selectedLibrarySlug)
+        if (!selectedLibrary) {
+            notifications.show({ title: 'Error', message: `Could not find details for library: ${selectedLibrarySlug}`, color: 'red' })
+            return
+        }
 
         try {
-            console.log('📋 About to call saveModule with:', { selectedPath, generatedData })
-            await saveModule(selectedPath, generatedData)
+            await saveModule(selectedLibrary.path, selectedLibrarySlug, generatedData) // Pass path and slug
             console.log('📋 saveModule completed successfully')
 
             notifications.show({
@@ -259,20 +271,6 @@ export function CreateModulePage() {
 
     const handleClose = () => {
         navigate({ to: '/' })
-    }
-
-    // Add a helper function to get library ID from path
-    const getLibraryIdFromPath = async (libraryPath: string): Promise<string> => {
-        try {
-            const library = await window.api.library.readLibrary(libraryPath)
-            if (!library || !library.metadata || !library.metadata.slug) {
-                throw new Error(`Could not determine library ID for path: ${libraryPath}`)
-            }
-            return library.metadata.slug
-        } catch (error) {
-            console.error('Error getting library ID from path:', error)
-            throw new Error(`Could not determine library ID for path: ${libraryPath}`)
-        }
     }
 
     return (

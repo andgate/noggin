@@ -1,9 +1,10 @@
+import { Library } from '@noggin/types/library-types'
 import { Mod, ModuleStats } from '@noggin/types/module-types'
 import { Submission } from '@noggin/types/quiz-types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as dateUtils from '../common/date-utils'
 import * as spacedRepetition from '../common/spaced-repetition'
-import { getAllLibraries } from './library-service'
+import { readAllLibraries } from './library-service'
 import { readModuleById } from './module-service/module-core-service'
 import { getModuleOverviews } from './module-service/module-discovery-service'
 import * as moduleStatsService from './module-service/module-stats-service'
@@ -22,15 +23,12 @@ describe('PracticeFeedService', () => {
     const mockLibraryId = 'test-library'
     const mockModuleId = 'test-module-20240101T000000Z'
 
-    const mockLibrary = {
+    const mockLibrary: Library = {
         path: '/test/library',
-        metadata: {
-            name: 'Test Library',
-            description: 'Test Description',
-            createdAt: '2024-01-01T00:00:00Z',
-            slug: mockLibraryId,
-        },
-        modules: [],
+        name: 'Test Library',
+        description: 'Test Description',
+        createdAt: new Date('2024-01-01T00:00:00Z').getTime(),
+        slug: mockLibraryId,
     }
 
     const mockModuleOverview = {
@@ -270,7 +268,7 @@ describe('PracticeFeedService', () => {
 
             const moduleWithDueStats = { ...mockModule, stats: dueStats }
 
-            vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary])
+            vi.mocked(readAllLibraries).mockResolvedValueOnce([mockLibrary])
             vi.mocked(getModuleOverviews).mockResolvedValueOnce([mockModuleOverview])
             vi.mocked(readModuleById).mockResolvedValueOnce(moduleWithDueStats)
             vi.mocked(moduleStatsService.getModuleStats).mockResolvedValueOnce(dueStats)
@@ -292,7 +290,7 @@ describe('PracticeFeedService', () => {
 
             const moduleWithFutureStats = { ...mockModule, stats: futureStats }
 
-            vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary])
+            vi.mocked(readAllLibraries).mockResolvedValueOnce([mockLibrary])
             vi.mocked(getModuleOverviews).mockResolvedValueOnce([mockModuleOverview])
             vi.mocked(readModuleById).mockResolvedValueOnce(moduleWithFutureStats)
             vi.mocked(moduleStatsService.getModuleStats).mockResolvedValueOnce(futureStats)
@@ -368,7 +366,7 @@ describe('PracticeFeedService', () => {
                 },
             ]
 
-            vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary])
+            vi.mocked(readAllLibraries).mockResolvedValueOnce([mockLibrary])
             vi.mocked(getModuleOverviews).mockResolvedValueOnce(mockModuleOverviews)
 
             // Set up module reading mocks
@@ -396,7 +394,7 @@ describe('PracticeFeedService', () => {
         it('should handle errors when reading modules', async () => {
             vi.mocked(dateUtils.getCurrentDate).mockReturnValue(new Date('2024-01-05T00:00:00Z'))
 
-            vi.mocked(getAllLibraries).mockResolvedValueOnce([mockLibrary])
+            vi.mocked(readAllLibraries).mockResolvedValueOnce([mockLibrary])
             vi.mocked(getModuleOverviews).mockResolvedValueOnce([mockModuleOverview])
             vi.mocked(readModuleById).mockRejectedValueOnce(new Error('Failed to read module'))
 

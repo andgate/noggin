@@ -1,46 +1,27 @@
-import { Library, LibraryMetadata } from '@noggin/types/library-types'
+import { Library } from '@noggin/types/library-types'
 import { ipcMain } from 'electron'
 import {
-    createLibrary,
-    getAllLibraries,
-    getRegisteredLibraries,
+    deleteLibrary,
+    readAllLibraries,
     readLibrary,
-    readLibraryMetadata,
-    registerLibrary,
-    unregisterLibrary,
+    saveLibrary,
 } from '../services/library-service'
 
 export function registerLibraryIPC(): void {
     ipcMain.handle(
-        'library:getRegisteredLibraries',
-        (): Promise<string[]> => getRegisteredLibraries()
-    )
-
-    ipcMain.handle(
-        'library:registerLibrary',
-        (_, libraryPath: string): Promise<void> => registerLibrary(libraryPath)
-    )
-
-    ipcMain.handle(
-        'library:unregisterLibrary',
-        (_, libraryPath: string): Promise<void> => unregisterLibrary(libraryPath)
-    )
-
-    ipcMain.handle(
-        'library:createLibrary',
-        (_, libraryPath: string, metadata: LibraryMetadata): Promise<void> =>
-            createLibrary(libraryPath, metadata)
+        'library:saveLibrary',
+        (_, library: Library): Promise<void> => saveLibrary(library)
     )
 
     ipcMain.handle(
         'library:readLibrary',
-        (_, libraryPath: string): Promise<Library> => readLibrary(libraryPath)
+        (_, librarySlug: string): Promise<Library> => readLibrary(librarySlug)
     )
+
+    ipcMain.handle('library:readAllLibraries', (): Promise<Library[]> => readAllLibraries())
 
     ipcMain.handle(
-        'library:readLibraryMetadata',
-        (_, libraryPath: string): Promise<LibraryMetadata> => readLibraryMetadata(libraryPath)
+        'library:deleteLibrary',
+        (_, librarySlug: string): Promise<void> => deleteLibrary(librarySlug)
     )
-
-    ipcMain.handle('library:getAllLibraries', (): Promise<Library[]> => getAllLibraries())
 }
