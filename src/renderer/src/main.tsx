@@ -6,6 +6,7 @@ import {
     createHashHistory,
     createRouter,
 } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { DefaultCatchBoundary } from './components/layout/DefaultCatchBoundary'
@@ -21,6 +22,9 @@ import { NotFound } from './components/layout/NotFound'
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 
+// Create a single QueryClient instance
+const queryClient = new QueryClient()
+
 const hashHistory = import.meta.env.DEV ? createBrowserHistory() : createHashHistory()
 
 // Create a new router instance
@@ -30,6 +34,9 @@ const router = createRouter({
     defaultPreload: 'intent',
     defaultErrorComponent: DefaultCatchBoundary,
     defaultNotFoundComponent: () => <NotFound />,
+    context: {
+        queryClient,
+    },
 })
 
 // Register the router instance for type safety
@@ -45,7 +52,9 @@ if (!rootElement.innerHTML) {
     const root = ReactDOM.createRoot(rootElement)
     root.render(
         <StrictMode>
-            <RouterProvider router={router} />
+            <QueryClientProvider client={queryClient}>
+                <RouterProvider router={router} />
+            </QueryClientProvider>
         </StrictMode>
     )
 }

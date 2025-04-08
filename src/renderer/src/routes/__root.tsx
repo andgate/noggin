@@ -5,18 +5,16 @@ import { Notifications } from '@mantine/notifications'
 import { PracticeFeedProvider } from '@renderer/app/hooks/use-practice-feed'
 import { UserSettingsProvider } from '@renderer/app/hooks/use-user-settings'
 import { AppLayout } from '@renderer/components/layout/AppLayout'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createRootRoute, Outlet } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/router-devtools'
+import { QueryClient } from '@tanstack/react-query'
+import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
+import { ReactQueryDevtools  } from '@tanstack/react-query-devtools'
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { type ReactNode } from 'react'
 import { DefaultCatchBoundary } from '../components/layout/DefaultCatchBoundary'
 import { NotFound } from '../components/layout/NotFound'
 import { theme } from '../theme'
 
-// Create a client
-const queryClient = new QueryClient()
-
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
     // meta: () => [
     //     {
     //         charSet: 'utf-8',
@@ -61,6 +59,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             <RootProvider>
                 <AppLayout>{children}</AppLayout>
             </RootProvider>
+            {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-right" />}
             {import.meta.env.DEV && <TanStackRouterDevtools position="bottom-left" />}
         </>
     )
@@ -74,7 +73,7 @@ const RootProvider = ({ children }: Readonly<{ children: ReactNode }>) => {
                     <ColorSchemeScript nonce="8IBTHwOdqNKAWeKl7plt8g==" defaultColorScheme="dark" />
                     <MantineProvider defaultColorScheme="dark" theme={theme}>
                         <Notifications />
-                        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+                        {children}
                     </MantineProvider>
                 </PracticeFeedProvider>
             </UserSettingsProvider>
