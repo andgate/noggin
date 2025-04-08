@@ -39,6 +39,15 @@ This release introduces the core features of the Noggin Protocol for modular, se
 
 ---
 
+## **Changelog** 📝
+
+<!--
+Paste the user-friendly changelog notes for this specific release here.
+Keep the format consistent (e.g., using ### for Added, Changed, Fixed).
+-->
+
+---
+
 ## **Platform Support** 🖥️
 
 - **Windows**: Installer available
