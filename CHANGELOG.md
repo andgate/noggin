@@ -5,7 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+### Added
+
+- Features that were added in this release
+
+### Changed
+
+- Features that were changed in this release
+
+### Fixed
+
+- Features that were fixed in this release
+
+### Deprecated
+
+- Features that will be removed in upcoming releases
+
+### Removed
+
+- Features that were removed in this release
+
+### Fixed
+
+- Bug fixes
+
+### Security
+
+- Security fixes
+
+## [v0.9.5-preview]
 
 ### Added
 
