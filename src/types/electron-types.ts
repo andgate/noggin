@@ -2,7 +2,7 @@ import { Part } from '@google/generative-ai'
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
 import { z } from 'zod'
 import { Library } from './library-types'
-import { Mod, ModuleMetadata, ModuleOverview, ModuleStats } from './module-types'
+import { Module, ModuleMetadata, ModuleOverview, ModuleStats } from './module-types'
 import { GradedSubmission } from './quiz-generation-types'
 import { Quiz, Submission } from './quiz-types'
 import { NogginStoreSchema } from './store-types'
@@ -15,44 +15,44 @@ interface StoreAPI {
 }
 
 interface ModuleAPI {
-    readModuleData: (modulePath: string) => Promise<Mod>
-    writeModuleData: (modulePath: string, mod: Mod) => Promise<void>
-    removeModule: (modulePath: string) => Promise<void>
-    writeModuleSource: (modPath: string, sourceFile: SimpleFile) => Promise<string>
-    deleteModuleSource: (sourcePath: string) => Promise<void>
-    readModuleById: (libraryId: string, moduleId: string) => Promise<Mod>
-    saveModuleQuiz: (libraryId: string, moduleId: string, quiz: Quiz) => Promise<void>
-    deleteModuleQuiz: (libraryId: string, moduleId: string, quizId: string) => Promise<void>
-    readModuleQuiz: (libraryId: string, moduleId: string, quizId: string) => Promise<Quiz>
-    readModuleSubmission: (
+    createModule: (
         libraryId: string,
-        moduleId: string,
-        quizId: string,
-        attempt: number
-    ) => Promise<Submission>
-    saveModuleSubmission: (
+        moduleName: string,
+        moduleOverview: string,
+        sourcePaths: SimpleFile[]
+    ) => Promise<string>
+    getModule: (moduleId: string) => Promise<Module>
+    deleteModule: (moduleId: string) => Promise<void>
+}
+
+interface QuizAPI {
+    createQuiz: (libraryId: string, moduleId: string, quiz: Quiz) => Promise<string>
+    getQuiz: (quizId: string) => Promise<Quiz>
+    deleteQuiz: (quizId: string) => Promise<void>
+    getQuizAttemptCount: (quizId: string) => Promise<number>
+    getQuizByLastAttempt: (moduleId: string) => Promise<Quiz>
+}
+
+interface SubmissionAPI {
+    createSubmission: (
         libraryId: string,
         moduleId: string,
         submission: Submission
-    ) => Promise<void>
-    getQuizAttemptCount: (libraryId: string, moduleId: string, quizId: string) => Promise<number>
-    getLatestModuleQuiz: (libraryId: string, moduleId: string) => Promise<Quiz>
+    ) => Promise<string>
+    getSubmissionById: (moduleId: string, submissionId: string) => Promise<Submission>
+    getSubmissionByAttempt: (moduleId: string, attempt: number) => Promise<Submission>
+    getSubmissions: (moduleId: string) => Promise<Submission[]>
+    getSubmissionsByQuiz: (quizId: string) => Promise<Submission[]>
     getModuleSubmissions: (libraryId: string, moduleId: string) => Promise<Submission[]>
     getQuizSubmissions: (
         libraryId: string,
         moduleId: string,
         quizId: string
     ) => Promise<Submission[]>
-    getModuleStats: (libraryId: string, moduleId: string) => Promise<ModuleStats>
-    saveModuleStats: (libraryId: string, moduleId: string, stats: ModuleStats) => Promise<void>
-    getAllModuleStats: () => Promise<ModuleStats[]>
-    getModuleOverviews: (libraryId: string) => Promise<ModuleOverview[]>
-    readModuleMetadata: (modPath: string) => Promise<ModuleMetadata>
-    writeModuleMetadata: (modPath: string, metadata: ModuleMetadata) => Promise<void>
 }
 
 interface PracticeFeedAPI {
-    getDueModules: () => Promise<Mod[]>
+    getDueModules: () => Promise<Module[]>
     updateReviewSchedule: (
         libraryId: string,
         moduleId: string,
@@ -138,6 +138,8 @@ interface PathAPI {
 export interface NogginElectronAPI {
     store: StoreAPI
     modules: ModuleAPI
+    quiz: QuizAPI
+    submission: SubmissionAPI
     path: PathAPI
     openai: OpenAIAPI
     filesystem: FilesystemAPI

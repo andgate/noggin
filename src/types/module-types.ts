@@ -6,7 +6,6 @@ export const moduleMetadataSchema = z.object({
     id: z.string(),
     path: z.string(),
     title: z.string(),
-    slug: z.string(),
     overview: z.string(),
     createdAt: z.string(),
     updatedAt: z.string(),
@@ -18,7 +17,7 @@ export const moduleStatsSchema = z.object({
     nextReviewDate: z.string(), // ISO date string - The date on/after which the module should be reviewed
 })
 
-export const modSchema = z.object({
+export const moduleSchema = z.object({
     metadata: moduleMetadataSchema,
     stats: moduleStatsSchema,
     sources: z.array(z.string()),
@@ -28,13 +27,4 @@ export const modSchema = z.object({
 
 export type ModuleMetadata = z.infer<typeof moduleMetadataSchema>
 export type ModuleStats = z.infer<typeof moduleStatsSchema>
-export type Mod = z.infer<typeof modSchema>
-
-export const moduleOverviewSchema = z.object({
-    id: z.string(),
-    slug: z.string(),
-    displayName: z.string(),
-    libraryId: z.string(),
-})
-
-export type ModuleOverview = z.infer<typeof moduleOverviewSchema>
+export type Module = z.infer<typeof moduleSchema>
