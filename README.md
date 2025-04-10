@@ -56,6 +56,25 @@ pnpm install
 pnpm dev
 ```
 
+## ⚙️ Local Development Setup (Supabase)
+
+This project uses Supabase for its backend services. To run the application locally, you need to configure your Supabase connection details:
+
+1.  **Copy the example environment file:**
+    Make a copy of the `.env.example` file located in the project root and rename the copy to `.env`.
+
+2.  **Add your Supabase credentials:**
+    Open the newly created `.env` file and replace the placeholder values with your actual Supabase project URL and Anon Key. You can find these in your Supabase project settings.
+    ```env
+    VITE_SUPABASE_URL=YOUR_SUPABASE_URL_HERE
+    VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY_HERE
+    ```
+
+**Important:**
+
+- The `.env` file contains sensitive credentials and is included in `.gitignore`, so it **should not be committed** to version control.
+- For production deployments (e.g., when hosting the application), you must configure these same `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` variables directly in your hosting platform's environment settings. Do not rely on the `.env` file for production.
+
 ## 🔍 Debugging
 
 The project includes VSCode debugging configurations for both the main and renderer processes:
