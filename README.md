@@ -65,10 +65,18 @@ This project uses Supabase for its backend services. To run the application loca
 
 2.  **Add your Supabase credentials:**
     Open the newly created `.env` file and replace the placeholder values with your actual Supabase project URL and Anon Key. You can find these in your Supabase project settings.
+
     ```env
     VITE_SUPABASE_URL=YOUR_SUPABASE_URL_HERE
     VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY_HERE
     ```
+
+3.  **Generate Supabase Types (Optional but Recommended):**
+    If you make changes to your Supabase database schema, you should regenerate the TypeScript types to ensure type safety in the application. Run the following command from the project root:
+    ```bash
+    pnpm types:supabase
+    ```
+    This will update the `src/types/database.types.ts` file based on your current Supabase schema.
 
 **Important:**
 
@@ -158,6 +166,7 @@ Once the release workflow has completed, you can review the release on the repos
 - `pnpm check` - Type check all code
 - `pnpm check:node` - Type check Node.js code in watch mode
 - `pnpm check:ui` - Type check web code in watch mode
+- `pnpm types:supabase` - Generate TypeScript types from Supabase schema
 - `pnpm generate` - Generate database migrations
 - `pnpm push` - Push database changes
 - `pnpm studio` - Open Drizzle Studio

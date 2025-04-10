@@ -5,7 +5,7 @@
     "version": "v0.9.5-preview",
     "main": "out/main/index.js",
     "type": "module",
-    "packageManager": "pnpm@9.12.3",
+    "packageManager": "pnpm@10.8.0",
     "scripts": {
         "postinstall": "electron-builder install-app-deps",
         "start": "electron-vite preview",
@@ -27,7 +27,8 @@
         "build:linux": "pnpm run build && electron-builder --linux --config --publish never",
         "publish:win": "electron-vite build && electron-builder --win --publish always",
         "publish:linux": "electron-vite build && electron-builder --linux --publish always",
-        "rebuild:electron": "electron-rebuild -f -w better-sqlite3-electron && electron-builder install-app-deps"
+        "rebuild:electron": "electron-rebuild -f -w better-sqlite3-electron && electron-builder install-app-deps",
+        "types:supabase": "pnpx supabase gen types typescript --project-id dfreaglzkffskxbgdfdf --schema public > src/types/database.types.ts"
     },
     "dependencies": {
         "@electron-toolkit/preload": "^3.0.1",

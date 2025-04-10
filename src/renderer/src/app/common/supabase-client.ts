@@ -1,3 +1,4 @@
+import type { Database } from '@noggin/types/database.types'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
@@ -9,6 +10,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
     )
 }
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
 
 export default supabase
