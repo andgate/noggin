@@ -106,7 +106,7 @@ The Practice Feed displays Module Cards that represent available learning module
         - Last reviewed date
         - Next review date
         - Each status is rendered as a chip
-    - "Start Quiz" button to launch the Quiz Session for the most recently generated quiz
+    - "Start Quiz" button to launch the Quiz Session for the most recently _taken_ quiz for this module
     - "Generate Quiz" button to open the Quiz Generation Modal
     - "Review Submissions" button to review previous quiz submissions
 - **Visual Hierarchy:**
@@ -135,7 +135,6 @@ The Module Explorer provides quick access to all modules, their contents, and se
         - Module count badge
     - Right-clicking a library opens a context menu with:
         - "View Library" (navigate to library page)
-        - "Copy Library Id" (copy slug to clipboard)
         - "Open Folder" (opens library directory)
         - "Delete Library" (prompts user to delete)
 - **Learning Paths:**
@@ -146,7 +145,6 @@ The Module Explorer provides quick access to all modules, their contents, and se
         - Expand/collapse indicator
     - Right-clicking a path opens a context menu with:
         - "View Path" (navigate to path page)
-        - "Copy Path Id" (copy slug to clipboard)
         - "View Progress" (opens progress modal)
         - "Delete Path" (prompts user to delete)
 - **Module List:** A vertically scrolling list of all modules.
@@ -156,7 +154,6 @@ The Module Explorer provides quick access to all modules, their contents, and se
     - Clicking a module name navigates to that module's page
     - When right-clicking a module name, a context menu appears with the following options:
         - "View Module" (navigate to the module's page).
-        - "Copy Module Id" (copy the module's ID to the clipboard).
         - "Copy Module Path" (copy the module's path to the clipboard).
         - "Open Folder" (opens the module's directory in the file explorer).
         - "Delete Module" (prompts user to delete the module).
@@ -387,7 +384,7 @@ This view is the final step in the module creation process, allowing users to re
 
 - **Main Content:**
 
-    - Editable module title
+    - Editable module title (validated title becomes folder name)
     - Editable overview
     - Library selection:
         - Dropdown of existing libraries
@@ -398,7 +395,7 @@ This view is the final step in the module creation process, allowing users to re
         - Visualization of total token usage
 
 - **Footer:**
-    - "Create Module" button (enabled when library is selected)
+    - "Create Module" button (enabled when library is selected). Creates module directory, copies sources, saves metadata, and generates initial lesson.
     - "Back" button
     - "Cancel" button
 
@@ -410,8 +407,8 @@ A simple modal dialog for creating new libraries.
 
 - **Content:**
 
-    - Library name input field
-    - "Select Location" button (opens system file picker)
+    - Library name input field (validated for filesystem safety)
+    - "Select Location" button (opens system file picker for parent directory)
     - Display of selected path
 
 - **Footer:**
@@ -421,9 +418,9 @@ A simple modal dialog for creating new libraries.
 
 - **Behavior:**
     - Upon creation, library is automatically:
-        - Created at the specified path
-        - Added to app's internal library registry
-        - Selected in the parent Module Creation Review view
+        - Created at the specified path _only if the target path doesn't exist or is empty_.
+        - Added to app's internal library registry.
+        - Selected in the parent Module Creation Review view.
 
 ### Quiz Page
 
@@ -673,8 +670,8 @@ The Lesson Summary View provides a completion overview when a user finishes all 
     - Create Module Page is displayed.
     - User enters a module name.
     - User adds source materials via file selection.
-    - User chooses whether to generate quizzes immediately or later.
-    - Module is created and appears in the Module Explorer and Practice Feed.
+    - User reviews title/overview, selects library, confirms creation.
+    - Module is created (directory, metadata, sources copied), initial `lesson.json` is generated, and module appears in Explorer/Feed. Module is now immutable.
 
 2. **Generating and Taking Quizzes:**
 
@@ -688,12 +685,11 @@ The Lesson Summary View provides a completion overview when a user finishes all 
     - When complete, user can either:
         - Click "Take Quiz Now" to immediately start the quiz
         - Click "Done" to close the modal
-    - Generated quiz becomes the "most recent quiz" for that module
 
 3. **Taking a Quiz:**
 
     - User can start a quiz from:
-        - Clicking "Start Quiz" on a Module Card (starts most recent quiz)
+        - Clicking "Start Quiz" on a Module Card (starts the most recently _taken_ quiz for this module)
         - Selecting a specific quiz from the Module Page's Quizzes Panel
         - Clicking "Take Quiz Now" after generating a new quiz
     - Quiz Session launches in full-screen.

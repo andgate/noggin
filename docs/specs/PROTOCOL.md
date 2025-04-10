@@ -1,7 +1,7 @@
 # Noggin Protocol for Modular, Self-Directed Learning
 
 **Author**: Gabriel Anderson
-**Date**: January 9, 2025
+**Date**: April 10, 2025
 
 ---
 
@@ -17,8 +17,8 @@ This protocol document serves as a comprehensive specification for implementing 
 
 ### Core Objectives
 
-1.  **Modular Design**: Organize learning into self-contained modules, each focused on a specific topic, with clear, accessible metadata.
-2.  **Transparent Storage**: Store all data—including library metadata, quizzes, lessons, and submissions—in accessible local folders for easy review and full user autonomy.
+1.  **Modular Design**: Organize learning into self-contained modules, each focused on a specific topic, with clear, accessible metadata. Modules are immutable once created.
+2.  **Transparent Storage**: Store all data—including library metadata, quizzes, lessons, and submissions—in accessible local folders using user-friendly names for easy review and full user autonomy.
 3.  **User-Driven Learning**: Provide tools to help users track their learning progress while keeping control over what and when to study.
 4.  **Simplicity in Implementation**: Focus on straightforward workflows that reduce complexity and empower users to manage their own learning processes effectively.
 
@@ -37,20 +37,22 @@ The Noggin system uses a hierarchical structure to organize learning content:
 - **Modules** are the fundamental learning units
     - Can exist either within learning paths or as standalone units in a library
     - Each module contains source materials, quizzes, and progress tracking
+    - Modules are **immutable** once created.
 
 This three-tier structure provides flexibility while maintaining clear organization: Libraries provide a customizable way to organize content, Learning Paths create structured progressions, and Modules deliver the actual learning material.
 
 #### Libraries
 
 Libraries serve as general-purpose containers for organizing learning content. Each library is a directory containing learning paths, standalone modules, and associated metadata. Users can choose to use a single library for all their content or create multiple libraries to suit their organizational preferences.
+When creating a library, the user provides a name (validated for filesystem safety) and selects an existing parent directory. The system checks if the target directory `[parent directory]/[library name]` either does not exist or is empty before creating it.
 
 #### Library Identification
 
-Each library is uniquely identified by a standard Version 4 UUID (Universally Unique Identifier).
+Each library is uniquely identified by a standard Version 6 UUID (Universally Unique Identifier).
 
 - This `id` is generated when the library is first created and stored within its `.lib/meta.json` file.
 - The UUID remains constant throughout the library's lifetime, providing a stable reference.
-- This `id` is used for all internal referencing, API calls, and routing (e.g., `/library/view/$libraryId`).
+- This `id` is used for all internal referencing and API calls.
 - Example UUID: `f47ac10b-58cc-4372-a567-0e02b2c3d479`
 
 #### Library Structure
@@ -58,11 +60,11 @@ Each library is uniquely identified by a standard Version 4 UUID (Universally Un
 ```
 <library path>/
 ├── .lib/
-│   └── meta.json     # Library metadata and configuration
-├── introduction_to_python_1703567451722/  # Learning path using slug with timestamp
-├── web_development_basics_1703567489123/  # Another learning path
-├── binary_search_trees_1703567512456/    # Standalone module
-└── sorting_algorithms_1703567534789/     # Another standalone module
+│   └── meta.json     # Library metadata (contains UUID) and configuration
+├── Introduction to Python/  # Learning path using user-validated name
+├── Web Development Basics/  # Another learning path
+├── Binary Search Trees/    # Standalone module using user-validated name
+└── Sorting Algorithms/     # Another standalone module
 ```
 
 #### Library Metadata
@@ -104,40 +106,42 @@ This dual approach allows flexibility in content organization while maintaining 
 ### Module Structure
 
 A **module** encapsulates source materials, quizzes, training material, and tracking data. The following structure defines a module:
+Modules are **immutable** once created; their source content cannot be changed. If modifications are needed, a new module must be created.
 
 - **Source Materials**: User-provided materials, such as PDFs or text files, stored in the module root.
 - **Module Metadata**: Essential static module information stored in `.mod/meta.json`.
 - **Module Statistics**: Dynamic usage data stored in `.mod/stats.json`.
 - **Quizzes**: A set of structured, static quizzes stored in `.mod/quizzes/`.
 - **Quiz Submissions**: Individual quiz attempt records stored in `.mod/submissions/`.
-- **Generated Lesson**: Optional AI-generated training material stored in `.mod/lesson.json`.
+- **Generated Lesson**: AI-generated training material, created alongside the module, stored in `.mod/lesson.json`.
 
 #### Directory Structure Example:
 
 ```
-<module_slug>/
+<module_name>/ # Directory uses the user-validated module name
 ├── .mod/
-│   ├── meta.json  # Static module information
+│   ├── meta.json      # Static module information
 │   ├── stats.json     # Dynamic usage statistics
 │   ├── lesson.json    # Current active lesson
 │   ├── quizzes/
-│   │   ├── quiz1.json
-│   │   ├── quiz2.json
-│   ├── submissions/
-│   │   ├── submission1.json
-│   │   ├── submission2.json
-├── source_material.pdf
-├── source_notes.txt
+│   │   ├── quiz_1.json
+│   │   ├── quiz_2.json
+│   ├── submissions/ # Contains submissions for quizzes in this module
+│   │   ├── submission_1.json
+│   │   ├── submission_2.json # Example submission filenames
+│   ├── source_material.pdf
+│   ├── source_notes.txt
 ```
 
 #### Module Metadata Format (meta.json)
 
 Module metadata stores essential static information about each learning module. This immutable data defines the module's identity and core characteristics, serving as a reference point for the learning system:
+Each module is uniquely identified by a standard Version 6 UUID stored in the `id` field.
 
 ```json
 {
+    "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
     "title": "Region-Based Memory Management",
-    "slug": "region-based-memory-management-1703567451722",
     "overview": "An exploration of region-based memory management techniques...",
     "createdAt": 1703567451722
 }
@@ -164,24 +168,23 @@ This separation ensures clear distinction between immutable module properties an
 
 #### Learning Paths
 
-Learning paths provide structured progression through multiple modules. Each learning path has its own unique path slug (e.g., `introduction-to-python-1703567451722`) that follows the same naming convention as modules: a URL-friendly name followed by a creation timestamp. This path slug serves as both the directory name and unique identifier for the learning path.
-
-Each learning path maintains its own metadata and progress tracking while preserving the autonomy of individual modules.
+Learning paths provide structured progression through multiple modules. Each learning path is uniquely identified by a Version 6 UUID and uses a user-validated name for its directory.
+Each learning path maintains its own metadata (including its UUID) and progress tracking while preserving the autonomy of individual modules.
 
 #### Learning Path Structure
 
 ```
-<library path>/introduction_to_python_1703567451722/
+<library path>/Introduction to Python/
 ├── .path/
 │   ├── meta.json        # Learning path configuration
 │   └── progress.json    # User progression data
-├── python_basics_1703567489123/           # First module in sequence
+├── Python Basics/       # First module in sequence
 │   ├── .mod/
-│   │   └── ...         # Standard module structure
+│   │   └── ...
 │   └── source_files
-└── control_flow_1703567512456/           # Second module in sequence
+└── Control Flow/        # Second module in sequence
     ├── .mod/
-    │   └── ...         # Standard module structure
+    │   └── ...
     └── source_files
 ```
 
@@ -191,19 +194,20 @@ The `.path/meta.json` file defines the learning path configuration:
 
 ```json
 {
+    "id": "b2c3d4e5-f6a7-8901-2345-67890abcdef0",
     "title": "Python for Beginners",
     "description": "A structured introduction to Python programming",
     "createdAt": 1703567451722,
     "modules": [
         {
-            "slug": "python_basics_1703567489123",
-            "title": "Python Basics",
+            "moduleId": "a1b2c3d4-e5f6-7890-1234-567890abcdef", // UUID of "Python Basics" module
+            "title": "Python Basics", // Stored for display convenience
             "unlockRequirements": []
         },
         {
-            "slug": "control_flow_1703567512456",
+            "moduleId": "c3d4e5f6-a7b8-9012-3456-7890abcdef01", // UUID of "Control Flow" module
             "title": "Control Flow",
-            "unlockRequirements": ["python_basics_1703567489123"]
+            "unlockRequirements": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"] // Depends on "Python Basics" UUID
         }
     ]
 }
@@ -215,9 +219,12 @@ The `.path/progress.json` file maintains user progression data:
 
 ```json
 {
-    "completedModules": ["module-1"],
-    "unlockedModules": ["module-1", "module-2"],
-    "currentModule": "module-2",
+    "completedModules": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+    "unlockedModules": [
+        "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+        "c3d4e5f6-a7b8-9012-3456-7890abcdef01"
+    ],
+    "currentModule": "c3d4e5f6-a7b8-9012-3456-7890abcdef01",
     "lastAccessed": 1703567489123
 }
 ```
@@ -238,6 +245,7 @@ The protocol supports two primary forms of interactive learning: Lessons and Qui
 #### Lessons
 
 Lessons provide structured, interactive guidance through module content. Each module maintains a single active lesson, stored in `.mod/lesson.json`. Lessons consist of Learning Units—sequential combinations of content and comprehension questions.
+The lesson is generated during the module creation process.
 
 ##### Lesson Structure
 
@@ -271,8 +279,7 @@ Lessons provide structured, interactive guidance through module content. Each mo
 ##### Lesson Generation
 
 - Lessons are AI-generated based on module source content
-- Users may provide focus instructions to tailor lesson content
-- Generating a new lesson replaces any existing lesson
+- The initial lesson is generated during module creation. Generating a new lesson replaces the existing `lesson.json` file.
 - Users receive a warning before lesson replacement
 
 ##### Learning Units
@@ -300,7 +307,7 @@ Each Learning Unit contains:
 
 - Lessons are transient and focus on immediate comprehension
 - Only one lesson exists per module at any time
-- All state is maintained in the single `lesson.json` file
+- All state is maintained in the single `lesson.json` file.
 - Lessons persist until explicitly replaced or deleted
 
 #### Quizzes
@@ -315,15 +322,12 @@ Each Learning Unit contains:
 #### Storage
 
 Quizzes are stored in the `.mod/quizzes/` folder, with each quiz saved as a JSON file. The filename follows the pattern:
-`<quiz-slug>-<timestamp>.json`
+`quiz_<N>.json`
 
-Where:
+Where `<N>` is a sequential number (1, 2, 3, ...) indicating the order of generation for quizzes within that module.
+Example: `quiz_1.json`, `quiz_2.json`
 
-- `quiz-slug` is a URL-friendly version of the quiz title
-- `timestamp` is the Unix timestamp when the quiz was created
-- Example: `region-based-memory-management-quiz-1703567451722.json`
-
-This naming scheme ensures unique filenames even when multiple quizzes have similar titles.
+Each quiz file contains a unique Version 6 UUID (`id`) for internal identification. Quiz generation is **additive**; generating a new quiz adds the next numbered file to the directory without removing existing ones.
 
 Users can attempt quizzes multiple times, with each attempt stored as a submission in `.mod/submissions/`.
 
@@ -359,23 +363,23 @@ This grading framework supports the protocol's core objective of facilitating se
 #### Submission Storage Format
 
 Submissions are stored as JSON files in `.mod/submissions/` using the following pattern:
-`<quiz-slug>-<quiz-timestamp>-<attempt>.json`
+`submission_<N>.json`
 
 Where:
 
-- `quiz-slug` and `quiz-timestamp` match the parent quiz's identifier
-- `attempt` is the attempt number (1, 2, 3, etc.)
-- Example: `region-based-memory-management-quiz-1703567451722-1.json`
+- `<N>` is the attempt number for that module (1, 2, 3, etc.). This number reflects the total count of submissions across all quizzes for the module.
+- Example: `submission_1.json`, `submission_2.json`, `submission_3.json`
 
 Each submission file contains:
 
 ```json
 {
-    "quizId": "region-based-memory-management-quiz-1703567451722",
+    "id": "f6a7b8c9-d0e1-2345-6789-0abcdef012345",
+    "quizId": "e5f6a7b8-c9d0-1234-5678-90abcdef0123",
     "submissionTimestamp": 1703567489123,
-    "attempt": 1,
+    "attempt": 1, // Module-wide attempt number
     "answers": [
-        // ... rest of the structure remains the same ...
+        // ... structure for answers, feedback, pass/fail status ...
     ]
 }
 ```
@@ -385,7 +389,7 @@ Each submission file contains:
 ### Progress Tracking and Scheduling
 
 Learning progress is tracked through quiz submissions. Each submission represents a record of a user's attempt at a quiz, including answers, scores, and timestamps. Submissions are stored as files in `.mod/submissions/`, ensuring users can review their learning journey at any time.
-
+Because modules are immutable, an attempt on **any quiz** associated with a module updates that module's statistics (`.mod/stats.json`), which are used for spaced repetition scheduling.
 This approach maintains simplicity while enabling users to observe trends in their performance and mastery over time.
 
 Noggin supports long-term retention through periodic review recommendations. Users are encouraged to revisit modules based on their own priorities and practice schedules.
@@ -406,9 +410,9 @@ The practice feed leverages these statistics to generate intelligent review reco
 
 This flexible approach empowers users to manage their learning without imposing strict deadlines or notifications, while still benefiting from proven spaced repetition techniques.
 
-### Simplified Module Updates
+### Module Immutability
 
-Users can freely update the contents of a module by modifying its source files. The system is designed to adapt seamlessly to these changes, reflecting updated content in newly created quizzes. There is no need for complex versioning or tracking—modules evolve naturally as users refine their learning materials.
+Once a module is created, its source content is considered **immutable**. Users cannot modify the source files within an existing module directory. If changes to the learning material are required, the user must create a **new module** with the updated content. This ensures the integrity of the learning statistics and quizzes associated with each module instance.
 
 ### Module Creation Workflow
 
@@ -421,72 +425,43 @@ The module creation process follows these specific steps:
 2.  **Module Generation**
 
     - File contents are extracted and provided to the AI model
-    - AI generates a descriptive module title based on content analysis
-    - AI writes a brief overview summarizing the module contents
-    - A URL-friendly slug is created from the module title
+    - AI generates:
+        - A suggested module `title` based on content analysis.
+        - A brief `overview` summarizing the module contents.
+        - The initial `lesson.json` content.
 
 3.  **Module Storage**
-    - User confirms the generated title and overview
-    - User selects destination directory for the module
-    - System creates a new directory named with the slug in the chosen destination
-    - Source files are copied into the new module directory, preserving their original filenames
-    - Module metadata (title, overview) is saved
+    - User reviews the AI-generated `title` and `overview`.
+    - User confirms or edits the `title`. This final title is validated to ensure it is a safe and unique directory name within the chosen library. This validated name is used as the folder name.
+    - User selects an existing destination library (directory path).
+    - System creates a new directory named with the validated module name within the chosen library path.
+    - Source files are copied into the new module directory.
+    - Module metadata (id, title, overview, createdAt) is saved to `.mod/meta.json`.
+    - The generated lesson is saved to `.mod/lesson.json`.
 
 ---
 
 ### Naming Conventions
 
-The Noggin protocol uses consistent naming conventions across all components to ensure uniqueness and clarity:
+The Noggin protocol uses consistent identification and naming conventions:
 
-#### Slug Format (for Modules and Learning Paths)
+#### Internal Identification: UUIDs
 
-Slugs for modules and learning paths follow these rules:
+- All core entities—Libraries, Learning Paths, Modules, Quizzes, and Submissions—are uniquely identified internally by a standard Version 6 UUID.
+- This UUID is stored within the entity's metadata file (e.g., `.lib/meta.json`, `.mod/meta.json`, `.path/meta.json`) or directly within its JSON data (for Quizzes and Submissions). Lessons do **not** have a UUID.
+- UUIDs provide stable, unique references for internal logic, API calls, and cross-referencing, regardless of changes to user-facing names or filesystem locations.
+- Example UUID: `f47ac10b-58cc-4372-a567-0e02b2c3d479`
 
-1.  **Basic Transformation**:
+#### Filesystem Naming
 
-    - Trim leading and trailing whitespace
-    - Split on whitespace into parts
-    - Remove any empty parts
-    - For each part:
-        - Convert to lowercase
-        - Remove all non-alphanumeric characters
-    - Join parts with underscores
-    - Truncate to 255 characters for filesystem compatibility
-
-2.  **Timestamp Addition**:
-
-    - Modules and learning paths append creation timestamp: `<slug>_<timestamp>`
-    - Libraries are identified by a UUID (see Library Identification section) and do not use slugs.
-    - Timestamp format: Compact ISO 8601 UTC (e.g., `20250217T021330Z`)
-        - Format: `YYYYMMDD'T'HHMMSS'Z'`
-        - No separators (dashes, colons)
-        - No milliseconds
-        - Always UTC timezone (Z suffix)
-
-3.  **Usage Rules**:
-    - Applications must prevent creation of duplicate slugs within their scope (modules/paths within a library).
-    - Slugs are used for routing modules and learning paths (e.g., `/module/view/binary_search_trees_20250217T021330Z`), while library routes use the library ID (e.g., `/library/view/f47ac10b-58cc-4372-a567-0e02b2c3d479`).
-    - Slugs serve as stable identifiers for cross-referencing modules and paths.
-    - File paths and directory names for modules and paths use these slugs directly.
-
-Examples (Modules/Paths):
-
-- "C++ & Systems Programming!" -> `c_systems_programming`
-- "Web Dev (2024) - Basics" -> `web_dev_2024_basics`
-- Module: `binary_search_trees_20250217T021330Z`
-- Learning Path: `introduction_to_python_20250217T021330Z`
-
-#### Usage Throughout the System
-
-- **Library IDs (UUIDs)**: Used for unique identification, API calls, and internal referencing.
-    - Example: `f47ac10b-58cc-4372-a567-0e02b2c3d479`
-- **Learning Path Slugs**: Used for learning path directory names and references.
-    - Example: `introduction_to_python_20250217T021330Z`
-- **Module Slugs**: Used for module directory names and references.
-    - Example: `python_basics_20250217T021330Z`
-- **Quiz Slugs**: Used in quiz filenames, combining with attempt numbers for submissions.
-    - Quiz file: `python_basics_quiz_20250217T021330Z.json`
+- **Libraries:** The filesystem location is determined by the path chosen by the user during library creation (e.g., `[parent directory]/[library name]`). The library's user-facing name is stored in `.lib/meta.json`. The directory is only created if the target path doesn't exist or is an empty directory.
+- **Modules & Learning Paths:** The directory name is the user-validated title provided during creation. This name must be unique within its parent library and conform to filesystem naming restrictions.
+    - Example Module Directory: `Binary Search Trees/`
+    - Example Path Directory: `Introduction to Python/`
+- **Quizzes:** Stored within `.mod/quizzes/` using sequentially numbered filenames: `quiz_1.json`, `quiz_2.json`, etc.
+- **Submissions:** Stored within `.mod/submissions/` using a module-wide attempt number: `submission_1.json`, `submission_2.json`, etc.
+- **Lessons:** Stored as a single file: `.mod/lesson.json`.
 
 ### Conclusion
 
-This protocol provides a robust yet flexible framework for building modular, self-directed learning applications. By adhering to these specifications, developers can create systems that empower users with transparent data management, customizable content organization, and effective tools for tracking learning progress. The emphasis on local storage and user autonomy ensures that learners remain in full control of their educational journey.
+This protocol provides a robust yet flexible framework for building modular, self-directed learning applications. By adhering to these specifications, developers can create systems that empower users with transparent data management, customizable content organization, and effective tools for tracking learning progress. The emphasis on local storage, user autonomy, and module immutability ensures that learners remain in full control of their educational journey while benefiting from reliable spaced repetition tracking.
