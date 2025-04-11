@@ -2,3 +2,5 @@ node_modules
 dist
 out
 .gitignore
+src\routeTree.gen.ts
+src\types\database.types.ts

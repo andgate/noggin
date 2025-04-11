@@ -7,13 +7,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Build Environment
 node_modules
-dist
-dist-ssr
-*.local
-out
 
-html/
+# Project output
+dist
 
 # Editor directories and files
 .idea
@@ -28,17 +26,9 @@ html/
 /blob-report/
 /playwright/.cache/
 
-.vinxi
-.output
+# Local env files
 .env.local
 .env
-
-sqlite.db
-
-# Electron
-html.meta.json.gz
-src/renderer/html/assets/index-*.css
-src/renderer/html/assets/index-*.js
 
 # MCP (contains personal access tokens, can't be commited)
 .roo/mcp.json

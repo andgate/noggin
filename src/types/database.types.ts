@@ -1,10 +1,4 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
   public: {
@@ -33,18 +27,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "learning_path_modules_module_id_fkey"
-            columns: ["module_id"]
+            foreignKeyName: 'learning_path_modules_module_id_fkey'
+            columns: ['module_id']
             isOneToOne: false
-            referencedRelation: "modules"
-            referencedColumns: ["id"]
+            referencedRelation: 'modules'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "learning_path_modules_path_id_fkey"
-            columns: ["path_id"]
+            foreignKeyName: 'learning_path_modules_path_id_fkey'
+            columns: ['path_id']
             isOneToOne: false
-            referencedRelation: "learning_paths"
-            referencedColumns: ["id"]
+            referencedRelation: 'learning_paths'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -75,11 +69,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "learning_paths_library_id_fkey"
-            columns: ["library_id"]
+            foreignKeyName: 'learning_paths_library_id_fkey'
+            columns: ['library_id']
             isOneToOne: false
-            referencedRelation: "libraries"
-            referencedColumns: ["id"]
+            referencedRelation: 'libraries'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -140,11 +134,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "module_sources_module_id_fkey"
-            columns: ["module_id"]
+            foreignKeyName: 'module_sources_module_id_fkey'
+            columns: ['module_id']
             isOneToOne: false
-            referencedRelation: "modules"
-            referencedColumns: ["id"]
+            referencedRelation: 'modules'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -181,11 +175,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "module_stats_module_id_fkey"
-            columns: ["module_id"]
+            foreignKeyName: 'module_stats_module_id_fkey'
+            columns: ['module_id']
             isOneToOne: true
-            referencedRelation: "modules"
-            referencedColumns: ["id"]
+            referencedRelation: 'modules'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -222,11 +216,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "modules_library_id_fkey"
-            columns: ["library_id"]
+            foreignKeyName: 'modules_library_id_fkey'
+            columns: ['library_id']
             isOneToOne: false
-            referencedRelation: "libraries"
-            referencedColumns: ["id"]
+            referencedRelation: 'libraries'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -239,6 +233,7 @@ export type Database = {
           question_type: string
           quiz_id: string
           sequence_order: number
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -249,6 +244,7 @@ export type Database = {
           question_type: string
           quiz_id: string
           sequence_order?: number
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -259,15 +255,16 @@ export type Database = {
           question_type?: string
           quiz_id?: string
           sequence_order?: number
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "questions_quiz_id_fkey"
-            columns: ["quiz_id"]
+            foreignKeyName: 'questions_quiz_id_fkey'
+            columns: ['quiz_id']
             isOneToOne: false
-            referencedRelation: "quizzes"
-            referencedColumns: ["id"]
+            referencedRelation: 'quizzes'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -278,6 +275,7 @@ export type Database = {
           module_id: string
           time_limit_seconds: number | null
           title: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -286,6 +284,7 @@ export type Database = {
           module_id: string
           time_limit_seconds?: number | null
           title: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -294,15 +293,16 @@ export type Database = {
           module_id?: string
           time_limit_seconds?: number | null
           title?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "quizzes_module_id_fkey"
-            columns: ["module_id"]
+            foreignKeyName: 'quizzes_module_id_fkey'
+            columns: ['module_id']
             isOneToOne: false
-            referencedRelation: "modules"
-            referencedColumns: ["id"]
+            referencedRelation: 'modules'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -339,18 +339,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "responses_question_id_fkey"
-            columns: ["question_id"]
+            foreignKeyName: 'responses_question_id_fkey'
+            columns: ['question_id']
             isOneToOne: false
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
+            referencedRelation: 'questions'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "responses_submission_id_fkey"
-            columns: ["submission_id"]
+            foreignKeyName: 'responses_submission_id_fkey'
+            columns: ['submission_id']
             isOneToOne: false
-            referencedRelation: "submissions"
-            referencedColumns: ["id"]
+            referencedRelation: 'submissions'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -365,6 +365,7 @@ export type Database = {
           status: string
           submitted_at: string | null
           time_elapsed_seconds: number | null
+          updated_at: string
           user_id: string
         }
         Insert: {
@@ -377,6 +378,7 @@ export type Database = {
           status?: string
           submitted_at?: string | null
           time_elapsed_seconds?: number | null
+          updated_at?: string
           user_id: string
         }
         Update: {
@@ -389,22 +391,23 @@ export type Database = {
           status?: string
           submitted_at?: string | null
           time_elapsed_seconds?: number | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "submissions_module_id_fkey"
-            columns: ["module_id"]
+            foreignKeyName: 'submissions_module_id_fkey'
+            columns: ['module_id']
             isOneToOne: false
-            referencedRelation: "modules"
-            referencedColumns: ["id"]
+            referencedRelation: 'modules'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "submissions_quiz_id_fkey"
-            columns: ["quiz_id"]
+            foreignKeyName: 'submissions_quiz_id_fkey'
+            columns: ['quiz_id']
             isOneToOne: false
-            referencedRelation: "quizzes"
-            referencedColumns: ["id"]
+            referencedRelation: 'quizzes'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -445,29 +448,27 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DefaultSchema = Database[Extract<keyof Database, 'public'>]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof Database },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (Database[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        Database[DefaultSchemaTableNameOrOptions['schema']]['Views'])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  ? (Database[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      Database[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] & DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -476,21 +477,21 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof Database },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof Database[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? Database[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -499,21 +500,21 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof Database },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof Database[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? Database[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -521,33 +522,31 @@ export type TablesUpdate<
     : never
 
 export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+  DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums'] | { schema: keyof Database },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof Database[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  ? Database[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof DefaultSchema['CompositeTypes']
     | { schema: keyof Database },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof Database[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  ? Database[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {

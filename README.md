@@ -60,8 +60,8 @@ pnpm dev
 
 This project uses Supabase for its backend services. To run the application locally, you need to configure your Supabase connection details:
 
-1.  **Copy the example environment file:**
-    Make a copy of the `.env.example` file located in the project root and rename the copy to `.env`.
+1.  **Create an environment file:**
+    Create an empty `.env.local` file located in the project root.
 
 2.  **Add your Supabase credentials:**
     Open the newly created `.env` file and replace the placeholder values with your actual Supabase project URL and Anon Key. You can find these in your Supabase project settings.
@@ -80,8 +80,17 @@ This project uses Supabase for its backend services. To run the application loca
 
 **Important:**
 
-- The `.env` file contains sensitive credentials and is included in `.gitignore`, so it **should not be committed** to version control.
 - For production deployments (e.g., when hosting the application), you must configure these same `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` variables directly in your hosting platform's environment settings. Do not rely on the `.env` file for production.
+
+## How to Regenerate Supabase Types
+
+If you make changes to your Supabase database schema, you should regenerate the TypeScript types to ensure type safety in the application. Run the following command from the project root:
+
+```bash
+pnpm types:supabase
+```
+
+This will update the `src/types/database.types.ts` file based on your current Supabase schema.
 
 ## 🔍 Debugging
 

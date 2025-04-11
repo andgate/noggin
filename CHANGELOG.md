@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2025-04-11
+
+### Added
+
+- **Supabase Backend:** Integrated Supabase for database, authentication, storage, and edge functions, replacing the local filesystem backend.
+- **Database Schema:** Defined and applied PostgreSQL schema in Supabase based on application types and protocol.
+- **TypeScript Types:** Generated TypeScript types from the Supabase schema (`src/types/database.types.ts`).
+- **Vite Configuration:** Configured Vite for standard web app development using `.env` for environment variables.
+- **Edge Functions:** Implemented Supabase Edge Functions (`/set-gemini-key`, `/call-gemini`) for secure handling of user-provided Gemini API keys using AES-GCM encryption via Supabase Secrets.
+- **Authentication:** Implemented basic user authentication (Login, Logout, Protected Routes) using Supabase Auth and React Context (`AuthProvider`, `useAuth`).
+- **API Layer:** Created Supabase API interaction functions for Libraries (`libraryApi.ts`) and Modules (`moduleApi.ts`).
+- **Hook Layer:** Implemented TanStack Query hooks for Libraries (`useLibraryHooks.ts`).
+- Implemented Supabase API and TanStack Query hook layers for Modules, Quizzes, Submissions, User Profile, Storage, AI Generation (Edge Functions), and Practice Feed. *(Keeping existing entry)*
+- Added basic Signup UI and integration with `supabase.auth.signUp`. *(Keeping existing entry)*
+
+### Changed
+
+- **Architecture:** Migrated project from Electron-based desktop application to a standard Vite web application structure.
+- **User Settings:** Refactored `useUserSettings` hook to remove Electron `store` dependency (persistence temporarily disabled pending Supabase integration).
+- Refactored `ModuleExplorer`, Library View, Module View, Quiz View, Quiz Session, Submission View, `UserSettingsPanel`, `RegisteredLibraryList`, and `CreateLibraryModal` to use new Supabase-backed API/hooks, removing `window.api.*` dependencies for data fetching and mutations in these areas. *(Keeping existing entry)*
+- Updated TanStack Router loaders to use `ensureQueryData` pattern for pre-fetching data in relevant routes. *(Keeping existing entry)*
+
+### Removed
+
+- **Electron:** Removed Electron dependencies, scripts, configuration (`electron-vite`, `electron-builder`, etc.), and specific code (`src/main`, `src/preload`).
+- **Electron Store:** Removed usage of `electron-store` for user settings persistence.
+- **Electron API:** Removed all `window.api.*` IPC calls previously used for backend communication.
+
+---
+
 ### Added
 
 - Features that were added in this release
