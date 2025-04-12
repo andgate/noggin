@@ -1,20 +1,16 @@
-import { Center, ColorSchemeScript, Loader, MantineProvider } from '@mantine/core'
+import { ColorSchemeScript, MantineProvider } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
-import { AuthProvider, useAuth } from '@noggin/app/auth/AuthProvider'
-import { AppLayout } from '@noggin/components/layout/AppLayout'
+import { AuthProvider } from '@noggin/app/auth/AuthProvider'
+import { supabase } from '@noggin/app/common/supabase-client'
+// import { AppLayout } from '@noggin/components/layout/AppLayout' // disabled for now, until we figoure out what to do about it
 import { DefaultCatchBoundary } from '@noggin/components/layout/DefaultCatchBoundary'
 import { NotFound } from '@noggin/components/layout/NotFound'
 import { theme } from '@noggin/theme'
 import { QueryClient } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import {
-  createRootRouteWithContext,
-  Outlet,
-  useNavigate,
-  useRouterState,
-} from '@tanstack/react-router'
+import { createRootRouteWithContext, Outlet, redirect } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { type ReactNode, useEffect } from 'react'
+import { type ReactNode } from 'react'
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   // meta: () => [ ... ], // Meta tags
@@ -27,12 +23,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       </RootDocument>
     )
   },
-  beforeLoad: ({ location, params }) => {
+  beforeLoad: async ({ location, params }) => {
     console.log('[RootRoute] beforeLoad:', {
       pathname: location.pathname,
       search: location.search,
       params,
     })
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    const publicPaths = ['/', '/login', '/signup']
+    if (!user && !publicPaths.includes(location.pathname)) {
+      throw redirect({ to: '/', search: { redirect: location.pathname } })
+    }
   },
   notFoundComponent: () => (
     <RootDocument>
@@ -43,32 +47,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 })
 
 function RootComponent() {
-  const { isLoading, session } = useAuth()
-  const navigate = useNavigate()
-  const routerState = useRouterState()
-  const currentPath = routerState.location.pathname
-
-  useEffect(() => {
-    // Redirect logic: If not loading, not logged in, and not already on login page
-    if (!isLoading && !session && currentPath !== '/login') {
-      console.log('Redirecting to /login from:', currentPath)
-      navigate({ to: '/login', replace: true })
-    }
-  }, [isLoading, session, currentPath, navigate])
-
-  // Show loader while checking auth status
-  if (isLoading) {
-    // Render loader within the basic provider structure, but outside AppLayout
-    return (
-      <RootProvider>
-        <Center style={{ height: '100vh' }}>
-          <Loader />
-        </Center>
-      </RootProvider>
-    )
-  }
-
-  // If loading is finished, render the full document structure.
+  // Render the full document structure.
   // The Outlet will render LoginPage or protected content based on the route and auth state.
   // The redirect effect ensures non-authed users end up on /login.
   return (
@@ -83,7 +62,8 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <>
       <RootProvider>
-        <AppLayout>{children}</AppLayout>
+        {/* <AppLayout>{children}</AppLayout> */}
+        {children}
       </RootProvider>
       {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-right" />}
       {import.meta.env.DEV && <TanStackRouterDevtools position="bottom-left" />}
