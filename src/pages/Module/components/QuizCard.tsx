@@ -4,7 +4,6 @@ import { IconTrash } from '@tabler/icons-react'
 import { useNavigate } from '@tanstack/react-router'
 
 type QuizCardProps = {
-  libraryId: string
   moduleId: string
   title: string
   questionCount: number
@@ -15,7 +14,6 @@ type QuizCardProps = {
 }
 
 export function QuizCard({
-  libraryId,
   moduleId,
   quizId,
   title,
@@ -27,14 +25,9 @@ export function QuizCard({
   const navigate = useNavigate()
 
   const handleViewQuiz = () => {
-    if (!libraryId) {
-      throw new Error('Library ID is required for navigation')
-    }
-
     navigate({
-      to: '/quiz/view/$libraryId/$moduleId/$quizId',
+      to: '/quiz/view/$moduleId/$quizId',
       params: {
-        libraryId,
         moduleId,
         quizId,
       },
@@ -42,14 +35,9 @@ export function QuizCard({
   }
 
   const handleStartQuiz = () => {
-    if (!libraryId) {
-      throw new Error('Library ID is required for navigation')
-    }
-
     navigate({
-      to: '/quiz/session/$libraryId/$moduleId/$quizId',
+      to: '/quiz/session/$moduleId/$quizId',
       params: {
-        libraryId,
         moduleId,
         quizId,
       },

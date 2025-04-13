@@ -1,11 +1,10 @@
-// src/renderer/src/hooks/useModuleHooks.ts
 import {
   addModuleSource,
   createModule,
   deleteModule,
   deleteModuleSource,
+  getAllModules,
   getModule,
-  getModulesByLibrary,
   getModuleStats,
   getModuleWithDetails,
   updateModule,
@@ -15,28 +14,48 @@ import {
   type DbModuleStats,
 } from '@noggin/api/moduleApi'
 import type { Json, TablesInsert } from '@noggin/types/database.types'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { moduleKeys } from './query-keys'
 
-// Type for the detailed module data
+// TODO This needs to be removed in favor of robust, zod-based UI types.
+// This is basically just the module type the ui expects. I hate this.
 export type ModuleWithDetails = {
-  // <--- Added export
   module: DbModule
   stats: DbModuleStats
   sources: DbModuleSource[]
 }
 
 /**
- * Hook to fetch modules by library ID.
- * @param libraryId The ID of the library.
+ * Query options for fetching a module with its stats and sources.
+ * Suitable for use with loaders or useQuery.
+ * @param moduleId The ID of the module.
  */
-export const useModulesByLibrary = (libraryId: string | null | undefined) => {
-  return useQuery<DbModule[], Error>({
-    queryKey: moduleKeys.list(libraryId!),
-    queryFn: () => getModulesByLibrary(libraryId!),
+// TODO this should just be `useModule`.
+export const moduleDetailsQueryOptions = (moduleId: string) =>
+  queryOptions<ModuleWithDetails | null, Error>({
+    queryKey: moduleKeys.detailWithDetails(moduleId),
+    queryFn: () => getModuleWithDetails(moduleId),
     staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: !!libraryId, // Only run if libraryId is provided
+    enabled: !!moduleId, // Ensure moduleId is provided
   })
+
+/**
+ * Query options for fetching all modules for the current user.
+ * Suitable for use with loaders or useQuery.
+ */
+export const allModulesQueryOptions = () =>
+  queryOptions<DbModule[], Error>({
+    queryKey: moduleKeys.list,
+    queryFn: getAllModules,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  })
+
+/**
+ * Hook to fetch all modules for the current user.
+ */
+export const useAllModules = () => {
+  // Use the shared queryOptions function
+  return useQuery(allModulesQueryOptions())
 }
 
 /**
@@ -57,12 +76,8 @@ export const useModule = (moduleId: string | null | undefined) => {
  * @param moduleId The ID of the module.
  */
 export const useModuleWithDetails = (moduleId: string | null | undefined) => {
-  return useQuery<ModuleWithDetails | null, Error>({
-    queryKey: moduleKeys.detailWithDetails(moduleId!),
-    queryFn: () => getModuleWithDetails(moduleId!),
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: !!moduleId, // Only run if moduleId is provided
-  })
+  // Use the shared queryOptions function
+  return useQuery(moduleDetailsQueryOptions(moduleId!))
 }
 
 /**
@@ -74,7 +89,7 @@ export const useModuleStats = (moduleId: string | null | undefined) => {
     queryKey: moduleKeys.stats(moduleId!),
     queryFn: () => getModuleStats(moduleId!),
     staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: !!moduleId, // Only run if moduleId is provided
+    enabled: !!moduleId,
   })
 }
 
@@ -84,21 +99,36 @@ export const useModuleStats = (moduleId: string | null | undefined) => {
 export const useCreateModule = () => {
   const queryClient = useQueryClient()
   type CreateModuleInput = {
-    libraryId: string
     title: string
     overview: string
-    lessonContent: Json
   }
 
   return useMutation<DbModule | null, Error, CreateModuleInput>({
-    mutationFn: (vars) =>
-      createModule(vars.libraryId, vars.title, vars.overview, vars.lessonContent),
-    onSuccess: (newModule, variables) => {
+    mutationFn: (vars) => createModule(vars.title, vars.overview),
+    onSuccess: (newModule) => {
       if (newModule) {
-        // Invalidate the list query for the specific library
-        queryClient.invalidateQueries({ queryKey: moduleKeys.list(variables.libraryId) })
-        // Optionally pre-populate the detail cache
+        // Invalidate the general module list query
+        queryClient.invalidateQueries({ queryKey: moduleKeys.list })
+        // Pre-populate the detail cache
         queryClient.setQueryData(moduleKeys.detail(newModule.id), newModule)
+
+        // Define default stats based on the actual DbModuleStats type
+        const defaultStats: DbModuleStats = {
+          module_id: newModule.id,
+          user_id: newModule.user_id,
+          current_box: 1,
+          last_reviewed_at: null,
+          next_review_at: null,
+          quiz_attempts: 0,
+          review_count: 0,
+        }
+
+        // Pre-populate the detailWithDetails cache using the new options function
+        queryClient.setQueryData(moduleDetailsQueryOptions(newModule.id).queryKey, {
+          module: newModule,
+          stats: defaultStats, // Use the correctly typed default stats
+          sources: [], // Assuming new modules start with no sources
+        })
       }
     },
     onError: (error) => {
@@ -114,27 +144,25 @@ export const useUpdateModule = () => {
   const queryClient = useQueryClient()
   type UpdateModuleInput = {
     moduleId: string
-    libraryId: string // Needed for list invalidation
-    updates: Partial<Pick<DbModule, 'title' | 'overview' | 'lesson_content'>>
+    updates: Partial<Pick<DbModule, 'title' | 'overview'>>
   }
   type UpdateModuleContext = {
     previousModule: DbModule | undefined
     previousModuleWithDetails: ModuleWithDetails | undefined
     moduleId: string
-    libraryId: string
   }
 
   return useMutation<DbModule | null, Error, UpdateModuleInput, UpdateModuleContext>({
     mutationFn: (vars) => updateModule(vars.moduleId, vars.updates),
-    onMutate: async ({ moduleId, libraryId, updates }) => {
+    onMutate: async ({ moduleId, updates }) => {
       // Cancel outgoing refetches for detail and detailWithDetails
       await queryClient.cancelQueries({ queryKey: moduleKeys.detail(moduleId) })
-      await queryClient.cancelQueries({ queryKey: moduleKeys.detailWithDetails(moduleId) })
+      await queryClient.cancelQueries({ queryKey: moduleDetailsQueryOptions(moduleId).queryKey })
 
       // Snapshot previous values
       const previousModule = queryClient.getQueryData<DbModule>(moduleKeys.detail(moduleId))
       const previousModuleWithDetails = queryClient.getQueryData<ModuleWithDetails>(
-        moduleKeys.detailWithDetails(moduleId)
+        moduleDetailsQueryOptions(moduleId).queryKey
       )
 
       // Optimistically update the detail cache
@@ -147,7 +175,7 @@ export const useUpdateModule = () => {
       }
       // Optimistically update the detailWithDetails cache
       if (previousModuleWithDetails) {
-        queryClient.setQueryData<ModuleWithDetails>(moduleKeys.detailWithDetails(moduleId), {
+        queryClient.setQueryData<ModuleWithDetails>(moduleDetailsQueryOptions(moduleId).queryKey, {
           ...previousModuleWithDetails,
           module: {
             ...previousModuleWithDetails.module,
@@ -157,7 +185,7 @@ export const useUpdateModule = () => {
         })
       }
 
-      return { previousModule, previousModuleWithDetails, moduleId, libraryId } // Return context
+      return { previousModule, previousModuleWithDetails, moduleId }
     },
     onError: (err, variables, context) => {
       console.error(`Error updating module ${variables.moduleId}:`, err)
@@ -167,22 +195,19 @@ export const useUpdateModule = () => {
       }
       if (context?.previousModuleWithDetails) {
         queryClient.setQueryData(
-          moduleKeys.detailWithDetails(context.moduleId),
+          moduleDetailsQueryOptions(context.moduleId).queryKey, // Use options queryKey
           context.previousModuleWithDetails
         )
       }
     },
-    onSettled: (_data, _error, variables, context) => {
+    onSettled: (_data, _error, variables) => {
       // Always refetch after error or success to ensure consistency
       queryClient.invalidateQueries({ queryKey: moduleKeys.detail(variables.moduleId) })
-      queryClient.invalidateQueries({ queryKey: moduleKeys.detailWithDetails(variables.moduleId) })
-      // Invalidate the list for the library the module belongs to
-      if (context?.libraryId) {
-        queryClient.invalidateQueries({ queryKey: moduleKeys.list(context.libraryId) })
-      } else {
-        // Fallback if libraryId wasn't in context (should be)
-        queryClient.invalidateQueries({ queryKey: moduleKeys.all }) // Less specific
-      }
+      queryClient.invalidateQueries({
+        queryKey: moduleDetailsQueryOptions(variables.moduleId).queryKey,
+      })
+      // Invalidate the general module list
+      queryClient.invalidateQueries({ queryKey: moduleKeys.list })
     },
   })
 }
@@ -194,19 +219,18 @@ export const useDeleteModule = () => {
   const queryClient = useQueryClient()
   type DeleteModuleInput = {
     moduleId: string
-    libraryId: string // Needed for list invalidation
   }
 
   return useMutation<boolean, Error, DeleteModuleInput>({
     mutationFn: (vars) => deleteModule(vars.moduleId),
     onSuccess: (success, variables) => {
       if (success) {
-        // Invalidate the list query for the specific library
-        queryClient.invalidateQueries({ queryKey: moduleKeys.list(variables.libraryId) })
+        // Invalidate the general module list query
+        queryClient.invalidateQueries({ queryKey: moduleKeys.list })
         // Remove detail queries from cache
         queryClient.removeQueries({ queryKey: moduleKeys.detail(variables.moduleId), exact: true })
         queryClient.removeQueries({
-          queryKey: moduleKeys.detailWithDetails(variables.moduleId),
+          queryKey: moduleDetailsQueryOptions(variables.moduleId).queryKey,
           exact: true,
         })
         queryClient.removeQueries({ queryKey: moduleKeys.stats(variables.moduleId), exact: true })
@@ -217,8 +241,6 @@ export const useDeleteModule = () => {
     },
     onError: (error, variables) => {
       console.error(`Error deleting module ${variables.moduleId}:`, error)
-      // Consider invalidating relevant queries on error if optimistic updates were used elsewhere
-      // queryClient.invalidateQueries({ queryKey: moduleKeys.list(variables.libraryId) });
     },
   })
 }
@@ -241,7 +263,7 @@ export const useAddModuleSource = () => {
     onSuccess: (_newSource, variables) => {
       // Invalidate queries that include sources
       queryClient.invalidateQueries({
-        queryKey: moduleKeys.detailWithDetails(variables.moduleId),
+        queryKey: moduleDetailsQueryOptions(variables.moduleId).queryKey,
       })
       queryClient.invalidateQueries({ queryKey: moduleKeys.sources(variables.moduleId) })
     },
@@ -258,7 +280,7 @@ export const useDeleteModuleSource = () => {
   const queryClient = useQueryClient()
   type DeleteSourceInput = {
     sourceId: string
-    moduleId: string // Needed for invalidation
+    moduleId: string
   }
 
   return useMutation<boolean, Error, DeleteSourceInput>({
@@ -267,7 +289,7 @@ export const useDeleteModuleSource = () => {
       if (success) {
         // Invalidate queries that include sources
         queryClient.invalidateQueries({
-          queryKey: moduleKeys.detailWithDetails(variables.moduleId),
+          queryKey: moduleDetailsQueryOptions(variables.moduleId).queryKey,
         })
         queryClient.invalidateQueries({ queryKey: moduleKeys.sources(variables.moduleId) })
       } else {
@@ -296,7 +318,7 @@ export const useUpdateModuleStats = () => {
       // Invalidate stats and detailWithDetails queries
       queryClient.invalidateQueries({ queryKey: moduleKeys.stats(variables.moduleId) })
       queryClient.invalidateQueries({
-        queryKey: moduleKeys.detailWithDetails(variables.moduleId),
+        queryKey: moduleDetailsQueryOptions(variables.moduleId).queryKey,
       })
     },
     onError: (error, variables) => {

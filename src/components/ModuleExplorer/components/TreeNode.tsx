@@ -1,101 +1,50 @@
 import { Box, Group, RenderTreeNodePayload, Text, Tooltip } from '@mantine/core'
-import { IconFile, IconFolder, IconFolderOpen } from '@tabler/icons-react'
+import { IconFile } from '@tabler/icons-react'
 import { useNavigate } from '@tanstack/react-router'
-import { getNodeIdentifier, isLibraryNode, isModuleNode } from '../types'
+import { getNodeIdentifier, isModuleNode } from '../types'
 
-// Navigation helpers
-function navigateToModule(
-  navigate: ReturnType<typeof useNavigate>,
-  libraryId: string,
-  moduleId: string
-) {
-  navigate({ to: '/module/view/$libraryId/$moduleId', params: { libraryId, moduleId } })
-}
-
-function navigateToLibrary(navigate: ReturnType<typeof useNavigate>, libraryId: string) {
-  navigate({ to: '/library/view/$libraryId', params: { libraryId } })
-}
-
-// Context menu handlers removed
-
-export function TreeNode({ node, expanded, elementProps, tree }: RenderTreeNodePayload) {
+export function TreeNode({ node, elementProps, tree }: RenderTreeNodePayload) {
   const navigate = useNavigate()
-  const originalOnClick = elementProps.onClick
 
-  const { onClick: _removedOnClick, ...restElementProps } = elementProps
+  const { ...restElementProps } = elementProps
 
-  // Helper function for handling module clicks (icon or text)
+  // Click handler for module nodes (icon or text)
   const handleModuleNodeClick = () => {
-    tree.select(node.value) // Select the node first
+    tree.select(node.value) // Select the node
     try {
-      const { nodeId } = getNodeIdentifier(node.value)
-      // For modules, we need the libraryId from node props
-      const nodeLibraryId = node.nodeProps?.libraryId
-      if (!nodeLibraryId) {
-        console.error(`Library ID not found for module ${nodeId}`)
-        return
-      }
-      navigateToModule(navigate, nodeLibraryId, nodeId)
+      const { nodeId: moduleId } = getNodeIdentifier(node.value)
+      // Call updated navigation function
+      navigate({ to: '/module/view/$moduleId', params: { moduleId } })
     } catch (error) {
       console.error('Error handling module node click:', error)
     }
   }
 
-  // handleContextMenu function removed
-
-  // Handler for clicking the text label (Module or Library name)
-  const handleTextClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    tree.select(node.value) // Keep selection separate in case logic diverges later
-
-    try {
-      const { nodeType, libraryId } = getNodeIdentifier(node.value)
-
-      if (nodeType === 'module') {
-        // Reuse the dedicated module click handler
-        handleModuleNodeClick()
-      } else if (nodeType === 'library' && libraryId) {
-        navigateToLibrary(navigate, libraryId)
-      }
-    } catch (error) {
-      console.error('Error handling tree node text click:', error)
-    }
-  }
-
-  // Handler for clicking the Library expand/collapse icon
-  const handleIconClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    originalOnClick?.(e)
+  // Ensure the node is actually a module node before rendering
+  if (!isModuleNode(node)) {
+    console.warn('TreeNode rendered with unexpected node type:', node.value)
+    return null
   }
 
   return (
-    // onContextMenu prop removed from Group
     <Group gap={0} {...restElementProps} w="100%">
       <Tooltip label={node.label} openDelay={800} position="bottom" withinPortal>
-        <Group gap="xs" px="xs" py={4} w="100%" wrap="nowrap">
-          {isModuleNode(node) ? (
-            // Module icon - navigates on click
-            <Box onClick={handleModuleNodeClick} style={{ cursor: 'pointer', lineHeight: 0 }}>
-              <IconFile size={16} style={{ flexShrink: 0 }} />
-            </Box>
-          ) : (
-            // Library icon - toggles expand/collapse
-            <Box onClick={handleIconClick} style={{ cursor: 'pointer', lineHeight: 0 }}>
-              {expanded ? (
-                <IconFolderOpen size={16} style={{ flexShrink: 0 }} />
-              ) : (
-                <IconFolder size={16} style={{ flexShrink: 0 }} />
-              )}
-            </Box>
-          )}
-          {/* Text label - navigates on click */}
-          <Text
-            size="sm"
-            truncate="end"
-            c={isLibraryNode(node) ? 'dimmed' : undefined}
-            style={{ flexGrow: 1, minWidth: 0, cursor: 'pointer' }}
-            onClick={handleTextClick}
-          >
+        {/* Apply click handler to the whole row */}
+        <Group
+          gap="xs"
+          px="xs"
+          py={4}
+          w="100%"
+          wrap="nowrap"
+          onClick={handleModuleNodeClick}
+          style={{ cursor: 'pointer' }}
+        >
+          {/* Always render Module icon */}
+          <Box style={{ lineHeight: 0 }}>
+            <IconFile size={16} style={{ flexShrink: 0 }} />
+          </Box>
+          {/* Text label */}
+          <Text size="sm" truncate="end" style={{ flexGrow: 1, minWidth: 0 }}>
             {node.label}
           </Text>
         </Group>

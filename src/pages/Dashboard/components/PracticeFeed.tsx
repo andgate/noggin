@@ -1,122 +1,220 @@
-import { ActionIcon, Button, Card, Group, Loader, SimpleGrid, Text } from '@mantine/core'
+import { ActionIcon, Button, Card, Group, Loader, Modal, SimpleGrid, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { getQuizzesByModule } from '@noggin/api/quizApi'
-import { quizKeys } from '@noggin/hooks/query-keys'
+import { type DueModuleWithSources } from '@noggin/api/practiceFeedApi'
+import { QuizGenerationWizard } from '@noggin/components/QuizGenerationWizard'
 import { useDeleteModule } from '@noggin/hooks/useModuleHooks'
 import { useGetDueModules } from '@noggin/hooks/usePracticeFeedHooks'
+import {
+  latestCreatedQuizByModuleQueryOptions,
+  latestSubmittedQuizByModuleQueryOptions,
+} from '@noggin/hooks/useQuizHooks'
 import type { Tables } from '@noggin/types/database.types'
 import { IconHistory, IconPlayerPlay, IconPlus, IconTrash } from '@tabler/icons-react'
-import { useQueryClient } from '@tanstack/react-query' // Import queryClient hook
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
+import { useState } from 'react'
 
-// Define DB Module type
-type DbModule = Tables<'modules'>
-type DbQuiz = Tables<'quizzes'> // Keep Quiz type
+type DbQuiz = Tables<'quizzes'>
 
-export function PracticeFeed() {
-  const navigate = useNavigate()
-  const queryClient = useQueryClient() // Get query client instance
-  // Use the new hook to fetch due modules
-  const { data: modules, isLoading, isError, error } = useGetDueModules()
-  // Use the new hook for deleting modules
-  const deleteModuleMutation = useDeleteModule()
-  // Removed useGetQuizzesByModule hook usage here
+// Define state for the wizard modal
+type WizardState = {
+  isOpen: boolean
+  moduleId: string | null
+  sources: string[]
+}
 
-  const handleDeleteMod = async (moduleId: string, libraryId: string | undefined) => {
-    // Add libraryId param
-    if (!moduleId || !libraryId) {
-      notifications.show({ title: 'Error', message: 'Module or Library ID missing.', color: 'red' })
-      return
-    }
+interface ModuleCardProps {
+  mod: DueModuleWithSources
+  onModuleClick: (moduleId: string) => void
+  onStartQuiz: (moduleId: string, quizId: string) => void
+  onOpenCreateQuizWizard: (moduleId: string, sources: string[]) => void
+  onDelete: (moduleId: string) => void
+  isDeleting: boolean
+}
 
-    const confirmed = window.confirm('Are you sure you want to delete this module?')
-    if (!confirmed) return
+function ModuleCard({
+  mod,
+  onModuleClick,
+  onStartQuiz,
+  onOpenCreateQuizWizard,
+  onDelete,
+  isDeleting,
+}: ModuleCardProps) {
+  const queryClient = useQueryClient()
 
-    // Pass both moduleId and libraryId
-    deleteModuleMutation.mutate(
-      { moduleId, libraryId },
-      {
-        onSuccess: () => {
-          notifications.show({
-            title: 'Success',
-            message: 'Module deleted successfully',
-            color: 'green',
-          })
-          // Invalidation happens within the hook
-        },
-        onError: (err) => {
-          notifications.show({
-            title: 'Error',
-            message: `Failed to delete module: ${err.message}`,
-            color: 'red',
-          })
-        },
+  const { data: latestCreatedQuiz, isLoading: isLoadingQuizCheck } = useQuery(
+    latestCreatedQuizByModuleQueryOptions(mod.id)
+  )
+
+  const handleQuizAction = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isLoadingQuizCheck) return
+
+    if (!latestCreatedQuiz) {
+      // Extract source paths before calling the handler
+      const sourcePaths = mod.module_sources.map((s) => s.storage_object_path)
+      if (sourcePaths.length === 0) {
+        notifications.show({
+          title: 'Cannot Create Quiz',
+          message: 'This module has no source content to generate a quiz from.',
+          color: 'orange',
+        })
+        return
       }
-    )
-  }
-
-  const handleModuleClick = (moduleId: string, libraryId: string) => {
-    if (!libraryId || !moduleId) {
-      notifications.show({
-        title: 'Error',
-        message: 'Library ID and Module ID are required for navigation',
-        color: 'red',
-      })
-      return
-    }
-
-    navigate({
-      to: '/module/view/$libraryId/$moduleId',
-      params: { libraryId, moduleId },
-    })
-  }
-
-  const handleStartQuiz = async (moduleId: string, libraryId: string) => {
-    if (!libraryId || !moduleId) {
-      notifications.show({
-        title: 'Error',
-        message: 'Library ID and Module ID are required for navigation',
-        color: 'red',
-      })
+      onOpenCreateQuizWizard(mod.id, sourcePaths)
       return
     }
 
     try {
-      // Fetch quizzes for the specific module on demand using queryClient
-      const quizzes = await queryClient.fetchQuery<DbQuiz[], Error>({
-        queryKey: quizKeys.list(moduleId), // Use the query key from quizKeys
-        queryFn: () => getQuizzesByModule(moduleId), // Use the direct API function
-        staleTime: 1000 * 60, // Optional: Cache for 1 minute
-      })
+      const latestSubmittedQuiz = await queryClient.fetchQuery(
+        latestSubmittedQuizByModuleQueryOptions(mod.id)
+      )
 
-      if (!quizzes || quizzes.length === 0) {
-        throw new Error('No quizzes available for this module.')
-      }
-
-      // Sort by creation date desc to find the latest
-      const latestQuiz = [...quizzes].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      )[0]
-
-      navigate({
-        to: '/quiz/session/$libraryId/$moduleId/$quizId',
-        params: { libraryId, moduleId, quizId: latestQuiz.id },
-      })
-    } catch (err: unknown) {
-      // Use unknown for error type
-      let errorMessage = 'Could not find or fetch a quiz for this module.'
-      if (err instanceof Error) {
-        errorMessage = err.message
-      }
+      // Use submitted or fallback to created
+      onStartQuiz(mod.id, latestSubmittedQuiz?.id ?? latestCreatedQuiz.id)
+    } catch (err) {
       notifications.show({
-        title: 'Error starting quiz',
-        message: errorMessage,
+        title: 'Error Starting Quiz',
+        message: err instanceof Error ? err.message : 'Could not determine which quiz to start.',
         color: 'red',
       })
     }
   }
 
-  // Handle loading state
+  const buttonText = isLoadingQuizCheck
+    ? 'Loading...'
+    : latestCreatedQuiz
+      ? 'Start Quiz'
+      : 'Create Quiz'
+  const buttonIcon = latestCreatedQuiz ? <IconPlayerPlay size={14} /> : <IconPlus size={14} />
+
+  return (
+    <Card
+      key={mod.id}
+      shadow="sm"
+      padding="md"
+      radius="md"
+      withBorder
+      style={{
+        width: '280px',
+        height: '180px',
+        cursor: 'pointer',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+      onClick={() => onModuleClick(mod.id)}
+    >
+      <div style={{ flexGrow: 1 }}>
+        <Group justify="space-between" mb="xs">
+          <Text fw={500} size="sm" truncate>
+            {mod.title}
+          </Text>
+        </Group>
+        <Group gap={8} mb="md">
+          <Text size="xs" c="dimmed">
+            Created {new Date(mod.created_at).toLocaleDateString()}
+          </Text>
+        </Group>
+      </div>
+
+      <Group justify="space-between" mt="auto">
+        <Button
+          variant="light"
+          size="xs"
+          leftSection={buttonIcon}
+          onClick={handleQuizAction}
+          title={latestCreatedQuiz ? 'Start the most recent quiz' : 'Create a quiz for this module'}
+          disabled={isLoadingQuizCheck}
+        >
+          {buttonText}
+        </Button>
+        <Group gap={8}>
+          <ActionIcon variant="subtle" size="md" title="Generate New Quiz (AI)">
+            <IconPlus size={18} />
+          </ActionIcon>
+          <ActionIcon variant="subtle" size="md" title="Review Submissions">
+            <IconHistory size={18} />
+          </ActionIcon>
+          <ActionIcon
+            variant="subtle"
+            color="red"
+            size="md"
+            title="Delete Module"
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete(mod.id)
+            }}
+            disabled={isDeleting}
+          >
+            <IconTrash size={18} />
+          </ActionIcon>
+        </Group>
+      </Group>
+    </Card>
+  )
+}
+
+export function PracticeFeed() {
+  const navigate = useNavigate()
+  const { data: modules, isLoading, isError, error } = useGetDueModules()
+  const deleteModuleMutation = useDeleteModule()
+  const [wizardState, setWizardState] = useState<WizardState>({
+    isOpen: false,
+    moduleId: null,
+    sources: [],
+  })
+
+  const handleDeleteMod = async (moduleId: string) => {
+    if (!moduleId) return
+    const confirmed = window.confirm('Are you sure you want to delete this module?')
+    if (!confirmed) return
+
+    deleteModuleMutation.mutate(
+      { moduleId },
+      {
+        onSuccess: () =>
+          notifications.show({ title: 'Success', message: 'Module deleted.', color: 'green' }),
+        onError: (err) =>
+          notifications.show({
+            title: 'Error',
+            message: `Delete failed: ${err.message}`,
+            color: 'red',
+          }),
+      }
+    )
+  }
+
+  const handleModuleClick = (moduleId: string) => {
+    if (!moduleId) return
+    navigate({ to: '/module/view/$moduleId', params: { moduleId } })
+  }
+
+  const handleNavigateToQuizSession = (moduleId: string, quizId: string) => {
+    if (!moduleId || !quizId) return
+    navigate({ to: '/quiz/session/$moduleId/$quizId', params: { moduleId, quizId } })
+  }
+
+  // Updated handler to open the modal
+  const handleOpenCreateQuizWizard = (moduleId: string, sources: string[]) => {
+    setWizardState({ isOpen: true, moduleId, sources })
+  }
+
+  // Handler for when the wizard completes
+  const handleWizardComplete = (newQuiz: DbQuiz) => {
+    setWizardState({ isOpen: false, moduleId: null, sources: [] })
+    notifications.show({
+      title: 'Quiz Created',
+      message: `Successfully created quiz: ${newQuiz.title}`,
+      color: 'green',
+    })
+    // Navigate to the new quiz or session
+    // navigate({ to: '/quiz/view/$moduleId/$quizId', params: { moduleId: newQuiz.module_id, quizId: newQuiz.id } });
+  }
+
+  const handleWizardCancel = () => {
+    setWizardState({ isOpen: false, moduleId: null, sources: [] })
+  }
+
   if (isLoading) {
     return (
       <Group justify="center" p="xl">
@@ -124,8 +222,6 @@ export function PracticeFeed() {
       </Group>
     )
   }
-
-  // Handle error state
   if (isError) {
     return (
       <Text color="red" p="md">
@@ -133,8 +229,6 @@ export function PracticeFeed() {
       </Text>
     )
   }
-
-  // Handle empty state
   if (!modules || modules.length === 0) {
     return (
       <Text c="dimmed" p="md">
@@ -144,85 +238,43 @@ export function PracticeFeed() {
   }
 
   return (
-    <SimpleGrid
-      cols={{ base: 1, sm: 2, lg: 3, xl: 4 }}
-      p="md"
-      style={{ flex: 1, overflow: 'auto' }}
-    >
-      {/* Map over data from the hook */}
-      {modules.map((mod: DbModule) => (
-        <Card
-          key={mod.id} // Use new ID
-          shadow="sm"
-          padding="md"
-          radius="md"
-          withBorder
-          style={{
-            width: '280px',
-            height: '180px',
-            cursor: 'pointer',
-            display: 'flex', // Use flexbox for layout
-            flexDirection: 'column', // Stack elements vertically
-          }}
-          onClick={() => handleModuleClick(mod.id, mod.library_id)} // Use new IDs
-        >
-          <div style={{ flexGrow: 1 }}>
-            {' '}
-            {/* Allow title/date to take available space */}
-            <Group justify="space-between" mb="xs">
-              <Text fw={500} size="sm" truncate>
-                {mod.title} {/* Use new title */}
-              </Text>
-            </Group>
-            <Group gap={8} mb="md">
-              <Text size="xs" c="dimmed">
-                {/* Use new created_at */}
-                Created {new Date(mod.created_at).toLocaleDateString()}
-              </Text>
-            </Group>
-          </div>
+    <>
+      <SimpleGrid
+        cols={{ base: 1, sm: 2, lg: 3, xl: 4 }}
+        p="md"
+        style={{ flex: 1, overflow: 'auto' }}
+      >
+        {modules.map((mod: DueModuleWithSources) => (
+          <ModuleCard
+            key={mod.id}
+            mod={mod}
+            onModuleClick={handleModuleClick}
+            onStartQuiz={handleNavigateToQuizSession}
+            onOpenCreateQuizWizard={handleOpenCreateQuizWizard} // Pass the modal opener
+            onDelete={handleDeleteMod}
+            isDeleting={
+              deleteModuleMutation.isPending && deleteModuleMutation.variables?.moduleId === mod.id
+            }
+          />
+        ))}
+      </SimpleGrid>
 
-          {/* Keep actions at the bottom */}
-          <Group justify="space-between" mt="auto">
-            <Button
-              variant="light"
-              size="xs"
-              leftSection={<IconPlayerPlay size={14} />}
-              onClick={(e) => {
-                e.stopPropagation()
-                handleStartQuiz(mod.id, mod.library_id) // Use new IDs
-              }}
-              title="Start the most recent quiz for this module"
-            >
-              Start Quiz
-            </Button>
-            <Group gap={8}>
-              {/* TODO: Implement Generate Quiz action */}
-              <ActionIcon variant="subtle" size="md" title="Generate New Quiz">
-                <IconPlus size={18} />
-              </ActionIcon>
-              {/* TODO: Implement Review Submissions action/navigation */}
-              <ActionIcon variant="subtle" size="md" title="Review Submissions">
-                <IconHistory size={18} />
-              </ActionIcon>
-              <ActionIcon
-                variant="subtle"
-                color="red"
-                size="md"
-                title="Delete Module"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  // Pass library_id to delete handler
-                  handleDeleteMod(mod.id, mod.library_id)
-                }}
-                disabled={deleteModuleMutation.isPending} // Disable while deleting
-              >
-                <IconTrash size={18} />
-              </ActionIcon>
-            </Group>
-          </Group>
-        </Card>
-      ))}
-    </SimpleGrid>
+      {/* Quiz Generation Wizard Modal */}
+      <Modal
+        opened={wizardState.isOpen}
+        onClose={handleWizardCancel}
+        title="Generate New Quiz"
+        size="xl" // Adjust size as needed
+      >
+        {wizardState.moduleId && (
+          <QuizGenerationWizard
+            moduleId={wizardState.moduleId}
+            sources={wizardState.sources} // Pass source paths
+            onComplete={handleWizardComplete}
+            onCancel={handleWizardCancel}
+          />
+        )}
+      </Modal>
+    </>
   )
 }

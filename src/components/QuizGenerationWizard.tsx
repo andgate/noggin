@@ -17,7 +17,6 @@ type DbQuestionInsert = TablesInsert<'questions'>
 
 export interface QuizGenerationWizardProps {
   sources: string[]
-  libraryId: string
   moduleId: string
   onComplete: (quiz: DbQuiz) => void
   onCancel: () => void
@@ -189,7 +188,6 @@ export function QuizGenerationWizard({
   const [numQuestions, setNumQuestions] = useState(10)
   const [includeMultipleChoice, setIncludeMultipleChoice] = useState(true)
   const [includeWritten, setIncludeWritten] = useState(true)
-  // Use the correct GeneratedQuiz type from imports
   const [generatedQuizData, setGeneratedQuizData] = useState<GeneratedQuiz | null>(null)
 
   const generateQuizMutation = useGenerateQuiz()
@@ -208,7 +206,7 @@ export function QuizGenerationWizard({
         includeWritten,
         moduleId,
       })
-      setGeneratedQuizData(quizData) // Store the GeneratedQuiz result
+      setGeneratedQuizData(quizData)
       setStage('preview')
     } catch (error) {
       console.error('Failed to generate quiz:', error)
@@ -220,7 +218,6 @@ export function QuizGenerationWizard({
     }
   }
 
-  // Updated function to transform GeneratedQuiz to DbQuestionInsert[]
   const transformGeneratedQuestions = (
     quiz: GeneratedQuiz
   ): Omit<DbQuestionInsert, 'quiz_id' | 'user_id'>[] => {
@@ -230,10 +227,8 @@ export function QuizGenerationWizard({
       return {
         question_text: q.question,
         question_type: q.questionType,
-        // Convert choices array [{text: "A"}, {text: "B"}] to JSON string '["A", "B"]'
         choices: JSON.stringify(q.choices.map((c) => c.text)),
-        // Correct answer text needs to be handled if AI provides it separately
-        correct_answer_text: null, // Placeholder - AI schema needs update for this
+        correct_answer_text: null,
         sequence_order: sequence,
       }
     })
@@ -242,8 +237,8 @@ export function QuizGenerationWizard({
       return {
         question_text: q.question,
         question_type: q.questionType,
-        choices: null, // No choices for written
-        correct_answer_text: null, // Placeholder - AI schema needs update for this
+        choices: null,
+        correct_answer_text: null,
         sequence_order: sequence,
       }
     })
@@ -266,7 +261,7 @@ export function QuizGenerationWizard({
       }
 
       // 2. Transform and Create the Questions
-      const questionsToInsert = transformGeneratedQuestions(generatedQuizData) // Pass the whole object
+      const questionsToInsert = transformGeneratedQuestions(generatedQuizData)
       if (questionsToInsert.length > 0) {
         await createQuestionsMutation.mutateAsync({
           quizId: newQuiz.id,

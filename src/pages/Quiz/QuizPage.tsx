@@ -1,6 +1,6 @@
 import { ActionIcon, Button, Card, Grid, Group, Menu, Modal, Stack, Title } from '@mantine/core'
 import { AppHeader, HeaderAction } from '@noggin/components/layout/AppHeader'
-import { Route } from '@noggin/routes/quiz/view.$libraryId.$moduleId.$quizId'
+import { Route } from '@noggin/routes/quiz/view.$moduleId.$quizId'
 import type { Tables } from '@noggin/types/database.types'
 import { IconClipboardList, IconEye, IconMenu2 } from '@tabler/icons-react'
 import { useNavigate } from '@tanstack/react-router'
@@ -14,8 +14,6 @@ type DbQuestion = Tables<'questions'>
 type DbSubmission = Tables<'submissions'>
 
 export type QuizPageProps = {
-  // libraryId: string // Removed, get from params
-  // moduleId: string // Removed, get from params
   quiz: DbQuiz
   questions: DbQuestion[]
   submissions: DbSubmission[]
@@ -24,7 +22,7 @@ export type QuizPageProps = {
 export function QuizPage({ quiz, questions, submissions }: QuizPageProps) {
   const navigate = useNavigate()
   // Get params from the route context
-  const { libraryId, moduleId } = Route.useParams()
+  const { moduleId } = Route.useParams()
   const [attemptsModalOpen, setAttemptsModalOpen] = useState(false)
 
   // Define which header actions to enable
@@ -62,9 +60,9 @@ export function QuizPage({ quiz, questions, submissions }: QuizPageProps) {
                     leftSection={<IconClipboardList size={16} />}
                     onClick={() =>
                       navigate({
-                        to: '/quiz/session/$libraryId/$moduleId/$quizId',
+                        to: '/quiz/session/$moduleId/$quizId',
                         // Use params and quiz.id
-                        params: { libraryId, moduleId, quizId: quiz.id },
+                        params: { moduleId, quizId: quiz.id },
                       })
                     }
                   >
@@ -109,7 +107,6 @@ export function QuizPage({ quiz, questions, submissions }: QuizPageProps) {
         {/* Pass submissions and libraryId */}
         <AttemptsHistory
           submissions={submissions}
-          libraryId={libraryId}
           // moduleId={moduleId} // Not needed by AttemptsHistory anymore
           // quizId={quiz.id} // Not needed by AttemptsHistory anymore
           onClose={() => setAttemptsModalOpen(false)}

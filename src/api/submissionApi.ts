@@ -1,10 +1,9 @@
-// src/renderer/src/api/submissionApi.ts
 import { supabase } from '@noggin/app/common/supabase-client'
 import type { Tables, TablesInsert, TablesUpdate } from '@noggin/types/database.types'
+import { type DbQuiz } from './quizApi'
 
 export type DbSubmission = Tables<'submissions'>
 export type DbResponse = Tables<'responses'>
-// Define the new type for submission with quiz title
 export type DbSubmissionWithQuizTitle = DbSubmission & {
   quizzes: { title: string } | null // Joined quiz data
 }
@@ -93,9 +92,9 @@ export const getSubmissionWithResponses = async (
 
     // Handle submission fetch error or not found
     if (submissionResult.error || !submissionResult.data) {
-      console.error('Error fetching submission by ID:', submissionResult.error)
-      if (submissionResult.error?.code === 'PGRST116') {
-        // Specific error for not found/RLS denial
+      if (submissionResult.error && submissionResult.error.code !== 'PGRST116') {
+        console.error('Error fetching submission by ID:', submissionResult.error)
+      } else if (!submissionResult.data) {
         console.log(`Submission with id ${submissionId} not found or access denied.`)
       }
       return null
@@ -108,7 +107,6 @@ export const getSubmissionWithResponses = async (
         submissionId,
         responsesResult.error
       )
-      // Decide if you want to return partial data or null. Returning null for consistency.
       return null
     }
 
@@ -154,9 +152,12 @@ export const getSubmissionDetailsByAttempt = async (
       .single() // Expecting only one submission for a specific attempt
 
     if (lookupError || !submissionLookup) {
-      console.error(`Error finding submission for quiz ${quizId}, attempt ${attempt}:`, lookupError)
-      if (lookupError?.code === 'PGRST116') {
-        // Not found
+      if (lookupError && lookupError.code !== 'PGRST116') {
+        console.error(
+          `Error finding submission for quiz ${quizId}, attempt ${attempt}:`,
+          lookupError
+        )
+      } else {
         console.log(`Submission attempt ${attempt} for quiz ${quizId} not found.`)
       }
       return null
@@ -165,7 +166,6 @@ export const getSubmissionDetailsByAttempt = async (
     const submissionId = submissionLookup.id
 
     // 2. Fetch the full submission details and responses using the found ID
-    // Re-use the existing getSubmissionWithResponses logic
     return await getSubmissionWithResponses(submissionId)
   } catch (error) {
     console.error('Unexpected error in getSubmissionDetailsByAttempt:', error)
@@ -210,9 +210,6 @@ export const getSubmissionsByModule = async (
     return []
   }
 
-  // The data structure will be slightly different due to the join
-  // We need to ensure it matches DbSubmissionWithQuizTitle
-  // Supabase automatically nests the joined data if the foreign key relationship is set up
   return (data as DbSubmissionWithQuizTitle[]) || []
 }
 
@@ -246,6 +243,71 @@ export const getSubmissionsByQuiz = async (quizId: string): Promise<DbSubmission
 }
 
 /**
+ * Fetches the most recent submission for a given module by the current user.
+ * @param moduleId - The ID of the module.
+ * @returns The latest submission object or null if none found or error.
+ */
+export const getLatestSubmissionByModule = async (
+  moduleId: string
+): Promise<DbSubmission | null> => {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    console.error('Error getting user:', userError)
+    return null
+  }
+
+  const { data, error } = await supabase
+    .from('submissions')
+    .select('*')
+    .eq('module_id', moduleId)
+    .eq('user_id', user.id)
+    .order('submitted_at', { ascending: false })
+    .limit(1)
+    .maybeSingle() // Use maybeSingle to return null if no submission found
+
+  if (error) {
+    console.error('Error fetching latest submission by module:', error)
+    return null
+  }
+  return data
+}
+
+/**
+ * Fetches the quiz associated with the latest submission for a given module.
+ * @param moduleId - The ID of the module.
+ * @returns The DbQuiz object or null if no submission/quiz found or error.
+ */
+export const getLatestSubmittedQuizByModule = async (moduleId: string): Promise<DbQuiz | null> => {
+  const latestSubmission = await getLatestSubmissionByModule(moduleId)
+
+  if (!latestSubmission) {
+    console.log(`No submissions found for module ${moduleId} to determine latest quiz.`)
+    return null
+  }
+
+  // Fetch the quiz associated with the latest submission
+  const { data: quizData, error: quizError } = await supabase
+    .from('quizzes')
+    .select('*')
+    .eq('id', latestSubmission.quiz_id)
+    .single()
+
+  if (quizError) {
+    console.error(
+      `Error fetching quiz ${latestSubmission.quiz_id} for latest submission:`,
+      quizError
+    )
+    return null
+  }
+
+  return quizData
+}
+
+/**
  * Updates a submission record.
  * Assumes RLS handles ownership. Prevents updating user_id, module_id, quiz_id.
  * @param submissionId - The ID of the submission to update.
@@ -261,7 +323,6 @@ export const updateSubmission = async (
 
   if (Object.keys(validUpdates).length === 0) {
     console.warn('No valid fields provided for submission update.')
-    // Fetch and return the current submission if no update is needed
     const { data: currentData, error: currentError } = await supabase
       .from('submissions')
       .select('*')
@@ -304,7 +365,6 @@ export const updateResponse = async (
 
   if (Object.keys(validUpdates).length === 0) {
     console.warn('No valid fields provided for response update.')
-    // Fetch and return the current response if no update is needed
     const { data: currentData, error: currentError } = await supabase
       .from('responses')
       .select('*')

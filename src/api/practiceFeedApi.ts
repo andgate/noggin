@@ -1,20 +1,21 @@
-// src/renderer/src/api/practiceFeedApi.ts
 import { supabase } from '@noggin/app/common/supabase-client'
-// Import the generic Tables type
 import type { Tables } from '@noggin/types/database.types'
 
-// Define DbModule using the Tables type for the 'modules' table
 type DbModule = Tables<'modules'>
+type DbModuleSource = Tables<'module_sources'>
+
+export type DueModuleWithSources = DbModule & {
+  module_sources: Pick<DbModuleSource, 'storage_object_path'>[] // Only need the path for generation
+}
 
 /**
- * Fetches modules that are due for review for the current user.
+ * Fetches modules that are due for review for the current user, including their source paths.
  * Modules are considered due if their next_review_at timestamp in module_stats
  * is less than or equal to the current time.
  *
- * @returns A promise that resolves to an array of due DbModule objects, or an empty array on error.
+ * @returns A promise that resolves to an array of due DbModule objects with source paths, or an empty array on error.
  */
-export const getDueModules = async (): Promise<DbModule[]> => {
-  console.log('Fetching due modules...')
+export const getDueModules = async (): Promise<DueModuleWithSources[]> => {
   try {
     const { data: userData, error: userError } = await supabase.auth.getUser()
 
@@ -25,36 +26,29 @@ export const getDueModules = async (): Promise<DbModule[]> => {
     const userId = userData.user.id
     const now = new Date().toISOString()
 
-    console.log(`Fetching modules for user ${userId} due before ${now}`)
-
-    // Query modules, joining with module_stats where the user matches
-    // and the next review time is in the past or now.
-    // The !inner ensures only modules with matching stats are returned.
+    // Query modules, joining with module_stats (inner) and module_sources (left)
     const { data, error } = await supabase
       .from('modules')
       .select(
         `
         *,
-        module_stats!inner(*)
+        module_stats!inner(*),
+        module_sources ( storage_object_path )
       `
       )
       .eq('module_stats.user_id', userId)
       .lte('module_stats.next_review_at', now)
 
     if (error) {
-      console.error('Error fetching due modules:', error.message)
-      // Log specific Supabase error details if available
+      console.error('Error fetching due modules with sources:', error.message)
       if (error.details) console.error('Error details:', error.details)
       if (error.hint) console.error('Error hint:', error.hint)
       return []
     }
 
-    console.log(`Found ${data?.length ?? 0} due modules.`)
-    // Supabase typings might make `data` potentially null, ensure we return array
-    // The select with !inner(*) should return objects matching the DbModule structure
-    // directly when the join condition is met.
-    // The type assertion is still needed because Supabase select might return a broader type.
-    return (data as DbModule[]) || []
+    console.log(`Found ${data?.length ?? 0} due modules with sources.`)
+    // Type assertion needed as Supabase join typing can be complex
+    return (data as DueModuleWithSources[]) || []
   } catch (err) {
     console.error('Unexpected error in getDueModules:', err)
     if (err instanceof Error) {

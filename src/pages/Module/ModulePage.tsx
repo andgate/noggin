@@ -1,4 +1,3 @@
-// src/renderer/src/pages/Module/ModulePage.tsx
 import { Button, Grid, Group, Loader, Menu, Modal, Text, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { useUiStore } from '@noggin/app/stores/ui-store'
@@ -15,8 +14,8 @@ import { QuizCard } from './components/QuizCard'
 type DbModule = Tables<'modules'>
 type DbModuleSource = Tables<'module_sources'>
 type DbModuleStats = Tables<'module_stats'>
+type DbQuiz = Tables<'quizzes'>
 
-// Updated Props
 type ModulePageProps = {
   module: DbModule
   stats: DbModuleStats
@@ -28,9 +27,7 @@ export function ModulePage({ module, stats, sources }: ModulePageProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
-  // Removed: const { deleteModuleQuiz } = useModule() // Old hook
 
-  // Fetch quizzes using the new hook
   const {
     data: quizzes,
     isLoading: isLoadingQuizzes,
@@ -38,20 +35,16 @@ export function ModulePage({ module, stats, sources }: ModulePageProps) {
     error: errorQuizzes,
   } = useGetQuizzesByModule(module.id)
 
-  // Use the delete mutation hook
   const deleteQuizMutation = useDeleteQuiz()
 
-  // Define which header actions to enable
   const headerActions: HeaderAction[] = ['explorer', 'settings']
 
-  // Type for onComplete might need update if Quiz type changed significantly
-  const handleQuizGenerated = () => {
-    // Assuming DbQuiz is returned or null
+  const handleQuizGenerated = (newQuiz: DbQuiz) => {
+    // Added type for newQuiz
     setIsGenerating(false)
-    // Optionally show notification
     notifications.show({
       title: 'Quiz Saved',
-      message: 'The generated quiz has been saved.',
+      message: `The generated quiz "${newQuiz.title}" has been saved.`, // Use quiz title
       color: 'green',
     })
   }
@@ -86,7 +79,7 @@ export function ModulePage({ module, stats, sources }: ModulePageProps) {
     setDetailsModalOpen(true)
   }
 
-  // Prepare sources for QuizGenerationWizard (assuming storage_object_path is needed)
+  // Prepare sources for QuizGenerationWizard
   const sourcePaths = sources.map((s) => s.storage_object_path)
 
   return (
@@ -99,7 +92,6 @@ export function ModulePage({ module, stats, sources }: ModulePageProps) {
         overflow: 'hidden',
       }}
     >
-      {/* Use new module title */}
       <AppHeader title={module.title} actions={headerActions} />
 
       <div
@@ -134,6 +126,13 @@ export function ModulePage({ module, stats, sources }: ModulePageProps) {
                     <Menu.Item
                       leftSection={<IconPlus size={14} />}
                       onClick={() => setIsGenerating(true)}
+                      // Disable if no sources exist
+                      disabled={sourcePaths.length === 0}
+                      title={
+                        sourcePaths.length === 0
+                          ? 'Module needs source content first'
+                          : 'Create Quiz'
+                      }
                     >
                       Create Quiz
                     </Menu.Item>
@@ -149,7 +148,6 @@ export function ModulePage({ module, stats, sources }: ModulePageProps) {
                   </Menu.Dropdown>
                 </Menu>
               )}
-              {/* Use new module title */}
               <Title order={2}>{editMode ? `${module.title} (editing)` : module.title}</Title>
             </Group>
             {editMode && (
@@ -166,7 +164,6 @@ export function ModulePage({ module, stats, sources }: ModulePageProps) {
               marginBottom: '16px',
             }}
           >
-            {/* Use new module overview */}
             <Text>{module.overview}</Text>
           </div>
 
@@ -191,17 +188,14 @@ export function ModulePage({ module, stats, sources }: ModulePageProps) {
             )}
             {!isLoadingQuizzes && !isErrorQuizzes && (
               <Grid style={{ width: '100%', margin: 0 }}>
-                {/* Map over fetched quizzes */}
                 {quizzes?.map((quiz) => (
                   <Grid.Col span={{ base: 12, sm: 6, md: 4 }} key={quiz.id}>
                     <QuizCard
-                      libraryId={module.library_id} // Use new field
-                      moduleId={module.id} // Use new field
+                      moduleId={module.id}
                       quizId={quiz.id}
                       title={quiz.title}
-                      // TODO: Get actual question count later
-                      questionCount={0} // Placeholder
-                      createdAt={quiz.created_at} // Use new field
+                      questionCount={0}
+                      createdAt={quiz.created_at}
                       onDelete={() => handleDeleteQuiz(quiz.id)}
                       editMode={editMode}
                     />
@@ -222,10 +216,9 @@ export function ModulePage({ module, stats, sources }: ModulePageProps) {
         title="Generate Quiz"
       >
         <QuizGenerationWizard
-          sources={sourcePaths} // Pass mapped source paths
-          libraryId={module.library_id} // Use new field
-          moduleId={module.id} // Use new field (assuming slug means ID here)
-          onComplete={handleQuizGenerated} // Type might need adjustment based on wizard's return
+          sources={sourcePaths}
+          moduleId={module.id}
+          onComplete={handleQuizGenerated}
           onCancel={() => setIsGenerating(false)}
         />
       </Modal>
@@ -238,7 +231,6 @@ export function ModulePage({ module, stats, sources }: ModulePageProps) {
         title="Module Details"
         size="md"
       >
-        {/* Pass new props to ModuleDetails */}
         <ModuleDetails module={module} stats={stats} sources={sources} />
       </Modal>
 

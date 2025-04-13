@@ -1,32 +1,19 @@
-import { ActionIcon, Group, Menu, Stack, Title, Tree } from '@mantine/core'
-import { CreateLibraryModal } from '@noggin/components/CreateLibraryModal'
-import { IconDots, IconFilePlus, IconFolderPlus } from '@tabler/icons-react'
+import { ActionIcon, Group, Loader, Menu, Stack, Title, Tree } from '@mantine/core' // Added Loader import
+import { IconDots, IconFilePlus } from '@tabler/icons-react'
 import { useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
 import { TreeNode } from './components/TreeNode'
 import { useModuleTree } from './hooks/useModuleTree'
 import { useModuleTreeData } from './hooks/useModuleTreeData'
 
 export function ModuleExplorer() {
-  const [createLibraryOpen, setCreateLibraryOpen] = useState(false)
   const navigate = useNavigate()
 
-  // Get tree data using our custom hook
-  const { treeData, initialExpanded } = useModuleTreeData()
+  const { treeData, isLoading } = useModuleTreeData()
 
-  // Get tree controller using our custom hook
-  const tree = useModuleTree(treeData, initialExpanded)
-
-  const handleCreateLibrary = () => {
-    setCreateLibraryOpen(true)
-  }
+  const tree = useModuleTree(treeData)
 
   const handleCreateModule = () => {
     navigate({ to: '/module/create' })
-  }
-
-  const handleLibraryCreated = () => {
-    setCreateLibraryOpen(false)
   }
 
   return (
@@ -51,9 +38,6 @@ export function ModuleExplorer() {
             </ActionIcon>
           </Menu.Target>
           <Menu.Dropdown>
-            <Menu.Item leftSection={<IconFolderPlus size={16} />} onClick={handleCreateLibrary}>
-              Create Library
-            </Menu.Item>
             <Menu.Item leftSection={<IconFilePlus size={16} />} onClick={handleCreateModule}>
               Create Module
             </Menu.Item>
@@ -61,13 +45,14 @@ export function ModuleExplorer() {
         </Menu>
       </Group>
 
-      <Tree data={treeData} renderNode={TreeNode} tree={tree} style={{ paddingLeft: 10 }} />
-
-      <CreateLibraryModal
-        opened={createLibraryOpen}
-        onClose={() => setCreateLibraryOpen(false)}
-        onCreated={handleLibraryCreated}
-      />
+      {/* Conditionally render Loader or Tree based on isLoading state */}
+      {isLoading ? (
+        <Group justify="center" align="center" style={{ flexGrow: 1 }}>
+          <Loader size="sm" />
+        </Group>
+      ) : (
+        <Tree data={treeData} renderNode={TreeNode} tree={tree} style={{ paddingLeft: 10 }} />
+      )}
     </Stack>
   )
 }

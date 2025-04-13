@@ -1,7 +1,5 @@
-// src/renderer/src/api/moduleApi.ts
-
 import { supabase } from '@noggin/app/common/supabase-client'
-import type { Json, Tables, TablesInsert } from '@noggin/types/database.types'
+import type { Tables, TablesInsert } from '@noggin/types/database.types'
 
 // Helper types
 export type DbModule = Tables<'modules'>
@@ -9,19 +7,13 @@ export type DbModuleStats = Tables<'module_stats'>
 export type DbModuleSource = Tables<'module_sources'>
 
 /**
- * Creates a new module and its initial stats entry.
- * @param libraryId - The ID of the library this module belongs to.
+ * Creates a new module and its initial stats entry for the current user.
  * @param title - The title of the module.
  * @param overview - An overview/description of the module.
  * @param lessonContent - The lesson content (JSON).
  * @returns The newly created module object or null if an error occurs.
  */
-export const createModule = async (
-  libraryId: string,
-  title: string,
-  overview: string,
-  lessonContent: Json
-): Promise<DbModule | null> => {
+export const createModule = async (title: string, overview: string): Promise<DbModule | null> => {
   const {
     data: { session },
     error: authError,
@@ -36,11 +28,9 @@ export const createModule = async (
   const { data: newModule, error: moduleError } = await supabase
     .from('modules')
     .insert({
-      library_id: libraryId,
       user_id: userId,
       title,
       overview,
-      lesson_content: lessonContent,
     })
     .select()
     .single()
@@ -55,8 +45,8 @@ export const createModule = async (
   const { error: statsError } = await supabase.from('module_stats').insert({
     module_id: newModule.id,
     user_id: userId,
-    current_box: 1, // Default starting box
-    next_review_at: new Date().toISOString(), // Review immediately
+    current_box: 1,
+    next_review_at: new Date().toISOString(),
     quiz_attempts: 0,
     review_count: 0,
   })
@@ -74,11 +64,10 @@ export const createModule = async (
 }
 
 /**
- * Fetches all modules belonging to a specific library for the current user.
- * @param libraryId - The ID of the library.
+ * Fetches all modules belonging to the current user.
  * @returns An array of modules or an empty array if none found or error.
  */
-export const getModulesByLibrary = async (libraryId: string): Promise<DbModule[]> => {
+export const getAllModules = async (): Promise<DbModule[]> => {
   const {
     data: { session },
     error: authError,
@@ -89,14 +78,10 @@ export const getModulesByLibrary = async (libraryId: string): Promise<DbModule[]
   }
   const userId = session.user.id
 
-  const { data, error } = await supabase
-    .from('modules')
-    .select('*')
-    .eq('library_id', libraryId)
-    .eq('user_id', userId) // Explicit user_id check needed here
+  const { data, error } = await supabase.from('modules').select('*').eq('user_id', userId) // Explicit user_id check needed here
 
   if (error) {
-    console.error('Error fetching modules by library:', error)
+    console.error('Error fetching all modules:', error)
     return []
   }
   return data || []
@@ -176,7 +161,7 @@ export const getModuleWithDetails = async (
  */
 export const updateModule = async (
   moduleId: string,
-  updates: Partial<Pick<DbModule, 'title' | 'overview' | 'lesson_content'>>
+  updates: Partial<Pick<DbModule, 'title' | 'overview'>>
 ): Promise<DbModule | null> => {
   const { data, error } = await supabase
     .from('modules')

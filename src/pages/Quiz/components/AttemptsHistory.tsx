@@ -1,5 +1,5 @@
 import { Button, Card, Group, Stack, Text } from '@mantine/core'
-import { Route } from '@noggin/routes/quiz/view.$libraryId.$moduleId.$quizId'
+import { Route } from '@noggin/routes/quiz/view.$moduleId.$quizId'
 import type { Tables } from '@noggin/types/database.types'
 import { useNavigate } from '@tanstack/react-router'
 
@@ -7,11 +7,10 @@ type DbSubmission = Tables<'submissions'>
 
 type AttemptsHistoryProps = {
   submissions: DbSubmission[]
-  libraryId: string
   onClose?: () => void
 }
 
-export function AttemptsHistory({ submissions, libraryId, onClose }: AttemptsHistoryProps) {
+export function AttemptsHistory({ submissions, onClose }: AttemptsHistoryProps) {
   const navigate = useNavigate()
   const { moduleId, quizId } = Route.useParams()
 
@@ -27,9 +26,8 @@ export function AttemptsHistory({ submissions, libraryId, onClose }: AttemptsHis
     }
 
     navigate({
-      to: '/submission/$libraryId/$moduleId/$quizId/$attempt',
+      to: '/submission/$moduleId/$quizId/$attempt',
       params: {
-        libraryId,
         moduleId,
         quizId,
         attempt: `${attemptNumber}`,
