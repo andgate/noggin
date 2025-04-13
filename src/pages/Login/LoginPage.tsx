@@ -1,4 +1,4 @@
-import { ActionIcon, Anchor, Center, Container, Group, Paper, Title } from '@mantine/core'
+import { ActionIcon, Anchor, Center, Container, Paper, Title } from '@mantine/core'
 import { LoginForm } from '@noggin/components/Auth/LoginForm'
 import { IconX } from '@tabler/icons-react'
 import { Link } from '@tanstack/react-router'
