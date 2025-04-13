@@ -1,21 +1,53 @@
 import { supabase } from '@noggin/app/common/supabase-client'
 import type { Tables, TablesInsert, TablesUpdate } from '@noggin/types/database.types'
-import { type DbQuiz } from './quizApi'
+import { Response } from '@noggin/types/response.types'
+import { Submission } from '@noggin/types/submission.types'
+import { mapDbResponseToResponse } from './responseApi.mappers'
+import { mapDbSubmissionToSubmission } from './submissionApi.mappers'
 
-export type DbSubmission = Tables<'submissions'>
-export type DbResponse = Tables<'responses'>
-export type DbSubmissionWithQuizTitle = DbSubmission & {
-  quizzes: { title: string } | null // Joined quiz data
-}
+// Define DB Row types locally
+type DbResponse = Tables<'responses'>
+
+/**
+ * Defines the data required to create a new submission.
+ */
+type CreateSubmissionInput = Pick<
+  TablesInsert<'submissions'>,
+  | 'quiz_id'
+  | 'module_id'
+  | 'time_elapsed_seconds'
+  | 'submitted_at'
+  | 'status'
+  | 'grade_percent'
+  | 'letter_grade'
+>
+
+/**
+ * Defines the data required to create a new response.
+ */
+type CreateResponseInput = Pick<TablesInsert<'responses'>, 'question_id' | 'student_answer_text'>
+
+/**
+ * Defines the data allowed for updating a submission (grading).
+ */
+type UpdateSubmissionInput = Pick<
+  TablesUpdate<'submissions'>,
+  'grade_percent' | 'letter_grade' | 'status'
+>
+
+/**
+ * Defines the data allowed for updating a response (grading).
+ */
+type UpdateResponseInput = Pick<TablesUpdate<'responses'>, 'feedback' | 'is_correct'>
 
 /**
  * Creates a new submission record.
- * @param submissionData - The data for the new submission, excluding user_id and id.
- * @returns The created submission object or null if an error occurred.
+ * @param submissionData - The data required to create the submission.
+ * @returns The created and mapped Submission object (with empty responses array initially) or null if an error occurred.
  */
 export const createSubmission = async (
-  submissionData: Omit<TablesInsert<'submissions'>, 'user_id' | 'id'>
-): Promise<DbSubmission | null> => {
+  submissionData: CreateSubmissionInput
+): Promise<Submission | null> => {
   const {
     data: { user },
     error: userError,
@@ -26,9 +58,22 @@ export const createSubmission = async (
     return null
   }
 
-  const { data, error } = await supabase
+  // Calculate attempt number
+  const { count, error: countError } = await supabase
     .from('submissions')
-    .insert({ ...submissionData, user_id: user.id })
+    .select('*', { count: 'exact', head: true })
+    .eq('quiz_id', submissionData.quiz_id)
+    .eq('user_id', user.id)
+
+  if (countError) {
+    console.error('Error counting previous submissions:', countError)
+    return null
+  }
+  const attemptNumber = (count ?? 0) + 1
+
+  const { data: newDbSubmission, error } = await supabase
+    .from('submissions')
+    .insert({ ...submissionData, user_id: user.id, attempt_number: attemptNumber })
     .select()
     .single()
 
@@ -36,19 +81,20 @@ export const createSubmission = async (
     console.error('Error creating submission:', error)
     return null
   }
-  return data
+  // Map submission, providing an empty array for responses
+  return mapDbSubmissionToSubmission(newDbSubmission, [])
 }
 
 /**
  * Creates multiple response records for a given submission.
  * @param submissionId - The ID of the submission these responses belong to.
- * @param responsesData - An array of response data, excluding user_id, id, and submission_id.
- * @returns An array of the created response objects or null if an error occurred.
+ * @param responsesData - An array of response data objects.
+ * @returns An array of the created and mapped Response objects or null if an error occurred.
  */
 export const createResponses = async (
   submissionId: string,
-  responsesData: Omit<TablesInsert<'responses'>, 'user_id' | 'id' | 'submission_id'>[]
-): Promise<DbResponse[] | null> => {
+  responsesData: CreateResponseInput[] // Use the defined Pick type
+): Promise<Response[] | null> => {
   const {
     data: { user },
     error: userError,
@@ -60,37 +106,39 @@ export const createResponses = async (
   }
 
   const responsesToInsert = responsesData.map((response) => ({
-    ...response,
+    ...response, // Contains question_id and student_answer_text
     submission_id: submissionId,
     user_id: user.id,
+    // Explicitly set grading fields to null/default for new responses
+    graded_at: null,
+    feedback: null,
+    is_correct: null,
   }))
 
-  const { data, error } = await supabase.from('responses').insert(responsesToInsert).select()
+  const { data: newDbResponses, error } = await supabase
+    .from('responses')
+    .insert(responsesToInsert)
+    .select()
 
   if (error) {
     console.error('Error creating responses:', error)
     return null
   }
-  return data
+  return newDbResponses.map(mapDbResponseToResponse)
 }
 
 /**
  * Fetches a submission and its associated responses by Submission ID.
- * Assumes RLS handles ownership check.
  * @param submissionId - The ID of the submission to fetch.
- * @returns An object containing the submission and its responses, or null if not found or an error occurred.
+ * @returns The fully populated Submission view object or null if not found or an error occurred.
  */
-export const getSubmissionWithResponses = async (
-  submissionId: string
-): Promise<{ submission: DbSubmission; responses: DbResponse[] } | null> => {
+export const getSubmissionDetails = async (submissionId: string): Promise<Submission | null> => {
   try {
-    // Fetch submission and responses concurrently
     const [submissionResult, responsesResult] = await Promise.all([
       supabase.from('submissions').select('*').eq('id', submissionId).single(),
       supabase.from('responses').select('*').eq('submission_id', submissionId),
     ])
 
-    // Handle submission fetch error or not found
     if (submissionResult.error || !submissionResult.data) {
       if (submissionResult.error && submissionResult.error.code !== 'PGRST116') {
         console.error('Error fetching submission by ID:', submissionResult.error)
@@ -100,7 +148,6 @@ export const getSubmissionWithResponses = async (
       return null
     }
 
-    // Handle responses fetch error
     if (responsesResult.error) {
       console.error(
         'Error fetching responses for submission ID:',
@@ -110,78 +157,20 @@ export const getSubmissionWithResponses = async (
       return null
     }
 
-    // Return the combined data
-    return {
-      submission: submissionResult.data,
-      responses: responsesResult.data || [], // Ensure responses is always an array
-    }
+    // Map the combined data, passing responses
+    return mapDbSubmissionToSubmission(submissionResult.data, responsesResult.data || [])
   } catch (error) {
-    console.error('Unexpected error in getSubmissionWithResponses:', error)
+    console.error('Unexpected error in getSubmissionDetails:', error)
     return null
   }
 }
 
 /**
- * Fetches a specific submission attempt for a quiz by the current user, including responses.
- * @param quizId - The ID of the quiz.
- * @param attempt - The attempt number.
- * @returns An object containing the submission and its responses, or null if not found or an error occurred.
- */
-export const getSubmissionDetailsByAttempt = async (
-  quizId: string,
-  attempt: number
-): Promise<{ submission: DbSubmission; responses: DbResponse[] } | null> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser()
-
-  if (userError || !user) {
-    console.error('Error getting user:', userError)
-    return null
-  }
-
-  try {
-    // 1. Find the submission based on quizId, attempt number, and user_id
-    const { data: submissionLookup, error: lookupError } = await supabase
-      .from('submissions')
-      .select('id') // Only need the ID initially
-      .eq('quiz_id', quizId)
-      .eq('attempt_number', attempt)
-      .eq('user_id', user.id)
-      .single() // Expecting only one submission for a specific attempt
-
-    if (lookupError || !submissionLookup) {
-      if (lookupError && lookupError.code !== 'PGRST116') {
-        console.error(
-          `Error finding submission for quiz ${quizId}, attempt ${attempt}:`,
-          lookupError
-        )
-      } else {
-        console.log(`Submission attempt ${attempt} for quiz ${quizId} not found.`)
-      }
-      return null
-    }
-
-    const submissionId = submissionLookup.id
-
-    // 2. Fetch the full submission details and responses using the found ID
-    return await getSubmissionWithResponses(submissionId)
-  } catch (error) {
-    console.error('Unexpected error in getSubmissionDetailsByAttempt:', error)
-    return null
-  }
-}
-
-/**
- * Fetches all submissions for a specific module made by the current user,
- * including the title of the associated quiz.
+ * Fetches all submissions for a specific module made by the current user, including their responses.
  * @param moduleId - The ID of the module.
- * @returns An array of submission objects with quiz titles.
+ * @returns An array of fully populated Submission view objects.
  */
-export const getSubmissionsByModule = async (
-  moduleId: string
-): Promise<DbSubmissionWithQuizTitle[]> => {
+export const getSubmissionsByModule = async (moduleId: string): Promise<Submission[]> => {
   const {
     data: { user },
     error: userError,
@@ -192,194 +181,150 @@ export const getSubmissionsByModule = async (
     return []
   }
 
-  // Join submissions with quizzes to get the quiz title
-  const { data, error } = await supabase
-    .from('submissions')
-    .select(
-      `
-            *,
-            quizzes ( title )
-        `
-    )
-    .eq('module_id', moduleId)
-    .eq('user_id', user.id) // Explicit user_id check
-    .order('submitted_at', { ascending: false }) // Optional: Order by submission date
-
-  if (error) {
-    console.error('Error fetching submissions by module with quiz title:', error)
-    return []
-  }
-
-  return (data as DbSubmissionWithQuizTitle[]) || []
-}
-
-/**
- * Fetches all submissions for a specific quiz made by the current user.
- * @param quizId - The ID of the quiz.
- * @returns An array of submission objects.
- */
-export const getSubmissionsByQuiz = async (quizId: string): Promise<DbSubmission[]> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser()
-
-  if (userError || !user) {
-    console.error('Error getting user:', userError)
-    return []
-  }
-
-  const { data, error } = await supabase
-    .from('submissions')
-    .select('*')
-    .eq('quiz_id', quizId)
-    .eq('user_id', user.id) // Explicit user_id check
-
-  if (error) {
-    console.error('Error fetching submissions by quiz:', error)
-    return []
-  }
-  return data || []
-}
-
-/**
- * Fetches the most recent submission for a given module by the current user.
- * @param moduleId - The ID of the module.
- * @returns The latest submission object or null if none found or error.
- */
-export const getLatestSubmissionByModule = async (
-  moduleId: string
-): Promise<DbSubmission | null> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser()
-
-  if (userError || !user) {
-    console.error('Error getting user:', userError)
-    return null
-  }
-
-  const { data, error } = await supabase
+  // Fetch submissions first
+  const { data: dbSubmissions, error: submissionError } = await supabase
     .from('submissions')
     .select('*')
     .eq('module_id', moduleId)
     .eq('user_id', user.id)
     .order('submitted_at', { ascending: false })
-    .limit(1)
-    .maybeSingle() // Use maybeSingle to return null if no submission found
 
-  if (error) {
-    console.error('Error fetching latest submission by module:', error)
-    return null
+  if (submissionError) {
+    console.error('Error fetching submissions by module:', submissionError)
+    return []
   }
-  return data
-}
-
-/**
- * Fetches the quiz associated with the latest submission for a given module.
- * @param moduleId - The ID of the module.
- * @returns The DbQuiz object or null if no submission/quiz found or error.
- */
-export const getLatestSubmittedQuizByModule = async (moduleId: string): Promise<DbQuiz | null> => {
-  const latestSubmission = await getLatestSubmissionByModule(moduleId)
-
-  if (!latestSubmission) {
-    console.log(`No submissions found for module ${moduleId} to determine latest quiz.`)
-    return null
+  if (!dbSubmissions || dbSubmissions.length === 0) {
+    return []
   }
 
-  // Fetch the quiz associated with the latest submission
-  const { data: quizData, error: quizError } = await supabase
-    .from('quizzes')
+  // Fetch all responses for these submissions
+  const submissionIds = dbSubmissions.map((s) => s.id)
+  const { data: dbResponses, error: responseError } = await supabase
+    .from('responses')
     .select('*')
-    .eq('id', latestSubmission.quiz_id)
-    .single()
+    .in('submission_id', submissionIds)
 
-  if (quizError) {
-    console.error(
-      `Error fetching quiz ${latestSubmission.quiz_id} for latest submission:`,
-      quizError
-    )
-    return null
+  if (responseError) {
+    console.error('Error fetching responses for module submissions:', responseError)
+    // Map without responses if response fetch fails
+    return dbSubmissions.map((sub) => mapDbSubmissionToSubmission(sub, [])) // Pass empty array
   }
 
-  return quizData
+  // Group responses by submission ID
+  const responsesBySubmissionId = (dbResponses || []).reduce(
+    (acc, response) => {
+      ;(acc[response.submission_id] = acc[response.submission_id] || []).push(response)
+      return acc
+    },
+    {} as Record<string, DbResponse[]>
+  )
+
+  // Map each submission, providing its corresponding responses
+  return dbSubmissions.map((sub) =>
+    mapDbSubmissionToSubmission(sub, responsesBySubmissionId[sub.id] || [])
+  )
 }
 
 /**
- * Updates a submission record.
- * Assumes RLS handles ownership. Prevents updating user_id, module_id, quiz_id.
+ * Fetches all submissions for a specific quiz made by the current user, including their responses.
+ * @param quizId - The ID of the quiz.
+ * @returns An array of fully populated Submission view objects.
+ */
+export const getSubmissionsByQuiz = async (quizId: string): Promise<Submission[]> => {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    console.error('Error getting user:', userError)
+    return []
+  }
+
+  // Fetch submissions first
+  const { data: dbSubmissions, error: submissionError } = await supabase
+    .from('submissions')
+    .select('*')
+    .eq('quiz_id', quizId)
+    .eq('user_id', user.id)
+    .order('attempt_number', { ascending: true })
+
+  if (submissionError) {
+    console.error('Error fetching submissions by quiz:', submissionError)
+    return []
+  }
+  if (!dbSubmissions || dbSubmissions.length === 0) {
+    return []
+  }
+
+  // Fetch all responses for these submissions
+  const submissionIds = dbSubmissions.map((s) => s.id)
+  const { data: dbResponses, error: responseError } = await supabase
+    .from('responses')
+    .select('*')
+    .in('submission_id', submissionIds)
+
+  if (responseError) {
+    console.error('Error fetching responses for quiz submissions:', responseError)
+    // Map without responses if response fetch fails
+    return dbSubmissions.map((sub) => mapDbSubmissionToSubmission(sub, [])) // Pass empty array
+  }
+
+  // Group responses by submission ID
+  const responsesBySubmissionId = (dbResponses || []).reduce(
+    (acc, response) => {
+      ;(acc[response.submission_id] = acc[response.submission_id] || []).push(response)
+      return acc
+    },
+    {} as Record<string, DbResponse[]>
+  )
+
+  // Map each submission with its responses
+  return dbSubmissions.map((sub) =>
+    mapDbSubmissionToSubmission(sub, responsesBySubmissionId[sub.id] || [])
+  )
+}
+
+/**
+ * Updates a submission record. Only allows updating grading-related fields.
+ * Fetches and returns the full updated submission including responses.
  * @param submissionId - The ID of the submission to update.
- * @param updates - An object containing the fields to update.
- * @returns The updated submission object or null if an error occurred.
+ * @param updates - An object containing the fields to update (grade_percent, letter_grade, status).
+ * @returns The updated and mapped Submission object (including responses) or null if an error occurred.
  */
 export const updateSubmission = async (
   submissionId: string,
-  updates: TablesUpdate<'submissions'>
-): Promise<DbSubmission | null> => {
-  // Prevent updating restricted fields
-  const { user_id, module_id, quiz_id, ...validUpdates } = updates
-
-  if (Object.keys(validUpdates).length === 0) {
-    console.warn('No valid fields provided for submission update.')
-    const { data: currentData, error: currentError } = await supabase
-      .from('submissions')
-      .select('*')
-      .eq('id', submissionId)
-      .single()
-    if (currentError) {
-      console.error('Error fetching current submission during no-op update:', currentError)
-      return null
-    }
-    return currentData
-  }
-
-  const { data, error } = await supabase
+  updates: UpdateSubmissionInput // Use the defined Pick type
+): Promise<Submission | null> => {
+  const { data: updatedDbSubmission, error: updateError } = await supabase
     .from('submissions')
-    .update(validUpdates)
+    .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', submissionId)
     .select()
     .single()
 
-  if (error) {
-    console.error('Error updating submission:', error)
+  if (updateError) {
+    console.error('Error updating submission:', updateError)
     return null
   }
-  return data
+
+  // After successful update, fetch the full details including responses
+  return getSubmissionDetails(submissionId)
 }
 
 /**
- * Updates a response record.
- * Assumes RLS handles ownership. Prevents updating user_id, submission_id, question_id.
+ * Updates a response record. Only allows updating grading-related fields.
  * @param responseId - The ID of the response to update.
- * @param updates - An object containing the fields to update.
- * @returns The updated response object or null if an error occurred.
+ * @param updates - An object containing the fields to update (feedback, is_correct).
+ * @returns The updated and mapped Response object or null if an error occurred.
  */
 export const updateResponse = async (
   responseId: string,
-  updates: TablesUpdate<'responses'>
-): Promise<DbResponse | null> => {
-  // Prevent updating restricted fields
-  const { user_id, submission_id, question_id, ...validUpdates } = updates
-
-  if (Object.keys(validUpdates).length === 0) {
-    console.warn('No valid fields provided for response update.')
-    const { data: currentData, error: currentError } = await supabase
-      .from('responses')
-      .select('*')
-      .eq('id', responseId)
-      .single()
-    if (currentError) {
-      console.error('Error fetching current response during no-op update:', currentError)
-      return null
-    }
-    return currentData
-  }
-
-  const { data, error } = await supabase
+  updates: UpdateResponseInput
+): Promise<Response | null> => {
+  const { data: updatedDbResponse, error } = await supabase
     .from('responses')
-    .update(validUpdates)
+    .update({ ...updates, graded_at: new Date().toISOString() })
     .eq('id', responseId)
     .select()
     .single()
@@ -388,7 +333,7 @@ export const updateResponse = async (
     console.error('Error updating response:', error)
     return null
   }
-  return data
+  return mapDbResponseToResponse(updatedDbResponse)
 }
 
 /**

@@ -1,171 +1,190 @@
 import { supabase } from '@noggin/app/common/supabase-client'
 import type { Tables, TablesInsert } from '@noggin/types/database.types'
+import { ModuleListItem } from '@noggin/types/module-list-item.types'
+import { ModuleSource } from '@noggin/types/module-source.types'
+import { ModuleStats } from '@noggin/types/module-stats.types'
+import { Module } from '@noggin/types/module.types'
+import {
+  mapDbDataToModuleListItem,
+  mapDbModuleSourceToModuleSource,
+  mapDbModuleStatsToModuleStats,
+  mapDbModuleToModule,
+} from './moduleApi.mappers'
 
-// Helper types
-export type DbModule = Tables<'modules'>
-export type DbModuleStats = Tables<'module_stats'>
-export type DbModuleSource = Tables<'module_sources'>
+// Define DB Row types locally
+type DbModule = Tables<'modules'>
+type DbModuleStats = Tables<'module_stats'>
 
 /**
- * Creates a new module and its initial stats entry for the current user.
- * @param title - The title of the module.
- * @param overview - An overview/description of the module.
- * @param lessonContent - The lesson content (JSON).
- * @returns The newly created module object or null if an error occurs.
+ * Fetches a list of modules for the current user with minimal details required for list views.
+ * @returns An array of ModuleListItem view objects.
  */
-export const createModule = async (title: string, overview: string): Promise<DbModule | null> => {
+export const getModuleList = async (): Promise<ModuleListItem[]> => {
   const {
     data: { session },
     error: authError,
   } = await supabase.auth.getSession()
   if (authError || !session?.user) {
-    console.error('Auth error:', authError)
-    return null
+    console.error('Auth error in getModuleList:', authError)
+    return []
   }
   const userId = session.user.id
 
-  // Insert the module
-  const { data: newModule, error: moduleError } = await supabase
+  // Select only the necessary fields for the list item
+  const { data: dbModuleListData, error } = await supabase
     .from('modules')
-    .insert({
-      user_id: userId,
+    .select(
+      `
+      id,
+      user_id,
       title,
-      overview,
-    })
-    .select()
-    .single()
-
-  if (moduleError || !newModule) {
-    console.error('Error creating module:', moduleError)
-    // TODO: Consider if cleanup is needed if module insert succeeded but stats failed later
-    return null
-  }
-
-  // Insert default stats for the new module
-  const { error: statsError } = await supabase.from('module_stats').insert({
-    module_id: newModule.id,
-    user_id: userId,
-    current_box: 1,
-    next_review_at: new Date().toISOString(),
-    quiz_attempts: 0,
-    review_count: 0,
-  })
-
-  if (statsError) {
-    console.error('Error creating default module stats:', statsError)
-    // Attempt to clean up the created module if stats insertion fails
-    // This is best-effort; a transaction or DB function would be more robust
-    await supabase.from('modules').delete().eq('id', newModule.id)
-    console.warn(`Cleaned up module ${newModule.id} due to stats insertion failure.`)
-    return null
-  }
-
-  return newModule
-}
-
-/**
- * Fetches all modules belonging to the current user.
- * @returns An array of modules or an empty array if none found or error.
- */
-export const getAllModules = async (): Promise<DbModule[]> => {
-  const {
-    data: { session },
-    error: authError,
-  } = await supabase.auth.getSession()
-  if (authError || !session?.user) {
-    console.error('Auth error:', authError)
-    return []
-  }
-  const userId = session.user.id
-
-  const { data, error } = await supabase.from('modules').select('*').eq('user_id', userId) // Explicit user_id check needed here
+      module_stats (
+        current_box,
+        next_review_at
+      )
+    `
+    )
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching all modules:', error)
+    console.error('Error fetching module list:', error)
     return []
   }
-  return data || []
-}
 
-/**
- * Fetches a single module by its ID. Assumes RLS handles ownership.
- * @param moduleId - The ID of the module.
- * @returns The module object or null if not found or error.
- */
-export const getModule = async (moduleId: string): Promise<DbModule | null> => {
-  const { data, error } = await supabase.from('modules').select('*').eq('id', moduleId).single()
-
-  if (error) {
-    // Don't log 'PGRST116' (resource not found) as an error
-    if (error.code !== 'PGRST116') {
-      console.error('Error fetching module:', error)
-    }
-    return null
+  // Define the expected shape explicitly for type safety before mapping
+  type DbModuleListItemData = Pick<DbModule, 'id' | 'user_id' | 'title'> & {
+    module_stats: Pick<DbModuleStats, 'current_box' | 'next_review_at'> | null
   }
-  return data
+
+  // Map the specifically fetched data using the dedicated list item mapper
+  return (dbModuleListData || []).map((dbData) =>
+    mapDbDataToModuleListItem(dbData as DbModuleListItemData)
+  )
 }
 
 /**
- * Fetches a module along with its stats and sources. Assumes RLS handles ownership.
+ * Fetches detailed information for a specific module, including stats, sources, and basic quiz info.
+ * Renamed from getModuleDetails.
  * @param moduleId - The ID of the module.
- * @returns An object containing the module, stats, and sources, or null if any part fails or not found.
+ * @returns The fully populated Module view object or null if not found/error.
  */
-export const getModuleWithDetails = async (
-  moduleId: string
-): Promise<{ module: DbModule; stats: DbModuleStats; sources: DbModuleSource[] } | null> => {
+export const getModule = async (moduleId: string): Promise<Module | null> => {
+  // Renamed function
   try {
-    const [moduleResult, statsResult, sourcesResult] = await Promise.all([
+    // Fetch module, stats, sources, and quizzes concurrently
+    const [moduleResult, statsResult, sourcesResult, quizzesResult] = await Promise.all([
       supabase.from('modules').select('*').eq('id', moduleId).single(),
       supabase.from('module_stats').select('*').eq('module_id', moduleId).single(),
       supabase.from('module_sources').select('*').eq('module_id', moduleId),
+      supabase
+        .from('quizzes')
+        .select('id, module_id, user_id, title, time_limit_seconds, created_at, updated_at') // Select only needed quiz fields
+        .eq('module_id', moduleId),
     ])
 
-    // Check for errors in each query
+    // --- Error Handling ---
     if (moduleResult.error) {
       if (moduleResult.error.code !== 'PGRST116')
         console.error('Error fetching module:', moduleResult.error)
-      return null
+      return null // Module not found or other error
     }
     if (statsResult.error) {
       if (statsResult.error.code !== 'PGRST116')
         console.error('Error fetching module stats:', statsResult.error)
-      // Module exists but stats don't - potentially inconsistent state, treat as error
-      return null
+      // Continue, stats are optional in the mapper
     }
     if (sourcesResult.error) {
       console.error('Error fetching module sources:', sourcesResult.error)
       return null
     }
+    if (quizzesResult.error) {
+      console.error('Error fetching module quizzes:', quizzesResult.error)
+      return null
+    }
+    // --- ---
 
-    // Ensure module and stats were found (sources can be empty)
-    if (!moduleResult.data || !statsResult.data) {
+    if (!moduleResult.data) {
       return null
     }
 
-    return {
-      module: moduleResult.data,
-      stats: statsResult.data,
-      sources: sourcesResult.data || [],
-    }
+    // Map the combined data using the main mapper
+    return mapDbModuleToModule(
+      moduleResult.data,
+      statsResult.data ?? undefined,
+      sourcesResult.data || [],
+      quizzesResult.data || []
+    )
   } catch (error) {
-    console.error('Error fetching module with details:', error)
+    console.error('Unexpected error in getModule:', error)
     return null
   }
 }
 
 /**
- * Updates a module's mutable fields. Assumes RLS handles ownership.
+ * Creates a new module and its initial stats entry for the current user.
+ * @param title - The title of the module.
+ * @param overview - An overview/description of the module.
+ * @returns The newly created and mapped Module object or null if an error occurs.
+ */
+export const createModule = async (title: string, overview: string): Promise<Module | null> => {
+  const {
+    data: { session },
+    error: authError,
+  } = await supabase.auth.getSession()
+  if (authError || !session?.user) {
+    console.error('Auth error:', authError)
+    return null
+  }
+  const userId = session.user.id
+
+  const { data: newDbModule, error: moduleError } = await supabase
+    .from('modules')
+    .insert({ user_id: userId, title, overview })
+    .select()
+    .single()
+
+  if (moduleError || !newDbModule) {
+    console.error('Error creating module:', moduleError)
+    return null
+  }
+
+  const { data: newDbStats, error: statsError } = await supabase
+    .from('module_stats')
+    .insert({
+      module_id: newDbModule.id,
+      user_id: userId,
+      current_box: 1,
+      next_review_at: new Date().toISOString(),
+      quiz_attempts: 0,
+      review_count: 0,
+    })
+    .select()
+    .single()
+
+  if (statsError) {
+    console.error('Error creating default module stats:', statsError)
+    await supabase.from('modules').delete().eq('id', newDbModule.id)
+    console.warn(`Cleaned up module ${newDbModule.id} due to stats insertion failure.`)
+    return null
+  }
+
+  return mapDbModuleToModule(newDbModule, newDbStats)
+}
+
+/**
+ * Updates a module's mutable fields (title, overview).
  * @param moduleId - The ID of the module to update.
  * @param updates - An object containing the fields to update.
- * @returns The updated module object or null if an error occurs.
+ * @returns The updated and mapped Module object (basic details only) or null if an error occurs.
  */
 export const updateModule = async (
   moduleId: string,
   updates: Partial<Pick<DbModule, 'title' | 'overview'>>
-): Promise<DbModule | null> => {
-  const { data, error } = await supabase
+): Promise<Module | null> => {
+  const { data: updatedDbModule, error } = await supabase
     .from('modules')
-    .update({ ...updates, updated_at: new Date().toISOString() }) // Ensure updated_at is set
+    .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', moduleId)
     .select()
     .single()
@@ -174,7 +193,22 @@ export const updateModule = async (
     console.error('Error updating module:', error)
     return null
   }
-  return data
+
+  // Fetch associated quizzes to include in the returned Module object
+  const { data: quizzesData, error: quizzesError } = await supabase
+    .from('quizzes')
+    .select('id, module_id, user_id, title, time_limit_seconds, created_at, updated_at')
+    .eq('module_id', moduleId)
+
+  if (quizzesError) {
+    console.error('Error fetching quizzes during module update:', quizzesError)
+    // Decide if you want to return partial data or null
+    // Returning partial data for now:
+    return mapDbModuleToModule(updatedDbModule)
+  }
+
+  // Map with quizzes included
+  return mapDbModuleToModule(updatedDbModule, undefined, undefined, quizzesData || [])
 }
 
 /**
@@ -196,7 +230,7 @@ export const deleteModule = async (moduleId: string): Promise<boolean> => {
  * Adds a source file reference to a module.
  * @param moduleId - The ID of the module to add the source to.
  * @param sourceData - Information about the source file.
- * @returns The newly created module source record or null if an error occurs.
+ * @returns The newly created and mapped ModuleSource object or null if an error occurs.
  */
 export const addModuleSource = async (
   moduleId: string,
@@ -204,7 +238,7 @@ export const addModuleSource = async (
     TablesInsert<'module_sources'>,
     'file_name' | 'storage_object_path' | 'mime_type' | 'size_bytes'
   >
-): Promise<DbModuleSource | null> => {
+): Promise<ModuleSource | null> => {
   const {
     data: { session },
     error: authError,
@@ -215,13 +249,9 @@ export const addModuleSource = async (
   }
   const userId = session.user.id
 
-  const { data, error } = await supabase
+  const { data: newDbSource, error } = await supabase
     .from('module_sources')
-    .insert({
-      ...sourceData,
-      module_id: moduleId,
-      user_id: userId,
-    })
+    .insert({ ...sourceData, module_id: moduleId, user_id: userId })
     .select()
     .single()
 
@@ -229,7 +259,7 @@ export const addModuleSource = async (
     console.error('Error adding module source:', error)
     return null
   }
-  return data
+  return mapDbModuleSourceToModuleSource(newDbSource)
 }
 
 /**
@@ -248,25 +278,24 @@ export const deleteModuleSource = async (sourceId: string): Promise<boolean> => 
 }
 
 /**
- * Updates the statistics for a module. Assumes RLS handles ownership.
+ * Updates the statistics for a module.
  * @param moduleId - The ID of the module whose stats are being updated.
  * @param statsUpdate - An object containing the stat fields to update.
- * @returns The updated module stats object or null if an error occurs.
+ * @returns The updated and mapped ModuleStats object or null if an error occurs.
  */
 export const updateModuleStats = async (
   moduleId: string,
   statsUpdate: Partial<Omit<DbModuleStats, 'module_id' | 'user_id'>>
-): Promise<DbModuleStats | null> => {
-  // Ensure last_reviewed_at is updated if relevant fields change
+): Promise<ModuleStats | null> => {
   const updatePayload = { ...statsUpdate }
   if (statsUpdate.current_box !== undefined || statsUpdate.review_count !== undefined) {
     updatePayload.last_reviewed_at = new Date().toISOString()
   }
 
-  const { data, error } = await supabase
+  const { data: updatedDbStats, error } = await supabase
     .from('module_stats')
     .update(updatePayload)
-    .eq('module_id', moduleId) // RLS implicitly handles user_id check here
+    .eq('module_id', moduleId)
     .select()
     .single()
 
@@ -274,27 +303,24 @@ export const updateModuleStats = async (
     console.error('Error updating module stats:', error)
     return null
   }
-  return data
+  return mapDbModuleStatsToModuleStats(updatedDbStats)
 }
 
 /**
- * Fetches the statistics for a single module. Assumes RLS handles ownership.
+ * Fetches the statistics for a single module.
  * @param moduleId - The ID of the module.
- * @returns The module stats object or null if not found or error.
+ * @returns The mapped ModuleStats object or null if not found or error.
  */
-export const getModuleStats = async (moduleId: string): Promise<DbModuleStats | null> => {
-  const { data, error } = await supabase
+export const getModuleStats = async (moduleId: string): Promise<ModuleStats | null> => {
+  const { data: dbStats, error } = await supabase
     .from('module_stats')
     .select('*')
-    .eq('module_id', moduleId) // RLS implicitly handles user_id check here
+    .eq('module_id', moduleId)
     .single()
 
   if (error) {
-    // Don't log 'PGRST116' (resource not found) as an error
-    if (error.code !== 'PGRST116') {
-      console.error('Error fetching module stats:', error)
-    }
+    if (error.code !== 'PGRST116') console.error('Error fetching module stats:', error)
     return null
   }
-  return data
+  return mapDbModuleStatsToModuleStats(dbStats)
 }

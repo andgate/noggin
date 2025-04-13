@@ -1,12 +1,14 @@
-import { Button, Center, Container, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { Button, Center, Container, Group, Image, Paper, Stack, Text, Title } from '@mantine/core'
 import { Link } from '@tanstack/react-router'
 import React from 'react'
+import coolBrain from '../../assets/cool-brain.png'
 
 export const SplashPage: React.FC = () => {
   return (
     <Center style={{ height: '100vh', padding: 'var(--mantine-spacing-md)' }}>
       <Container size="sm">
-        <Paper withBorder shadow="md" p="xl" radius="md">
+        {/* Add position: relative to make it the positioning context for the image */}
+        <Paper withBorder shadow="md" p="xl" radius="md" style={{ position: 'relative' }}>
           <Stack align="center" gap="xl">
             <Title order={1} ta="center">
               Welcome to Noggin
@@ -36,6 +38,18 @@ export const SplashPage: React.FC = () => {
               </Button>
             </Group>
           </Stack>
+          {/* Add the image */}
+          <Image
+            src={coolBrain}
+            alt="Cool Brain"
+            style={{
+              position: 'absolute',
+              bottom: 'var(--mantine-spacing-md)', // Position relative to Paper padding
+              right: 'var(--mantine-spacing-md)', // Position relative to Paper padding
+              width: '50px', // Adjust size as needed
+              height: 'auto',
+            }}
+          />
         </Paper>
       </Container>
     </Center>
