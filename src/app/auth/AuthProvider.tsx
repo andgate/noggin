@@ -1,16 +1,9 @@
-import { supabase } from '@noggin/app/common/supabase-client'
+import { supabase } from '@/shared/api/supabase-client'
 import { Session, User } from '@supabase/supabase-js'
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
+import { AuthContext } from './auth.context'
 
-interface AuthContextType {
-  session: Session | null
-  user: User | null
-  isLoading: boolean
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-interface AuthProviderProps {
+export interface AuthProviderProps {
   children: ReactNode
 }
 
@@ -53,12 +46,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
 }

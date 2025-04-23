@@ -1,5 +1,5 @@
-import { allModulesQueryOptions } from '@noggin/hooks/useModuleHooks'
-import { LibraryPage } from '@noggin/pages/Library'
+import { allModulesQueryOptions } from '@/core/hooks/useModuleHooks'
+import { LibraryPage } from '@/features/view-library/LibraryPage'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/library')({

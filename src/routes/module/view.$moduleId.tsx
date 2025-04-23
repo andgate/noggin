@@ -1,7 +1,6 @@
+import { moduleQueryOptions, useModule } from '@/core/hooks/useModuleHooks'
+import { ModulePage } from '@/features/view-module/ModulePage'
 import { Loader } from '@mantine/core'
-import { moduleDetailsQueryOptions } from '@noggin/hooks/useModuleHooks'
-import { ModulePage } from '@noggin/pages/Module'
-import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/module/view/$moduleId')({
@@ -10,7 +9,7 @@ export const Route = createFileRoute('/module/view/$moduleId')({
       console.error('QueryClient not found in route context!')
       throw new Error('QueryClient required in route context for pre-fetching.')
     }
-    return context.queryClient.ensureQueryData(moduleDetailsQueryOptions(params.moduleId))
+    return context.queryClient.ensureQueryData(moduleQueryOptions(params.moduleId))
   },
   component: ModuleViewRoot,
   // errorComponent: ModuleErrorComponent, // Example
@@ -18,12 +17,7 @@ export const Route = createFileRoute('/module/view/$moduleId')({
 
 function ModuleViewRoot() {
   const { moduleId } = Route.useParams()
-  const {
-    data: moduleData,
-    isLoading,
-    isError,
-    error,
-  } = useQuery(moduleDetailsQueryOptions(moduleId))
+  const { data: mod, isLoading, isError, error } = useModule(moduleId)
 
   if (isLoading) {
     return (
@@ -41,7 +35,7 @@ function ModuleViewRoot() {
     )
   }
 
-  if (!moduleData) {
+  if (!mod) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         Module not found or data is empty.
@@ -49,9 +43,7 @@ function ModuleViewRoot() {
     )
   }
 
-  return (
-    <ModulePage module={moduleData.module} stats={moduleData.stats} sources={moduleData.sources} />
-  )
+  return <ModulePage mod={mod} />
 }
 
 // Optional: Define an Error Component if needed

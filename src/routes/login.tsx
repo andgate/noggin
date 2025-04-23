@@ -1,4 +1,4 @@
-import { LoginPage } from '@noggin/pages/Login/LoginPage'
+import { LoginPage } from '@/features/auth/LoginPage'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 

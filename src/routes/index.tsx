@@ -1,8 +1,8 @@
+import { useAuth } from '@/app/auth/auth.hooks'
+import { NotFound } from '@/components/errors/NotFound'
+import { DashboardPage } from '@/features/practice-feed/Dashboard'
+import { SplashPage } from '@/features/splash/Splash'
 import { LoadingOverlay } from '@mantine/core'
-import { useAuth } from '@noggin/app/auth/AuthProvider'
-import { NotFound } from '@noggin/components/layout/NotFound'
-import { DashboardPage } from '@noggin/pages/Dashboard'
-import { SplashPage } from '@noggin/pages/Splash'
 import { createFileRoute, ErrorComponent, ErrorComponentProps } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({

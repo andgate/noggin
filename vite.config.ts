@@ -5,20 +5,20 @@ import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
-  root: resolve(__dirname, 'src'),
+  root: resolve(__dirname, 'src/app'),
   envDir: resolve(__dirname, './'),
   build: {
     outDir: resolve(__dirname, 'dist'),
     rollupOptions: {
       input: {
-        index: resolve(__dirname, 'src/index.html'),
+        index: resolve(__dirname, 'src/app/index.html'),
       },
     },
     emptyOutDir: true, // Ensure the output directory is cleaned before build
   },
   resolve: {
     alias: {
-      '@noggin': resolve(__dirname, 'src/'),
+      '@': resolve(__dirname, 'src/'),
       '@test-utils': resolve(__dirname, 'tests/test-utils'),
     },
   },
@@ -26,7 +26,7 @@ export default defineConfig({
     viteReact(),
     TanStackRouterVite({
       routesDirectory: resolve(__dirname, 'src/routes'),
-      generatedRouteTree: resolve(__dirname, 'src/routeTree.gen.ts'),
+      generatedRouteTree: resolve(__dirname, 'src/routes/routeTree.gen.ts'),
     }),
     tsconfigPaths(),
   ],

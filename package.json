@@ -18,10 +18,10 @@
     "format": "prettier --write .",
     "lint": "eslint .",
     "lint:fix": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
-    "types:supabase": "pnpx supabase gen types typescript --project-id dfreaglzkffskxbgdfdf --schema public > src/types/database.types.ts"
+    "types:supabase": "pnpx supabase gen types typescript --project-id dfreaglzkffskxbgdfdf --schema public > src/shared/types/database.types.ts"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.0",
+    "@google/genai": "^0.8.0",
     "@mantine/core": "^7.17.1",
     "@mantine/dropzone": "^7.17.1",
     "@mantine/form": "^7.17.1",
@@ -42,6 +42,7 @@
     "pngjs": "^7.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "tus-js-client": "^4.3.1",
     "usehooks-ts": "^3.1.1",
     "uuid": "^11.1.0",
     "zod": "^3.24.2",

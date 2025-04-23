@@ -1,5 +1,5 @@
+import { theme } from '@/app/theme'
 import { MantineProvider } from '@mantine/core'
-import { theme } from '@noggin/theme'
 import { RenderResult, render as testingLibraryRender } from '@testing-library/react'
 import React from 'react'
 
